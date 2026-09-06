@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Summing.Core;
 using Summing.World;
 using Summing.World.Materials;
+using Summing.History;
 
 namespace Summing.Generation;
 
@@ -23,7 +24,8 @@ internal static class BadlandsBuilder
             BuildRouteFormation(world, configuration, variant, random, route, protectedTiles, i);
         BuildGeologicalForms(world, configuration, variant, random, protectedTiles);
         ApplyErosion(world, configuration, variant, protectedTiles);
-        var features = PlaceSurfaceFeatures(world, configuration, variant, random, route);
+        var history = WorldHistoryGenerator.Generate(configuration.Seed);
+        var features = PlaceSurfaceFeatures(world, configuration, variant, random, route, history.Cultures.Count);
         var weather = BuildWeather(parameters, configuration.Seed);
 
         var spawnAnchor = route[0];
@@ -37,7 +39,8 @@ internal static class BadlandsBuilder
                 Math.Max(0, summitAnchor.Y - 4) * GameConstants.TileSize, 5 * GameConstants.TileSize, 4 * GameConstants.TileSize),
             RouteAnchors = route,
             Features = features,
-            Weather = weather
+            Weather = weather,
+            History = history
         };
     }
 
@@ -164,7 +167,7 @@ internal static class BadlandsBuilder
     }
 
     private static List<WorldFeature> PlaceSurfaceFeatures(TileWorld world, WorldGenerationConfig config,
-        GeneratorVariant variant, DeterministicRandom random, List<Point> route)
+        GeneratorVariant variant, DeterministicRandom random, List<Point> route, int cultureCount)
     {
         var features = new List<WorldFeature>();
         for (var i = 3; i < route.Count - 2; i++)
@@ -173,10 +176,19 @@ internal static class BadlandsBuilder
             var altitude = 1f - anchor.Y / (float)world.Height;
             if (random.Chance(config.Parameters.RuinDensity * (variant == GeneratorVariant.Layered ? 1.5f : 0.75f)))
             {
+                var provenance = (short)random.Range(1, cultureCount + 1);
                 var position = new Vector2((anchor.X + random.Range(-3, 4) + 0.5f) * GameConstants.TileSize,
                     anchor.Y * GameConstants.TileSize);
                 features.Add(new WorldFeature(i % 4 == 0 ? WorldFeatureKind.ExposedMachine : WorldFeatureKind.Ruin,
-                    position, random.Range(0, 4)));
+                    position, random.Range(0, 4), provenance));
+                var tracePoint = world.WorldToTile(position + new Vector2(0f, 2f));
+                var traceTile = world.GetTile(tracePoint.X, tracePoint.Y);
+                if (traceTile.Solid)
+                {
+                    traceTile.Flags |= TileFlags.RuinTrace;
+                    traceTile.ProvenanceId = provenance;
+                    world.SetTile(tracePoint.X, tracePoint.Y, traceTile);
+                }
             }
             if (altitude > 0.18f && random.Chance(config.Parameters.EcologyDensity * (0.4f + altitude)))
                 features.Add(new WorldFeature(WorldFeatureKind.Ecology,
@@ -184,7 +196,8 @@ internal static class BadlandsBuilder
                     random.Range(0, 3)));
             if (i % 11 == 6)
                 features.Add(new WorldFeature(WorldFeatureKind.RelicCandidate,
-                    new Vector2((anchor.X + (i % 2 == 0 ? 6 : -6)) * GameConstants.TileSize, (anchor.Y - 1) * GameConstants.TileSize), i % 6));
+                    new Vector2((anchor.X + (i % 2 == 0 ? 6 : -6)) * GameConstants.TileSize, (anchor.Y - 1) * GameConstants.TileSize),
+                    i % 6, (short)random.Range(1, cultureCount + 1)));
             if (i % 17 == 9)
                 features.Add(new WorldFeature(WorldFeatureKind.BurrowerSpawn,
                     new Vector2(anchor.X * GameConstants.TileSize, (anchor.Y - 1) * GameConstants.TileSize), 0));
