@@ -9,10 +9,10 @@ Bindings are editable from the in-game binding panel and persisted as readable J
 | Dash | Left Shift | X |
 | Wall cling / grapple modifier | Left Ctrl | left shoulder |
 | Active grapple | right mouse | right shoulder |
-| Dig | left mouse or F | X while grounded/near terrain |
+| Dig | left mouse or F | Y |
 | Slide | C | B |
-| Place rope | R | Y |
-| Bomb | Q | right trigger |
+| Place rope | R | left-stick click |
+| Bomb | Q | right-stick click |
 | Look | mouse / movement direction | right stick |
 | Debug/editor | F1 | Back + Start |
 | Pause | Escape | Start |
