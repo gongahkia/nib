@@ -30,6 +30,7 @@ public sealed class GeneratedWorld
     public required List<WorldFeature> Features { get; init; }
     public required List<WeatherBand> Weather { get; init; }
     public required WorldHistory History { get; init; }
+    public GenerationDiagnostics Diagnostics { get; set; } = new([], new TraversabilityReport(false, 0, 0, "not validated", []));
 
     public float WindAt(float worldY)
     {
