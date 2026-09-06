@@ -7,12 +7,14 @@ local Player = require("game.player")
 local World = require("game.world")
 local RunnerRender = require("game.runner_render")
 local Audio = require("game.audio")
+local Generator = require("game.generator")
 
 local game = { debug = true, cameraX = 0, cameraY = 0, gamepadPressed = {} }
 
 function love.load()
   render.load()
-  game.world, game.player, game.input = World.playground(), Player.new(14, 90), Input.new()
+  game.level = assert(Generator.generate(20260906))
+  game.world, game.player, game.input = World.new(game.level), Player.new(game.level.spawn.x, game.level.spawn.y), Input.new()
   game.fixed = Fixed.new(config.step, function(dt)
     local snapshot
     local joysticks = love.joystick.getJoysticks()
@@ -34,6 +36,7 @@ function love.load()
       if sounds[game.player.state] then Audio.play(sounds[game.player.state]) end
     end
     game.cameraX = math.max(0, game.player.x - 43)
+    game.cameraY = game.player.y - 88
     game.gamepadPressed = {}
   end)
   local ok = pcall(Audio.load); if not ok then Audio.enabled = false end
