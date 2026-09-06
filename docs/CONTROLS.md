@@ -16,7 +16,7 @@ On the title screen, D-pad/left stick selects difficulty and generator, A starts
 | Place rope | R | left-stick click |
 | Bomb | Q | right-stick click |
 | Look | mouse / movement direction | right stick |
-| Debug/editor | F1 | Back + Start |
+| Debug/editor | F1 | Back |
 | Pause | Escape | Start |
 
 Editor controls appear in the overlay because their meaning depends on the selected tool.

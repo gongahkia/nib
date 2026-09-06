@@ -57,6 +57,7 @@ public sealed class PlayerController
     public MovementState State { get; private set; } = MovementState.Falling;
     public MovementState VisualState => _actionVisualTimer > 0f ? _actionVisualState : State;
     public bool Grounded { get; private set; }
+    public bool TouchingCeiling { get; private set; }
     public bool TouchingLeftWall { get; private set; }
     public bool TouchingRightWall { get; private set; }
     public bool LeftWallClimbable { get; private set; }
@@ -281,6 +282,10 @@ public sealed class PlayerController
             Velocity = new Vector2(Velocity.X, Approach(Velocity.Y, climb, 1150f * dt));
             SetState(MovementState.WallCling);
         }
+        else if (State == MovementState.WallCling)
+        {
+            SetState(Velocity.Y < -55f ? MovementState.AscendingJump : MovementState.Falling);
+        }
         if (wall != 0 && _jumpBufferTimer > 0f && !Grounded)
         {
             Velocity = new Vector2(-wall * WallJumpX, -JumpSpeed * 0.92f);
@@ -380,6 +385,7 @@ public sealed class PlayerController
     {
         var body = Bounds;
         Grounded = world.OverlapsSolid(body.Offset(0f, 1f));
+        TouchingCeiling = world.OverlapsSolid(body.Offset(0f, -1f));
         TouchingLeftWall = world.OverlapsSolid(body.Offset(-1f, 0f));
         TouchingRightWall = world.OverlapsSolid(body.Offset(1f, 0f));
         LeftWallClimbable = TouchingLeftWall && world.IsClimbable(new Vector2(body.Left - 1f, body.Center.Y));

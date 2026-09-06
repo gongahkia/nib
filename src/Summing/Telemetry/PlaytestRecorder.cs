@@ -51,7 +51,7 @@ public sealed class PlaytestRecorder : IDisposable
         _frames = new StreamWriter(Path.Combine(DirectoryPath, "frames.csv"));
         _events = new StreamWriter(Path.Combine(DirectoryPath, "events.jsonl"));
         _screenshots = new StreamWriter(Path.Combine(DirectoryPath, "screenshots", "index.csv"));
-        _frames.WriteLine("frame,time_s,input_down,move_x,move_y,aim_x,aim_y,player_x,player_y,velocity_x,velocity_y,movement_state,visual_state,camera_x,camera_y,lookahead_x,lookahead_y,grounded,left_wall,right_wall,left_climbable,right_climbable,collision_normals,wall_stamina,dash_charges,grapple,grapple_x,grapple_y,coyote_used,jump_buffer_used,health,stunned,bombs,ropes,wind,nearby_tiles");
+        _frames.WriteLine("frame,time_s,input_down,input_pressed,input_released,move_x,move_y,aim_x,aim_y,player_x,player_y,velocity_x,velocity_y,movement_state,visual_state,camera_x,camera_y,lookahead_x,lookahead_y,grounded,ceiling,left_wall,right_wall,left_climbable,right_climbable,collision_normals,wall_stamina,dash_charges,grapple,grapple_x,grapple_y,coyote_used,jump_buffer_used,health,stunned,bombs,ropes,wind,nearby_tiles");
         _screenshots.WriteLine("frame,time_s,file,event,phase");
         File.WriteAllText(Path.Combine(DirectoryPath, "metadata.json"), JsonSerializer.Serialize(new
         {
@@ -84,14 +84,21 @@ public sealed class PlaytestRecorder : IDisposable
     {
         _frame = frame;
         var actions = string.Join('|', Enum.GetValues<InputAction>().Where(input.Down));
-        var normals = player.Grounded ? "0,-1" : player.TouchingLeftWall ? "1,0" : player.TouchingRightWall ? "-1,0" : "";
+        var pressed = string.Join('|', Enum.GetValues<InputAction>().Where(input.Pressed));
+        var released = string.Join('|', Enum.GetValues<InputAction>().Where(input.Released));
+        var contacts = new List<string>();
+        if (player.Grounded) contacts.Add("0:-1");
+        if (player.TouchingCeiling) contacts.Add("0:1");
+        if (player.TouchingLeftWall) contacts.Add("1:0");
+        if (player.TouchingRightWall) contacts.Add("-1:0");
+        var normals = string.Join('|', contacts);
         var grappleX = player.GrappleAttached ? F(player.GrappleAnchor.X) : "";
         var grappleY = player.GrappleAttached ? F(player.GrappleAnchor.Y) : "";
         var nearby = NearbyTiles(world, player);
-        _frames.WriteLine(string.Join(',', frame, F(frame / 60f), Csv(actions), F(input.Move.X), F(input.Move.Y),
+        _frames.WriteLine(string.Join(',', frame, F(frame / 60f), Csv(actions), Csv(pressed), Csv(released), F(input.Move.X), F(input.Move.Y),
             F(input.Aim.X), F(input.Aim.Y), F(player.Position.X), F(player.Position.Y), F(player.Velocity.X),
             F(player.Velocity.Y), player.State, player.VisualState, F(camera.Position.X), F(camera.Position.Y),
-            F(camera.LookAhead.X), F(camera.LookAhead.Y), player.Grounded, player.TouchingLeftWall,
+            F(camera.LookAhead.X), F(camera.LookAhead.Y), player.Grounded, player.TouchingCeiling, player.TouchingLeftWall,
             player.TouchingRightWall, player.LeftWallClimbable, player.RightWallClimbable, Csv(normals), F(player.WallStamina), player.DashCharges,
             player.GrappleAttached, grappleX, grappleY, player.UsedCoyoteThisFrame, player.UsedJumpBufferThisFrame,
             player.Health, player.Stunned, inventory.Bombs, inventory.Ropes, F(generated.WindAt(player.Position.Y)), Csv(nearby)));
@@ -150,10 +157,22 @@ public sealed class PlaytestRecorder : IDisposable
 
     private void RequestScreenshot(string eventName, bool withPost)
     {
-        if (!_pendingScreenshots.Exists(request => request.DueFrame == _frame && request.Event == eventName && request.Phase == "event"))
-            _pendingScreenshots.Add(new ScreenshotRequest(_frame, eventName, "event"));
-        if (withPost && !_pendingScreenshots.Exists(request => request.DueFrame == _frame + 12 && request.Event == eventName && request.Phase == "post"))
-            _pendingScreenshots.Add(new ScreenshotRequest(_frame + 12, eventName, "post"));
+        QueueScreenshot(_frame, eventName, "event");
+        if (withPost) QueueScreenshot(_frame + 12, eventName, "post");
+    }
+
+    private void QueueScreenshot(long dueFrame, string eventName, string phase)
+    {
+        var index = _pendingScreenshots.FindIndex(request => request.DueFrame == dueFrame && request.Phase == phase);
+        if (index < 0)
+        {
+            _pendingScreenshots.Add(new ScreenshotRequest(dueFrame, eventName, phase));
+            return;
+        }
+        var current = _pendingScreenshots[index];
+        var names = current.Event.Split('+', StringSplitOptions.RemoveEmptyEntries);
+        if (!names.Contains(eventName, StringComparer.Ordinal))
+            _pendingScreenshots[index] = current with { Event = $"{current.Event}+{eventName}" };
     }
 
     private static string NearbyTiles(TileWorld world, PlayerController player)

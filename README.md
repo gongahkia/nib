@@ -14,7 +14,7 @@ make build
 
 The project scripts detect the documented per-user install at `~/.local/share/dotnet` as well as a working SDK on `PATH`. The game creates local `archive/`, `saves/`, `exports/`, and `playtests/` directories in the working directory. They are deliberately ignored by Git. Silence is intentional; no audio subsystem or audio assets exist in this slice.
 
-Fedora's framework-dependent apphost cannot start when the system .NET host is incomplete. `run.sh` verifies the host before using it and prefers the working per-user SDK. To produce a runtime-independent local build, use `make publish-fedora`; afterward `./run.sh` launches `artifacts/linux-x64/Summing` directly.
+Fedora's framework-dependent apphost cannot start when the system .NET host is incomplete. Debug builds on Linux are therefore self-contained, while the project scripts also verify the SDK host and prefer a working per-user install. To produce a clean runtime-independent release, use `make publish-fedora`, then launch `artifacts/linux-x64/Summing` directly.
 
 The title screen selects Easy/Hard, the deterministic seed, Heightmap/Cellular/Layered generation, climber palette, and in-game bindings. `Esc`/Start pauses during play. Death has no checkpoint; Easy repeats the world and Hard advances to another generated history. Reach the summit relay to complete the slice.
 
@@ -24,7 +24,7 @@ Run all bounded non-visual verification with:
 make verify
 ```
 
-This checks three-variant determinism and traversability, complete JSON round-trip, scripted movement state transitions, hardness, terrain mutation, brittle collapse, and Archive persistence. `dotnet run --project src/Summing/Summing.csproj -- --smoke-run` additionally runs a four-second native scripted render/telemetry check.
+This checks three-variant determinism and traversability, complete JSON round-trip, scripted movement state transitions, hardness, terrain mutation, brittle collapse, and Archive persistence. `./run.sh --smoke-run` additionally runs a four-second native scripted render/telemetry check; `./run.sh --smoke-periodic` extends it past the ten-second periodic screenshot boundary.
 
 ## Project map
 

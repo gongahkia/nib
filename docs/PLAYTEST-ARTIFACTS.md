@@ -1,6 +1,6 @@
 # Playtest artifacts
 
-Every generated run creates one `playtests/<local timestamp>-<accepted seed>/` directory. Regenerating, loading an editor world, or restarting a run closes the current recorder with `world-replaced` and starts another directory. Normal application exit writes `application-exit`; summit and death restarts record their own outcomes during final integration.
+Every generated run creates one `playtests/<local timestamp>-<accepted seed>/` directory. Regenerating, loading an editor world, or restarting a run closes the current recorder with `world-replaced` and starts another directory. Normal application exit writes `application-exit`; summit and death record their own outcomes after their event screenshots are captured.
 
 Contents:
 

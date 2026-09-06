@@ -17,7 +17,7 @@ Generated histories use original vocabulary assembled from seed-bound language f
 - the **Votive Calculi** treated computation as a debt recorded in fired mineral tablets;
 - the **Ash Meridian** marked safe migrations with vertical red cuts in cliff faces;
 - the **Choir of Measures** enclosed fossil pressure organs and interpreted their weathering as law;
-- the **Pale Convenant** is a later scholarly label, not a stable universal truth.
+- the **Pale Covenant** is a later scholarly label, not a stable universal truth.
 
 These are tone examples, not fixed canon. Each seed generates new names, practices, migrations, conflicts, relations, monuments, and collapse causes. Factions in this slice are dead or absent. They appear only through provenance: masonry patterns, pigments, altered material, records, relics, and overlaid territorial marks.
 

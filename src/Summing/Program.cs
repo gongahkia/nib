@@ -24,6 +24,22 @@ if (Environment.GetCommandLineArgs().Contains("--verify-generation"))
         Console.WriteLine($"seed={configuration.Seed} variant={configuration.Variant} fingerprint={firstHash:x16} " +
             $"route={validated.Diagnostics.Traversability.CheckedTransitions} rejected={validated.Diagnostics.RejectedSeeds.Count}");
         if (firstHash != secondHash) throw new InvalidOperationException("generation is not deterministic");
+
+        var rejectedCandidates = 0;
+        for (var sample = 0; sample < 32; sample++)
+        {
+            var sampleSeed = unchecked(9042026L + sample * (long)0x61c8864680b583ebUL);
+            var sampleConfiguration = new WorldGenerationConfig { Seed = sampleSeed, Variant = variant };
+            var firstValidated = ValidatedWorldGenerator.Generate(sampleConfiguration);
+            var secondValidated = ValidatedWorldGenerator.Generate(sampleConfiguration);
+            if (!firstValidated.Diagnostics.Traversability.Solvable)
+                throw new InvalidOperationException($"validated {variant} seed {sampleSeed} is not solvable");
+            if (firstValidated.Configuration.Seed != secondValidated.Configuration.Seed ||
+                firstValidated.Terrain.Fingerprint() != secondValidated.Terrain.Fingerprint())
+                throw new InvalidOperationException($"validated {variant} seed {sampleSeed} is not deterministic");
+            rejectedCandidates += firstValidated.Diagnostics.RejectedSeeds.Count;
+        }
+        Console.WriteLine($"sweep variant={variant} seeds=32 deterministic=True solvable=True rejected={rejectedCandidates}");
     }
     return;
 }
@@ -31,6 +47,8 @@ if (Environment.GetCommandLineArgs().Contains("--verify-generation"))
 if (Environment.GetCommandLineArgs().Contains("--verify-serialization"))
 {
     var generated = WorldGeneratorRegistry.Generate(new WorldGenerationConfig());
+    generated.Terrain.SetTile(1, 1, Summing.World.Materials.MaterialId.BlackBasalt);
+    generated.Terrain.DamageTile(1, 1, 2, "serialization-verification");
     var tuning = DifficultyTuning.For(Difficulty.Easy);
     var player = new PlayerController(generated.Spawn, tuning.StartingHealth);
     var inventory = new PlayerInventory(tuning);
@@ -48,6 +66,8 @@ if (Environment.GetCommandLineArgs().Contains("--verify-serialization"))
         var loaded = WorldSerializer.Load(path);
         if (loaded.Terrain.Fingerprint() != generated.Terrain.Fingerprint() || loaded.History.Id != generated.History.Id)
             throw new InvalidDataException("world JSON round-trip changed authoritative data");
+        if (loaded.Terrain.GetTile(1, 1).Damage != 2)
+            throw new InvalidDataException("world JSON round-trip lost mutable tile damage");
         Console.WriteLine($"roundtrip=ok bytes={new FileInfo(path).Length} fingerprint={loaded.Terrain.Fingerprint():x16}");
     }
     finally
@@ -64,6 +84,8 @@ if (Environment.GetCommandLineArgs().Contains("--verify-systems"))
 }
 
 var smokeRun = Environment.GetCommandLineArgs().Contains("--smoke-run");
+var smokePeriodic = Environment.GetCommandLineArgs().Contains("--smoke-periodic");
 var smokeTitle = Environment.GetCommandLineArgs().Contains("--smoke-title");
-using var game = new Summing.Game1(smokeRun ? 240 : smokeTitle ? 30 : 0, smokeRun, smokeTitle);
+using var game = new Summing.Game1(smokeRun ? 240 : smokePeriodic ? 620 : smokeTitle ? 30 : 0,
+    smokeRun || smokePeriodic, smokeTitle);
 game.Run();

@@ -80,7 +80,7 @@ public sealed class Game1 : Game
         IsFixedTimeStep = true;
         TargetElapsedTime = TimeSpan.FromSeconds(GameConstants.FixedDelta);
         Window.AllowUserResizing = true;
-        Window.Title = "SUMMING — movement laboratory";
+        Window.Title = "SUMMING — The Lorn Reach";
     }
 
     protected override void Initialize()
@@ -321,10 +321,25 @@ public sealed class Game1 : Game
     private void DrawBackdrop()
     {
         _spriteBatch.Draw(_pixel, new Rectangle(-100, -100, _world.PixelWidth + 200, _world.PixelHeight + 200), GamePalette.DeepSky);
+        DrawDistantRidge((int)_camera.Position.Y + 105, 92, new Color(20, 24, 37), 31);
+        DrawDistantRidge((int)_camera.Position.Y + 145, 68, GamePalette.FarStone, 53);
         for (var x = -80; x < _world.PixelWidth + 80; x += 32)
         {
             var height = 30 + Math.Abs((x * 17) % 90);
             _spriteBatch.Draw(_pixel, new Rectangle(x, _world.PixelHeight - height - 30, 25, height), GamePalette.FarStone);
+        }
+    }
+
+    private void DrawDistantRidge(int horizon, int step, Color color, int phase)
+    {
+        var viewLeft = (int)_camera.Position.X - GameConstants.VirtualWidth / 2 - step;
+        var first = (int)MathF.Floor(viewLeft / (float)step) * step;
+        for (var x = first; x < viewLeft + GameConstants.VirtualWidth + step * 2; x += step)
+        {
+            var height = 34 + Math.Abs((x / step * 37 + phase) % 92);
+            var width = step - 5;
+            _spriteBatch.Draw(_pixel, new Rectangle(x, horizon - height, width, height + 240), color);
+            _spriteBatch.Draw(_pixel, new Rectangle(x, horizon - height, width, 2), color == GamePalette.FarStone ? GamePalette.Stone : GamePalette.FarStone);
         }
     }
 
@@ -334,7 +349,7 @@ public sealed class Game1 : Game
         {
             var digits = new[] { Keys.D0, Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9 };
             for (var index = 0; index < digits.Length; index++)
-                if (_input.KeyPressed(digits[index]) && _titleSeedText.Length < 18) _titleSeedText += index;
+                if (_input.KeyPressed(digits[index]) && _titleSeedText.Length < 20) _titleSeedText += index;
             if (_input.KeyPressed(Keys.OemMinus) && _titleSeedText.Length == 0) _titleSeedText = "-";
             if (_input.KeyPressed(Keys.Back) && _titleSeedText.Length > 0) _titleSeedText = _titleSeedText[..^1];
             if (_input.KeyPressed(Keys.Escape)) { _typingTitleSeed = false; return; }

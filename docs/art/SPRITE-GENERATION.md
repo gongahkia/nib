@@ -31,4 +31,4 @@ The tracked `source/summing-concept-white.png` was generated once with ChatGPT i
 
 ## Reference boundary
 
-The named games are communication references only. No source sprite, trace, pose sheet, faction symbol, or proprietary palette is an input to the generator. The placeholder code and images are dedicated to the project under CC0-1.0 so later production art can replace them cleanly.
+The named games are communication references only. No source sprite, trace, pose sheet, faction symbol, proprietary palette, or third-party art is an input to the generator. The generated placeholders remain project assets and can be replaced independently by preserving the manifest contract.

@@ -177,7 +177,7 @@ def main() -> None:
     }
     manifest = {
         "version": 1,
-        "license": "Original project placeholders; CC0-1.0",
+        "license": "Project-owned original placeholders; license not specified",
         "generation": "python3 tools/generate_sprites.py (Pillow; deterministic; no external inputs)",
         "palette": PALETTE,
         "sheets": sheets,
