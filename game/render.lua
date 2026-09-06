@@ -43,4 +43,31 @@ function Render.drawContract()
   love.graphics.print("PROVISIONAL", 37, 47)
 end
 
+function Render.drawWorld(world, cameraX, cameraY)
+  -- Distant architecture: palette-only ordered dither and slow parallax.
+  for layer = 1, 3 do
+    palette.set(1 + layer)
+    local offset = math.floor(cameraX * layer * 0.08) % 17
+    for x = -20, 148, 17 do
+      local h = 22 + ((x + layer * 13) % 25)
+      love.graphics.rectangle("fill", x - offset, 91 - h - layer * 7, 9 + layer, h)
+    end
+  end
+  for _, solid in ipairs(world.solids) do
+    if not solid.destroyed then
+      local colours = { stone = 5, brick = 6, metal = 11, sticky = 14, ice = 10, elastic = 16 }
+      palette.set(colours[solid.material] or 5)
+      love.graphics.rectangle("fill", math.floor(solid.x - cameraX), math.floor(solid.y - cameraY), solid.w, solid.h)
+      palette.set(7)
+      love.graphics.line(math.floor(solid.x - cameraX), math.floor(solid.y - cameraY), math.floor(solid.x + solid.w - cameraX), math.floor(solid.y - cameraY))
+    end
+  end
+  for _, anchor in ipairs(world.anchors) do
+    palette.set(7); love.graphics.circle("line", math.floor(anchor.x - cameraX), math.floor(anchor.y - cameraY), 2)
+  end
+  for _, rail in ipairs(world.rails) do
+    palette.set(10); love.graphics.line(rail.x1 - cameraX, rail.y1 - cameraY, rail.x2 - cameraX, rail.y2 - cameraY)
+  end
+end
+
 return Render
