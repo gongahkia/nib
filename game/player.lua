@@ -96,19 +96,19 @@ function Player:update(world, input, dt)
     self.vx = approach(self.vx, target, accel * dt)
     if not self.grounded then self.vy = math.min(config.maxFallSpeed, self.vy + config.gravity * dt) end
 
-    if self:consume("jump") and self.coyote > 0 then
+    if self.coyote > 0 and self:consume("jump") then
       if self.wall ~= 0 and not self.grounded then self.vx = -self.wall * config.wallJumpX; self:setState("jump_rise", "wall jump")
       else self:setState("jump_rise", "buffered jump") end
       self.vy, self.coyote = -config.jumpSpeed, 0
-    elseif self:consume("dash") and self.dashes > 0 then
+    elseif self.dashes > 0 and self:consume("dash") then
       local ax, ay = self:aim(input); self.vx, self.vy = ax * config.dashSpeed, ay * config.dashSpeed
       self.dashes = self.dashes - 1; self:setState("air_dash", "dash input")
-    elseif self:consume("slide") and self.grounded and math.abs(self.vx) > 15 then
+    elseif self.grounded and math.abs(self.vx) > 15 and self:consume("slide") then
       self.vx = self.vx + self.facing * 8; self:setState("slide", "slide input")
-    elseif self:consume("dive") and not self.grounded then
+    elseif not self.grounded and self:consume("dive") then
       self.vx, self.vy = self.facing * math.max(config.diveX, math.abs(self.vx)), config.diveY
       self:setState("dive", "dive input")
-    elseif self:consume("grapple") and self.grapples > 0 then
+    elseif self.grapples > 0 and self:consume("grapple") then
       local ax, ay = self:aim(input)
       local anchor = world:nearestAnchor(self.x, self.y - self.h / 2, ax, ay, config.grappleRange)
       if anchor then self.grapple, self.grapples = anchor, self.grapples - 1; self:setState("grapple_attach", "anchor acquired")
