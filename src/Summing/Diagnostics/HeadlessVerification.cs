@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Summing.Core;
 using Summing.Entities;
 using Summing.Gameplay;
@@ -21,7 +22,8 @@ public static class HeadlessVerification
         VerifyMaterialHardness();
         VerifyBombAndBurrowerMutation();
         VerifyBrittleAndArchive();
-        Console.WriteLine("systems=ok movement=jump-dash material=hardness terrain=bomb-burrower hazard=brittle archive=persistent-json");
+        VerifyInputBindingPersistence();
+        Console.WriteLine("systems=ok movement=jump-dash material=hardness terrain=bomb-burrower hazard=brittle archive=persistent-json input=remap-json");
     }
 
     private static void VerifyMovementTransitions()
@@ -115,6 +117,26 @@ public static class HeadlessVerification
         finally
         {
             Directory.Delete(temporaryDirectory, true);
+        }
+    }
+
+    private static void VerifyInputBindingPersistence()
+    {
+        var temporaryDirectory = Path.Combine(Path.GetTempPath(), $"summing-bindings-{Guid.NewGuid():N}");
+        var path = Path.Combine(temporaryDirectory, "bindings.json");
+        try
+        {
+            var bindings = InputBindings.LoadOrCreate(path);
+            bindings.Rebind(InputAction.Jump, Keys.Z, Buttons.B);
+            bindings.Save(path);
+            var loaded = InputBindings.LoadOrCreate(path);
+            var jump = loaded.Actions[InputAction.Jump];
+            if (jump.Key != Keys.Z || jump.Button != Buttons.B)
+                throw new InvalidOperationException("remapped input did not persist to JSON");
+        }
+        finally
+        {
+            if (Directory.Exists(temporaryDirectory)) Directory.Delete(temporaryDirectory, true);
         }
     }
 }

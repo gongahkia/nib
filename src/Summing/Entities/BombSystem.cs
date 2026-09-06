@@ -13,6 +13,7 @@ public sealed class BombSystem
     private readonly List<BombEntity> _bombs = [];
     private readonly List<(Vector2 Position, float Time)> _blasts = [];
     public IReadOnlyList<BombEntity> Bombs => _bombs;
+    public event Action<BombEntity>? Placed;
     public event Action<Explosion>? Exploded;
 
     public void Update(InputManager input, PlayerController player, PlayerInventory inventory, TileWorld world, long frame, float dt)
@@ -21,8 +22,10 @@ public sealed class BombSystem
         {
             var throwDirection = input.Move.LengthSquared() > 0.15f ? input.Move : new Vector2(player.Facing, 0f);
             if (throwDirection.LengthSquared() > 1f) throwDirection.Normalize();
-            _bombs.Add(new BombEntity(player.Bounds.Center + new Vector2(player.Facing * 12f, -3f),
-                new Vector2(throwDirection.X * 155f, throwDirection.Y * 145f - 95f) + player.Velocity * 0.3f));
+            var bomb = new BombEntity(player.Bounds.Center + new Vector2(player.Facing * 12f, -3f),
+                new Vector2(throwDirection.X * 155f, throwDirection.Y * 145f - 95f) + player.Velocity * 0.3f);
+            _bombs.Add(bomb);
+            Placed?.Invoke(bomb);
             player.ShowActionState(MovementState.BombUse, 0.18f);
         }
 

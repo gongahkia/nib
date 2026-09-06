@@ -13,6 +13,7 @@ public sealed class RopeSystem
 {
     private readonly List<RopeEntity> _ropes = [];
     public IReadOnlyList<RopeEntity> Ropes => _ropes;
+    public event Action<RopeEntity>? Placed;
 
     public void Update(InputManager input, PlayerController player, PlayerInventory inventory, TileWorld world, float dt)
     {
@@ -47,7 +48,9 @@ public sealed class RopeSystem
         var x = (tileX + 0.5f) * GameConstants.TileSize;
         var top = anchorY * GameConstants.TileSize;
         var bottom = MathF.Min(world.PixelHeight, top + GameConstants.TileSize * 9f);
-        _ropes.Add(new RopeEntity(x, top, bottom));
+        var rope = new RopeEntity(x, top, bottom);
+        _ropes.Add(rope);
+        Placed?.Invoke(rope);
         player.ShowActionState(MovementState.RopeInteraction, 0.2f);
     }
 }

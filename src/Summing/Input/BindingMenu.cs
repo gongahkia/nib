@@ -35,16 +35,17 @@ public sealed class BindingMenu
 
         if (input.Pressed(InputAction.Up)) _selected = (_selected - 1 + _actions.Length) % _actions.Length;
         if (input.Pressed(InputAction.Down)) _selected = (_selected + 1) % _actions.Length;
-        if (input.KeyPressed(Keys.Tab)) _gamepad = !_gamepad;
+        if (input.KeyPressed(Keys.Tab) || input.Pressed(InputAction.Left) || input.Pressed(InputAction.Right))
+            _gamepad = !_gamepad;
         if (input.KeyPressed(Keys.Enter) || input.Pressed(InputAction.Jump)) _waiting = true;
-        return input.KeyPressed(Keys.Escape) || input.KeyPressed(Keys.B);
+        return input.KeyPressed(Keys.Escape) || input.KeyPressed(Keys.B) || input.Pressed(InputAction.Pause);
     }
 
     public void Draw(SpriteBatch batch, Texture2D pixel, PixelFont font, InputBindings bindings)
     {
         batch.Draw(pixel, new Rectangle(0, 0, 640, 360), GamePalette.Void);
         font.Draw(batch, "REMAP CONTROLS", new Vector2(198, 30), GamePalette.SacredGold, 3);
-        font.Draw(batch, $"EDITING {(_gamepad ? "GAMEPAD" : "KEYBOARD")}  TAB SWITCHES DEVICE", new Vector2(175, 58), GamePalette.UiMuted);
+        font.Draw(batch, $"EDITING {(_gamepad ? "GAMEPAD" : "KEYBOARD")}  LEFT RIGHT SWITCH DEVICE", new Vector2(160, 58), GamePalette.UiMuted);
         for (var index = 0; index < _actions.Length; index++)
         {
             var column = index / 8;
@@ -56,7 +57,7 @@ public sealed class BindingMenu
             font.Draw(batch, _actions[index].ToString(), position, selected ? GamePalette.SaltCyan : Color.White);
             font.Draw(batch, _gamepad ? binding.Button.ToString() : binding.Key.ToString(), position + new Vector2(112, 0), GamePalette.Bone);
         }
-        var instruction = _waiting ? $"PRESS A {(_gamepad ? "GAMEPAD BUTTON" : "KEY")}" : "UP DOWN SELECT  ENTER REBIND  B OR ESC BACK";
+        var instruction = _waiting ? $"PRESS A {(_gamepad ? "GAMEPAD BUTTON" : "KEY")}" : "UP DOWN SELECT  ENTER OR A REBIND  START BACK";
         font.Draw(batch, instruction, new Vector2(160, 318), _waiting ? GamePalette.Danger : GamePalette.UiMuted);
     }
 }
