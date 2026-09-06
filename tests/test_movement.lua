@@ -25,8 +25,9 @@ H.test("fixed step ignores frame partition", function()
 end)
 
 H.test("buffered jump fires on landing", function()
-  local world, p = World.playground(), Player.new(20, 100)
-  p:update(world, { moveX = 0, jumpPressed = true, aimDirX = 1, aimDirY = 0 }, config.step)
+  local world, p = World.playground(), Player.new(20, 102)
+  p.vy = 24
+  p:update(world, { moveX = 0, jumpPressed = true, aimDirX = 1, aimDirY = 0 }, rootConfig.step)
   for _ = 1, 8 do p:update(world, blank(), rootConfig.step) end
   H.ok(p.vy < 0, "buffered jump should launch after contact")
 end)
