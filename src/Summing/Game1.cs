@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Summing.Camera;
 using Summing.Core;
+using Summing.Entities;
+using Summing.Gameplay;
 using Summing.Input;
 using Summing.Player;
 using Summing.Rendering;
@@ -23,6 +25,11 @@ public sealed class Game1 : Game
     private readonly Camera2D _camera = new();
     private PlayerController _player = null!;
     private readonly DigTool _digTool = new();
+    private readonly BombSystem _bombSystem = new();
+    private readonly RopeSystem _ropeSystem = new();
+    private PlayerInventory _inventory = null!;
+    private readonly Difficulty _difficulty = Difficulty.Easy;
+    private long _frame;
 
     public Game1()
     {
@@ -43,7 +50,9 @@ public sealed class Game1 : Game
     protected override void Initialize()
     {
         _input = new InputManager(InputBindings.LoadOrCreate("saves/bindings.json"));
-        _player = new PlayerController(new Vector2(7f * GameConstants.TileSize, 15f * GameConstants.TileSize));
+        var tuning = DifficultyTuning.For(_difficulty);
+        _player = new PlayerController(new Vector2(7f * GameConstants.TileSize, 15f * GameConstants.TileSize), tuning.StartingHealth);
+        _inventory = new PlayerInventory(tuning);
         _camera.Snap(new Vector2(320f, 348f));
         base.Initialize();
     }
@@ -63,9 +72,12 @@ public sealed class Game1 : Game
     {
         var playerScreen = _camera.WorldToScreen(_player.Bounds.Center);
         _input.Update(playerScreen);
+        _frame++;
         if (_input.Pressed(InputAction.Pause)) Exit();
         _player.Update(_input, _world, GameConstants.FixedDelta);
+        _ropeSystem.Update(_input, _player, _inventory, _world, GameConstants.FixedDelta);
         _digTool.Update(_input, _player, _world, GameConstants.FixedDelta);
+        _bombSystem.Update(_input, _player, _inventory, _world, _frame, GameConstants.FixedDelta);
         if (_player.Position.Y > _world.PixelHeight + 80f)
             _player.Reset(new Vector2(7f * GameConstants.TileSize, 15f * GameConstants.TileSize));
         var cameraTarget = new Vector2(
@@ -82,6 +94,8 @@ public sealed class Game1 : Game
         _spriteBatch.Begin(transformMatrix: _camera.View, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
         DrawBackdrop();
         _tileRenderer.Draw(_spriteBatch, _world, _camera.Position);
+        _ropeSystem.Draw(_spriteBatch, _pixel);
+        _bombSystem.Draw(_spriteBatch, _pixel);
         _player.Draw(_spriteBatch, _pixel);
         _digTool.Draw(_spriteBatch, _pixel, _player);
         _spriteBatch.End();
@@ -117,6 +131,8 @@ public sealed class Game1 : Game
         var target = _world.GetTile(_digTool.TargetTile.X, _digTool.TargetTile.Y);
         var targetName = target.Solid ? World.Materials.MaterialCatalog.Get(target.Material).Name : "air";
         _font.Draw(_spriteBatch, $"TOOL {targetName}", new Vector2(12, 39), new Color(169, 124, 94));
+        _font.Draw(_spriteBatch, $"HEALTH {_player.Health}/{_player.MaximumHealth}  BOMB {_inventory.Bombs}  ROPE {_inventory.Ropes}",
+            new Vector2(12, 48), new Color(205, 111, 92));
         _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  RMB GRAPPLE", new Vector2(12, 342), new Color(131, 132, 139));
     }
 
