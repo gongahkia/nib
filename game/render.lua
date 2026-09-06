@@ -73,4 +73,14 @@ function Render.drawWorld(world, cameraX, cameraY)
   for _, enemy in ipairs(world.enemies) do if enemy.alive then palette.set(16); love.graphics.rectangle("fill", enemy.x - 3 - cameraX, enemy.y - 6 - cameraY, 6, 6); palette.set(1); love.graphics.points(enemy.x - 1 - cameraX, enemy.y - 4 - cameraY) end end
 end
 
+function Render.drawLife(level, cameraX, cameraY, collected)
+  for _, human in ipairs(level.inhabitants) do
+    if not human.hidden then palette.set(9); love.graphics.rectangle("fill", human.x - cameraX, human.y - 6 - cameraY, 2, 6); if human.active then palette.set(16); love.graphics.points(human.x - cameraX - 1, human.y - 8 - cameraY) end end
+  end
+  for _, machine in ipairs(level.machines) do palette.set(10); love.graphics.rectangle("line", machine.x - 3 - cameraX, machine.y - 7 - cameraY, 6, 7); love.graphics.points(machine.x - cameraX, machine.y - 4 - cameraY) end
+  for _, hazard in ipairs(level.hazards) do palette.set(16); love.graphics.polygon("fill", hazard.x - 3 - cameraX, hazard.y - cameraY, hazard.x - cameraX, hazard.y - 5 - cameraY, hazard.x + 3 - cameraX, hazard.y - cameraY) end
+  for _, collectible in ipairs(level.collectibles) do if not collected[collectible.id] then palette.set(7); love.graphics.polygon("line", collectible.x - cameraX, collectible.y - 3 - cameraY, collectible.x + 3 - cameraX, collectible.y - cameraY, collectible.x - cameraX, collectible.y + 3 - cameraY, collectible.x - 3 - cameraX, collectible.y - cameraY) end end
+  palette.set(7); love.graphics.rectangle("line", level.exit.x - cameraX, level.exit.y - 18 - cameraY, 8, 18)
+end
+
 return Render
