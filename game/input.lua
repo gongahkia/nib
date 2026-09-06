@@ -11,6 +11,13 @@ function Input.new(bindings)
   return setmetatable({ bindings = bindings or Input.defaults, pressed = {}, held = {}, mouseAim = nil }, Input)
 end
 
+function Input:rebind(action, keys)
+  if not self.bindings[action] then return nil, "unknown action" end
+  if type(keys) ~= "table" or #keys == 0 then return nil, "at least one key is required" end
+  self.bindings[action] = keys
+  return true
+end
+
 function Input:keypressed(key)
   for action, keys in pairs(self.bindings) do
     for _, bound in ipairs(keys) do if bound == key then self.pressed[action], self.held[action] = true, true end end
