@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -96,11 +97,11 @@ public static class WorldSerializer
         index = 0;
         foreach (var rope in ropes.Ropes)
             entities.Add(new EntitySnapshot($"rope-{index++}", "placed-rope", rope.X, rope.Top, "placed",
-                new() { ["bottom"] = rope.Bottom.ToString("0.###") }));
+                new() { ["bottom"] = F(rope.Bottom) }));
         index = 0;
         foreach (var bomb in bombs.Bombs)
             entities.Add(new EntitySnapshot($"bomb-{index++}", "bomb", bomb.Position.X, bomb.Position.Y, "fuse",
-                new() { ["fuse"] = bomb.Fuse.ToString("0.###") }));
+                new() { ["fuse"] = F(bomb.Fuse) }));
         index = 0;
         foreach (var structure in brittle.Structures)
         {
@@ -108,17 +109,17 @@ public static class WorldSerializer
             entities.Add(new EntitySnapshot($"brittle-{index++}", "brittle-structure",
                 tile.X * GameConstants.TileSize, tile.Y * GameConstants.TileSize,
                 structure.Collapsed ? "collapsed" : structure.Triggered ? "triggered" : "stable",
-                new() { ["remaining"] = structure.Remaining.ToString("0.###") }));
+                new() { ["remaining"] = F(structure.Remaining) }));
         }
 
         var playerEntity = new EntitySnapshot("player", "player", player.Position.X, player.Position.Y,
             player.VisualState.ToString(), new()
             {
-                ["velocityX"] = player.Velocity.X.ToString("0.###"),
-                ["velocityY"] = player.Velocity.Y.ToString("0.###"),
+                ["velocityX"] = F(player.Velocity.X),
+                ["velocityY"] = F(player.Velocity.Y),
                 ["health"] = player.Health.ToString(),
                 ["grounded"] = player.Grounded.ToString(),
-                ["wallStamina"] = player.WallStamina.ToString("0.###"),
+                ["wallStamina"] = F(player.WallStamina),
                 ["dashCharges"] = player.DashCharges.ToString(),
                 ["grappleAttached"] = player.GrappleAttached.ToString()
             });
@@ -148,4 +149,6 @@ public static class WorldSerializer
                 entities, new List<string>(terrainEvents))
         };
     }
+
+    private static string F(float value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 }

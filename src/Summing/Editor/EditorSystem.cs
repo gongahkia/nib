@@ -211,7 +211,7 @@ public sealed class EditorSystem
     {
         var digits = new[] { Keys.D0, Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9 };
         for (var index = 0; index < digits.Length; index++)
-            if (input.KeyPressed(digits[index]) && _seedText.Length < 18) _seedText += index;
+            if (input.KeyPressed(digits[index]) && _seedText.Length < 20) _seedText += index;
         if (input.KeyPressed(Keys.OemMinus) && _seedText.Length == 0) _seedText = "-";
         if (input.KeyPressed(Keys.Back) && _seedText.Length > 0) _seedText = _seedText[..^1];
         if (input.KeyPressed(Keys.Escape)) { _typingSeed = false; return; }

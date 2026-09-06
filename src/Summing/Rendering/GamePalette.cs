@@ -5,7 +5,7 @@ namespace Summing.Rendering;
 public static class GamePalette
 {
     public static readonly Color Void = new(10, 13, 20);
-    public static readonly Color DeepSky = new(16, 20, 31);
+    public static readonly Color DeepSky = new(19, 25, 39);
     public static readonly Color FarStone = new(29, 31, 42);
     public static readonly Color Stone = new(64, 58, 72);
     public static readonly Color Oxide = new(159, 87, 74);

@@ -142,6 +142,8 @@ public sealed class TileWorld : ICollisionWorld
                 var tile = GetTile(x, y);
                 hash ^= (byte)tile.Material;
                 hash *= prime;
+                hash ^= tile.Damage;
+                hash *= prime;
                 hash ^= (byte)tile.Flags;
                 hash *= prime;
                 hash ^= unchecked((ushort)tile.ProvenanceId);
