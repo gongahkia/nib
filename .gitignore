@@ -6,3 +6,15 @@ artifacts/
 *.zip
 *.log
 AGENTS.md
+
+# .NET / MonoGame
+**/bin/
+**/obj/
+.vs/
+.idea/
+
+# local runtime state and play evidence
+archive/
+playtests/
+saves/
+screenshots/
