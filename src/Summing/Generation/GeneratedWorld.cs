@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Summing.Core;
 using Summing.World;
+using Summing.History;
 
 namespace Summing.Generation;
 
@@ -28,6 +29,7 @@ public sealed class GeneratedWorld
     public required List<Point> RouteAnchors { get; init; }
     public required List<WorldFeature> Features { get; init; }
     public required List<WeatherBand> Weather { get; init; }
+    public required WorldHistory History { get; init; }
 
     public float WindAt(float worldY)
     {
