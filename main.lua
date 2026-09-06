@@ -11,9 +11,9 @@ local Persistence = require("game.persistence")
 local Replay = require("game.replay")
 local Serialization = require("game.serialization")
 local HotReload = require("game.hot_reload")
-local Scoring = require("game.scoring")
 
 local game = { debug = false, generationDebug = false, cameraX = 0, cameraY = 0, gamepadPressed = {}, mousePressed = {}, mode = "menu", seedText = "20260906", runSerial = 0 }
+for _, value in ipairs(arg or {}) do if value == "--automated-smoke" then game.automatedSmoke = true end end
 local function read(name) if love.filesystem.getInfo(name) then return love.filesystem.read(name) end end
 local function write(name, text) return love.filesystem.write(name, text) end
 
@@ -36,7 +36,11 @@ function love.load()
   game.fixed = Fixed.new(config.step, function()
     if game.mode ~= "run" then return end
     local snapshot; local joysticks = love.joystick.getJoysticks()
-    if joysticks[1] and joysticks[1]:isGamepad() then snapshot = Input.fromGamepad(joysticks[1], game.gamepadPressed)
+    if game.automatedSmoke then
+      local tick = game.session.tick + 1; snapshot = { moveX = 1, moveY = 0, aimDirX = 0.70710678, aimDirY = -0.70710678 }
+      if tick == 20 then snapshot.jump, snapshot.jumpPressed = true, true elseif tick == 55 then snapshot.dash, snapshot.dashPressed = true, true elseif tick == 100 then snapshot.slide, snapshot.slidePressed = true, true elseif tick == 140 then snapshot.grapple, snapshot.grapplePressed = true, true elseif tick == 180 then snapshot.mouseAim, snapshot.aimX, snapshot.aimY, snapshot.tool, snapshot.toolPressed = true, game.session.player.x + 20, game.session.player.y, true, true elseif tick == 220 then snapshot.dive, snapshot.divePressed = true, true end
+      if tick == 260 then snapshot.abort = true end
+    elseif joysticks[1] and joysticks[1]:isGamepad() then snapshot = Input.fromGamepad(joysticks[1], game.gamepadPressed)
     else
       local mx, my = love.mouse.getPosition(); local w, h = love.graphics.getDimensions(); local scale = math.max(1, math.floor(math.min(w / 128, h / 128))); local cx, cy = (w - 128 * scale) / 2, (h - 128 * scale) / 2
       local mouseWorld; if love.mouse.isDown(1) or love.mouse.isDown(2) then mouseWorld = { x = (mx - cx) / scale + game.cameraX, y = (my - cy) / scale + game.cameraY } end; snapshot = game.input:snapshot(mouseWorld)
@@ -51,11 +55,16 @@ function love.load()
     if player.toolEvent and player.toolEvent.destroyed then Audio.play("breakage") end
     if game.session.tick % 45 == 0 and game.session.hand.activeContacts > 0 then Audio.play("hand_step") end
     if before == "running" and game.session.status ~= "running" then Audio.play(game.session.status == "finished" and "exit" or "capture"); finishRun() end
+    if game.automatedSmoke and game.session.status ~= "running" then game.smokeDone = true end
     game.cameraX = math.max(game.session.hand.x - 8, game.session.player.x - 43); game.cameraY = game.session.player.y - 88; game.gamepadPressed, game.mousePressed = {}, {}
   end)
   local ok = pcall(Audio.load); if not ok then Audio.enabled = false end
+  if game.automatedSmoke then beginRun(42) end
 end
-function love.update(dt) game.fixed:advance(dt) end
+function love.update(dt)
+  game.fixed:advance(game.automatedSmoke and config.step * 4 or dt)
+  if game.smokeDone then love.filesystem.write("smoke-result.json", require("game.json").encode({ schemaVersion = 1, status = game.session.status, ticks = game.session.tick, replay = game.recorder.data.id, playerState = game.session.player.state })); love.event.quit() end
+end
 
 local function drawMenu()
   render.drawContract(); palette.set(9); love.graphics.print("N  FRESH SEED", 27, 66); love.graphics.print("S  ENTER SEED", 27, 75); love.graphics.print("F2 REMAP KEYS", 27, 84); palette.set(7); love.graphics.print("SEED " .. game.seedText, 27, 95); love.graphics.print("FULL KIT ALWAYS READY", 16, 116)
@@ -76,7 +85,7 @@ function love.draw()
   render.endFrame()
 end
 function love.keypressed(key)
-  if key == "escape" then if game.mode == "run" then if game.session.status == "running" then game.session.status, game.session.result = "abandoned", Scoring.result(game.session.score, game.session.tick); finishRun() end; game.mode = "menu" else love.event.quit() end; return end
+  if key == "escape" then if game.mode == "run" then if game.session.status == "running" then local input = { abort = true }; game.session:update(input); game.recorder:capture(game.session, input); finishRun() end; game.mode = "menu" else love.event.quit() end; return end
   if key == "f3" then game.debug = not game.debug; return end
   if key == "f4" then game.generationDebug = not game.generationDebug; return end
   if game.remapAction then if key ~= "tab" then game.input:rebind(game.remapAction, { key }); game.profile.bindings = game.input.bindings; Persistence.save(game.profile, write) end; game.remapIndex = game.remapIndex + 1; game.remapAction = game.remapActions[game.remapIndex]; return end

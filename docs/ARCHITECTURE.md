@@ -11,4 +11,6 @@ Palimpsest Run is a dependency-light Lua 5.1/LuaJIT project targeting LÖVE 11.5
 - Determinism: gameplay uses no global random source, wall clock, or frame delta. Replays store per-tick inputs and state hashes.
 - Tooling: `bin/palimpsest` invokes headless Lua modules through LuaJIT; LÖVE is graphical only when requested.
 
+Module boundaries are `fixed_step`/`session` (simulation), `render` and rig renderers (graphics), `input`, `animation`, `world`/`materials`/`tool`, `generator`, `reachability`, `hand`, `scoring`, `persistence`/`storage`, `replay`, `hot_reload`, and `schema`/`serialization`/`overlay`/`obstacle` (agent tooling). Tables are owned by a session; global mutable randomness is absent.
+
 Schema version 1 is current. Future readers reject unknown versions with a JSON path. Migrations are pure transforms registered by source and destination version; raw files are never silently rewritten.

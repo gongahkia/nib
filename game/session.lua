@@ -20,6 +20,7 @@ end
 function Session:update(input)
   if self.status ~= "running" then return end
   self.tick = self.tick + 1
+  if input.abort then self.status, self.result = "abandoned", Scoring.result(self.score, self.tick); return end
   local p, oldState = self.player, self.player.state
   p:update(self.world, input, config.step); self.world:updateObjects(config.step)
   if p.grounded then self.safeX, self.safeY = p.x, p.y end
