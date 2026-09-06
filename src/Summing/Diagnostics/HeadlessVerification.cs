@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Summing.Camera;
 using Summing.Core;
 using Summing.Entities;
 using Summing.Gameplay;
@@ -9,6 +10,7 @@ using Summing.Generation;
 using Summing.History;
 using Summing.Input;
 using Summing.Player;
+using Summing.Rendering;
 using Summing.World;
 using Summing.World.Materials;
 
@@ -23,7 +25,8 @@ public static class HeadlessVerification
         VerifyBombAndBurrowerMutation();
         VerifyBrittleAndArchive();
         VerifyInputBindingPersistence();
-        Console.WriteLine("systems=ok movement=jump-dash material=hardness terrain=bomb-burrower hazard=brittle archive=persistent-json input=remap-json");
+        VerifyImpactFeedback();
+        Console.WriteLine("systems=ok movement=one-tile-jump-dash material=hardness terrain=bomb-burrower hazard=brittle archive=persistent-json input=remap-json feedback=shake-debris");
     }
 
     private static void VerifyMovementTransitions()
@@ -37,6 +40,8 @@ public static class HeadlessVerification
             player.Update(input, world, GameConstants.FixedDelta);
         }
         var start = player.Position;
+        if (player.Bounds.Height > GameConstants.TileSize || player.Bounds.Width > GameConstants.TileSize)
+            throw new InvalidOperationException("player body is larger than one authoritative tile");
         input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right, InputAction.Jump);
         player.Update(input, world, GameConstants.FixedDelta);
         if (player.Velocity.Y >= 0f) throw new InvalidOperationException("scripted jump did not begin");
@@ -138,5 +143,20 @@ public static class HeadlessVerification
         {
             if (Directory.Exists(temporaryDirectory)) Directory.Delete(temporaryDirectory, true);
         }
+    }
+
+    private static void VerifyImpactFeedback()
+    {
+        var camera = new Camera2D();
+        camera.Snap(new Vector2(320f, 180f));
+        camera.AddShake(10f);
+        camera.Update(new Vector2(320f, 180f), Vector2.Zero, GameConstants.FixedDelta);
+        if (camera.ShakeStrength <= 0f || camera.ShakeOffset.LengthSquared() <= 0f)
+            throw new InvalidOperationException("impact did not produce camera shake");
+
+        var effects = new TerrainBreakEffects();
+        effects.Emit(new TerrainChange(new Point(4, 5), MaterialId.RedSandstone, "tool", 1, true));
+        if (effects.ActiveDebris < 12)
+            throw new InvalidOperationException("block break did not produce a substantial debris burst");
     }
 }

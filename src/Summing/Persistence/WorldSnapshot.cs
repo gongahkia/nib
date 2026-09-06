@@ -10,7 +10,7 @@ namespace Summing.Persistence;
 
 public sealed class WorldSnapshot
 {
-    public int FormatVersion { get; set; } = 1;
+    public int FormatVersion { get; set; } = 2;
     public DateTimeOffset SavedAtUtc { get; set; }
     public required WorldGenerationConfig Generator { get; set; }
     public required WorldGridSnapshot World { get; set; }
@@ -29,7 +29,7 @@ public sealed record WorldGridSnapshot(int Width, int Height, int ChunkSize, int
 public sealed record ChunkSnapshot(int X, int Y, int Revision, List<TileSnapshot> Tiles);
 public sealed record TileSnapshot(int LocalX, int LocalY, MaterialId Material, byte Damage, TileFlags Flags, short ProvenanceId);
 public sealed record MaterialSnapshot(MaterialId Id, string Name, bool Solid, int Hardness, float Friction, float Brittleness,
-    float Heat, float Conductivity, bool Climbable, bool GrappleCompatible, bool Structural);
+    float Heat, float Conductivity, bool Climbable, bool Structural);
 public sealed record PositionSnapshot(float X, float Y);
 public sealed record PointSnapshot(int X, int Y);
 public sealed record RectangleSnapshot(int X, int Y, int Width, int Height);

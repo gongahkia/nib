@@ -14,8 +14,8 @@ public sealed record TraversabilityReport(
 
 public static class TraversabilityValidator
 {
-    private const int MaximumHorizontalTiles = 9;
-    private const int MaximumAscentTiles = 5;
+    private const int MaximumHorizontalTiles = 6;
+    private const int MaximumAscentTiles = 4;
     private const int MaximumDropTiles = 8;
 
     public static TraversabilityReport Validate(GeneratedWorld generated)
@@ -58,10 +58,10 @@ public static class TraversabilityValidator
             return Failure("summit trigger is detached from the validated ascent", anchors.Count - 1, obstructions);
 
         return new TraversabilityReport(true, anchors.Count - 1, obstructions, "",
-            ["run", "jump", "coyote", "wall-cling", "wall-jump", "dash", "grapple", "digging-tool"]);
+            ["run", "jump", "coyote", "wall-cling", "wall-jump", "dash", "digging-tool"]);
     }
 
     private static TraversabilityReport Failure(string failure, int transitions, int obstructions) =>
         new(false, transitions, obstructions, failure,
-            ["run", "jump", "coyote", "wall-cling", "wall-jump", "dash", "grapple", "digging-tool"]);
+            ["run", "jump", "coyote", "wall-cling", "wall-jump", "dash", "digging-tool"]);
 }

@@ -34,6 +34,7 @@ public sealed class Game1 : Game
     private GeneratedWorld _generated = null!;
     private TileWorldRenderer _tileRenderer = null!;
     private readonly Camera2D _camera = new();
+    private readonly TerrainBreakEffects _terrainBreakEffects = new();
     private PlayerController _player = null!;
     private DigTool _digTool = null!;
     private BombSystem _bombSystem = null!;
@@ -172,8 +173,8 @@ public sealed class Game1 : Game
         _relicSystem.Update(_player, GameConstants.FixedDelta);
         _burrowerSystem.Update(_player, _world, GameConstants.FixedDelta);
         _brittleSystem.Update(_player, _world, GameConstants.FixedDelta);
+        _terrainBreakEffects.Update(GameConstants.FixedDelta);
         if (_input.Pressed(InputAction.Dash)) _telemetry?.RecordEvent("dash", new { _player.Position, _player.Velocity, _player.DashCharges });
-        if (_input.Pressed(InputAction.Grapple)) _telemetry?.RecordEvent("grapple", new { _player.Position, _player.GrappleAttached, _player.GrappleAnchor });
         if (_player.Position.Y > _world.PixelHeight + 80f && _player.Alive)
             _player.ApplyDamage(99, Vector2.Zero, "void");
         var cameraTarget = new Vector2(
@@ -219,6 +220,7 @@ public sealed class Game1 : Game
             DrawBackdrop();
             _atmosphere.DrawWorldDither(_spriteBatch, _camera.Position, _frame);
             _tileRenderer.Draw(_spriteBatch, _world, _camera.Position);
+            _terrainBreakEffects.Draw(_spriteBatch, _pixel);
             foreach (var feature in _generated.Features)
                 if (feature.Kind != WorldFeatureKind.RelicCandidate) _sprites.DrawFeature(_spriteBatch, feature);
             DrawSummitMarker();
@@ -227,7 +229,7 @@ public sealed class Game1 : Game
             _ropeSystem.Draw(_spriteBatch, _pixel);
             _bombSystem.Draw(_spriteBatch, _pixel);
             _burrowerSystem.Draw(_spriteBatch, _sprites);
-            _player.Draw(_spriteBatch, _pixel, _sprites, _frame, AppearanceTints[_appearanceIndex]);
+            _player.Draw(_spriteBatch, _sprites, _frame, AppearanceTints[_appearanceIndex]);
             _digTool.Draw(_spriteBatch, _pixel, _player);
             _editor.DrawWorld(_spriteBatch, _pixel);
             _spriteBatch.End();
@@ -380,16 +382,16 @@ public sealed class Game1 : Game
     private void ApplySyntheticSmokeInput()
     {
         var actions = new List<InputAction>();
-        var move = _frame is >= 12 and <= 155 ? Vector2.UnitX : Vector2.Zero;
+        var move = _frame == 82 ? Vector2.UnitY : _frame is >= 12 and <= 155 ? Vector2.UnitX : Vector2.Zero;
         if (move.X > 0f) actions.Add(InputAction.Right);
+        if (move.Y > 0f) actions.Add(InputAction.Down);
         if (_frame is >= 18 and <= 34) actions.Add(InputAction.Jump);
         if (_frame == 8) actions.Add(InputAction.Bomb);
         if (_frame == 42) actions.Add(InputAction.Dash);
-        if (_frame == 65) actions.Add(InputAction.Grapple);
         if (_frame == 82) actions.Add(InputAction.Dig);
         if (_frame == 108) actions.Add(InputAction.Slide);
         if (_frame == 126) actions.Add(InputAction.Rope);
-        _input.SetSyntheticState(move, _frame == 65 ? new Vector2(1f, -1f) : Vector2.UnitX, actions.ToArray());
+        _input.SetSyntheticState(move, Vector2.UnitX, actions.ToArray());
     }
 
     private void StartRun(WorldGenerationConfig configuration)
@@ -417,9 +419,19 @@ public sealed class Game1 : Game
         _frame = 0;
         _generated = generated;
         _world = generated.Terrain;
+        _terrainBreakEffects.Clear();
         _terrainEvents.Clear();
         _world.TerrainChanged += change =>
         {
+            _terrainBreakEffects.Emit(change);
+            var shake = change.Destroyed ? change.Cause switch
+            {
+                "bomb" => 12f,
+                "brittle-collapse" => 9f,
+                "burrower" => 5f,
+                _ => 7.5f
+            } : change.Cause == "tool" ? 2.5f : 0f;
+            if (shake > 0f) _camera.AddShake(shake);
             _terrainEvents.Add($"{_frame}:{change.Cause}:{change.Tile.X},{change.Tile.Y}:{change.Material}:{change.Damage}:{change.Destroyed}");
             if (_terrainEvents.Count > 512) _terrainEvents.RemoveAt(0);
             _telemetry?.RecordEvent(change.Destroyed ? "terrain-destroyed" : "terrain-damaged", change,
@@ -436,6 +448,7 @@ public sealed class Game1 : Game
         _brittleSystem = new BrittleSystem(generated, tuning);
         _bombSystem.Exploded += explosion =>
         {
+            _camera.AddShake(14f);
             _burrowerSystem.ApplyExplosion(explosion);
             _telemetry?.RecordEvent("bomb-explosion", explosion);
         };
@@ -515,7 +528,7 @@ public sealed class Game1 : Game
         _spriteBatch.Draw(_pixel, new Rectangle(7, 7, 310, 51), new Color(6, 8, 13, 220));
         _font.Draw(_spriteBatch, $"STATE {Format(_player.VisualState.ToString())}", new Vector2(12, 12), new Color(226, 207, 158));
         _font.Draw(_spriteBatch, $"VEL {(int)_player.Velocity.X},{(int)_player.Velocity.Y}  DASH {_player.DashCharges}", new Vector2(12, 21), new Color(144, 158, 166));
-        _font.Draw(_spriteBatch, $"WALL {(int)(_player.WallStamina * 100f / PlayerController.WallStaminaMaximum)}%  GRAPPLE {(_player.GrappleAttached ? "ON" : "OFF")}", new Vector2(12, 30), new Color(144, 158, 166));
+        _font.Draw(_spriteBatch, $"WALL STAMINA {(int)(_player.WallStamina * 100f / PlayerController.WallStaminaMaximum)}%", new Vector2(12, 30), new Color(144, 158, 166));
         var target = _world.GetTile(_digTool.TargetTile.X, _digTool.TargetTile.Y);
         var targetName = target.Solid ? World.Materials.MaterialCatalog.Get(target.Material).Name : "air";
         _font.Draw(_spriteBatch, $"TOOL {targetName}", new Vector2(12, 39), new Color(169, 124, 94));
@@ -533,7 +546,7 @@ public sealed class Game1 : Game
             _spriteBatch.Draw(_pixel, new Rectangle(125, 300, 390, 24), new Color(7, 10, 15, 230));
             _font.Draw(_spriteBatch, _relicSystem.LastDiscovery, new Vector2(141, 309), GamePalette.SacredGold);
         }
-        _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  RMB GRAPPLE", new Vector2(12, 342), new Color(131, 132, 139));
+        _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  R ROPE  Q BOMB", new Vector2(12, 342), new Color(131, 132, 139));
     }
 
     private static string Format(string value)

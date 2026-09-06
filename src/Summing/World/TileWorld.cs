@@ -96,12 +96,6 @@ public sealed class TileWorld : ICollisionWorld
         return false;
     }
 
-    public bool IsGrappleCompatible(Vector2 worldPosition)
-    {
-        var tile = GetTile(WorldToTile(worldPosition.X), WorldToTile(worldPosition.Y));
-        return tile.Solid && MaterialCatalog.Get(tile.Material).GrappleCompatible;
-    }
-
     public bool IsClimbable(Vector2 worldPosition)
     {
         var tile = GetTile(WorldToTile(worldPosition.X), WorldToTile(worldPosition.Y));
@@ -112,19 +106,6 @@ public sealed class TileWorld : ICollisionWorld
     {
         var tile = GetTile(WorldToTile(worldPosition.X), WorldToTile(worldPosition.Y));
         return tile.Solid ? MaterialCatalog.Get(tile.Material).Friction : 1f;
-    }
-
-    public bool RaycastGrapple(Vector2 origin, Vector2 direction, float maximumDistance, out Vector2 hit)
-    {
-        for (var distance = 3f; distance <= maximumDistance; distance += 3f)
-        {
-            var sample = origin + direction * distance;
-            if (!IsGrappleCompatible(sample)) continue;
-            hit = sample;
-            return true;
-        }
-        hit = default;
-        return false;
     }
 
     public Point WorldToTile(Vector2 position) => new(WorldToTile(position.X), WorldToTile(position.Y));

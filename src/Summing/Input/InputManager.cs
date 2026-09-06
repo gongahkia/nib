@@ -47,7 +47,6 @@ public sealed class InputManager
         }
 
         SetMouseButton(InputAction.Dig, _mouse.LeftButton, _previousMouse.LeftButton);
-        SetMouseButton(InputAction.Grapple, _mouse.RightButton, _previousMouse.RightButton);
 
         var digital = new Vector2(
             (Down(InputAction.Right) ? 1f : 0f) - (Down(InputAction.Left) ? 1f : 0f),

@@ -4,7 +4,7 @@ The authoritative world is a deterministic square tile grid partitioned into 16Ã
 
 Generation is a seed/version/parameter function behind one interface. Heightmap, cellular, and layered variants emit the same `TileWorld`. A validator checks the explicit macro route against conservative player-scale transition, clearance, summit attachment, and diggability limits using no consumables. Failed candidates are rejected and the next derived seed is visible in debug state.
 
-The game loop uses MonoGame's fixed timestep at 60 Hz. Input is translated into named actions before controllers consume it. `PlayerController` owns stable body physics while focused ability/state components own dash, grapple, climbing, tools, health, and animation presentation. Terrain collision uses axis-separated tile queries. Mutations dirty only affected chunks.
+The game loop uses MonoGame's fixed timestep at 60 Hz. Input is translated into named actions before controllers consume it. `PlayerController` owns a one-tile body and stable physics while focused ability/state components own dash, climbing, tools, health, and animation presentation. Terrain collision uses axis-separated tile queries. Mutations dirty only affected chunks.
 
 Runtime persistence normally stores generation configuration and mutable run metadata. The editor can export a complete indented JSON snapshot containing tiles, chunks, materials, entities, hazards, relics, history references, and mutations. The permanent Archive is separate from run state and stores discoveries only.
 

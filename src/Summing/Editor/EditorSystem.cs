@@ -132,7 +132,7 @@ public sealed class EditorSystem
                 var tile = generated.Terrain.GetTile(CursorTile.X, CursorTile.Y);
                 var material = MaterialCatalog.Get(tile.Material);
                 SetNotice($"{tile.Material} HARD {material.Hardness} FRICTION {material.Friction:0.00} " +
-                    $"CLIMB {material.Climbable} GRAPPLE {material.GrappleCompatible} PROV {tile.ProvenanceId}");
+                    $"CLIMB {material.Climbable} STRUCT {material.Structural} PROV {tile.ProvenanceId}");
                 break;
             case EditorTool.Paint:
                 generated.Terrain.SetTile(CursorTile.X, CursorTile.Y, SelectedMaterial, TileFlags.PlayerBuilt);

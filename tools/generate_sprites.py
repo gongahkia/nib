@@ -18,7 +18,7 @@ PALETTE = {
 }
 
 PLAYER_LOCOMOTION = ["idle_0", "idle_1", "run_0", "run_1", "run_2", "run_3", "takeoff", "ascend", "apex", "fall", "land"]
-PLAYER_TRAVERSAL = ["crouch", "crawl", "slide", "ledge", "mantle", "wall_cling", "wall_jump", "dash", "grapple", "rope", "dig_0", "dig_1", "bomb", "hurt", "death"]
+PLAYER_TRAVERSAL = ["crouch", "crawl", "slide", "ledge", "mantle", "wall_cling", "wall_jump", "dash", "rope", "dig_0", "dig_1", "bomb", "hurt", "death"]
 
 
 def color(name: str) -> str:
@@ -41,42 +41,35 @@ def make_sheet(name: str, cell: tuple[int, int], frames: list[str], drawer) -> d
 
 
 def player(draw: ImageDraw.ImageDraw, ox: int, oy: int, state: str) -> None:
-    x, y = ox + 5, oy + 5
     low = state in {"crouch", "crawl", "slide", "death"}
     dash = state == "dash"
     wall = state in {"wall_cling", "ledge", "mantle"}
     hurt = state == "hurt"
     if low:
-        y += 19
-    if dash:
-        x -= 2
-        y += 5
-    # trailing wrap and body silhouette
-    draw.rectangle((x - (6 if dash else 2), y + 17, x + 5, y + 28), fill=color("oxide"))
-    draw.rectangle((x + 3, y + 13, x + (15 if dash else 12), y + 29), fill=color("stone"))
-    draw.rectangle((x + 5, y + 1, x + 14, y + 13), fill=color("bone"))
-    draw.rectangle((x + 4, y + 5, x + 15, y + 8), fill=color("bone"))
-    draw.rectangle((x + 9, y + 6, x + 15, y + 8), fill=color("ink"))
-    # readable limb changes, kept inside the 24x48 cell
-    if state.startswith("run") or state in {"wall_jump", "takeoff", "ascend", "fall"}:
-        phase = int(state[-1]) if state.startswith("run_") else 1
-        draw.line((x + 6, y + 29, x + 3 + (phase % 2) * 8, y + 38), fill=color("ink"), width=4)
-        draw.line((x + 11, y + 29, x + 14 - (phase % 2) * 8, y + 39), fill=color("stone_light"), width=4)
-    elif not low:
-        draw.rectangle((x + 4, y + 29, x + 7, y + 40), fill=color("ink"))
-        draw.rectangle((x + 11, y + 29, x + 14, y + 40), fill=color("stone_light"))
-    if low:
-        draw.rectangle((x + 2, y + 29, x + 17, y + 36), fill=color("stone"))
+        draw.rectangle((ox + 2, oy + 14, ox + 10, oy + 20), fill=color("oxide"))
+        draw.rectangle((ox + 6, oy + 12, ox + 21, oy + 21), fill=color("stone"))
+        draw.rectangle((ox + 10, oy + 6, ox + 19, oy + 14), fill=color("bone"))
+        draw.rectangle((ox + 14, oy + 9, ox + 21, oy + 11), fill=color("ink"))
+        draw.rectangle((ox + 4, oy + 21, ox + 22, oy + 23), fill=color("ink" if state == "death" else "stone_light"))
+    else:
+        x = ox + (1 if dash else 3)
+        draw.rectangle((x - (2 if dash else 1), oy + 10, x + 6, oy + 17), fill=color("oxide"))
+        draw.rectangle((x + 4, oy + 9, x + (19 if dash else 15), oy + 19), fill=color("stone"))
+        draw.rectangle((x + 7, oy + 1, x + 15, oy + 10), fill=color("bone"))
+        draw.rectangle((x + 11, oy + 4, x + 17, oy + 6), fill=color("ink"))
+        if state.startswith("run") or state in {"wall_jump", "takeoff", "ascend", "fall"}:
+            phase = int(state[-1]) if state.startswith("run_") else 1
+            draw.line((x + 7, oy + 18, x + 4 + (phase % 2) * 8, oy + 23), fill=color("ink"), width=3)
+            draw.line((x + 13, oy + 18, x + 16 - (phase % 2) * 8, oy + 23), fill=color("stone_light"), width=3)
+        else:
+            draw.rectangle((x + 6, oy + 18, x + 9, oy + 23), fill=color("ink"))
+            draw.rectangle((x + 12, oy + 18, x + 15, oy + 23), fill=color("stone_light"))
     if wall:
-        draw.rectangle((x + 14, y + 14, x + 18, y + 18), fill=color("gold"))
+        draw.rectangle((ox + 18, oy + 9, ox + 22, oy + 13), fill=color("gold"))
     if state in {"dig_0", "dig_1"}:
-        draw.line((x + 13, y + 18, x + 19, y + (8 if state == "dig_0" else 25)), fill=color("bone"), width=2)
-    if state == "grapple":
-        draw.line((x + 13, y + 16, x + 21, y + 7), fill=color("cyan"), width=2)
+        draw.line((ox + 16, oy + 13, ox + 22, oy + (3 if state == "dig_0" else 20)), fill=color("bone"), width=2)
     if hurt:
-        draw.rectangle((x + 2, y + 15, x + 4, y + 27), fill=color("blood"))
-    if state == "death":
-        draw.rectangle((x, y + 34, x + 18, y + 39), fill=color("bone"))
+        draw.rectangle((ox + 4, oy + 9, ox + 6, oy + 18), fill=color("blood"))
 
 
 def tile(draw: ImageDraw.ImageDraw, ox: int, oy: int, frame: str) -> None:
@@ -120,9 +113,6 @@ def tool(draw: ImageDraw.ImageDraw, ox: int, oy: int, frame: str) -> None:
     elif frame == "rope":
         draw.line((ox + 12, oy + 2, ox + 12, oy + 22), fill=color("bone"), width=2)
         for y in range(5, 22, 5): draw.line((ox + 9, oy + y, ox + 15, oy + y), fill=color("gold"), width=1)
-    elif frame == "grapple":
-        draw.arc((ox + 4, oy + 3, ox + 20, oy + 19), 185, 355, fill=color("cyan"), width=3)
-        draw.line((ox + 12, oy + 12, ox + 12, oy + 23), fill=color("bone"), width=2)
     else:
         draw.line((ox + 5, oy + 19, ox + 18, oy + 5), fill=color("bone"), width=3)
         draw.line((ox + 13, oy + 3, ox + 21, oy + 10), fill=color("cyan"), width=3)
@@ -165,18 +155,18 @@ def ui(draw: ImageDraw.ImageDraw, ox: int, oy: int, frame: str) -> None:
 
 def main() -> None:
     sheets = {
-        "player_locomotion": make_sheet("player_locomotion", (24, 48), PLAYER_LOCOMOTION, player),
-        "player_traversal": make_sheet("player_traversal", (24, 48), PLAYER_TRAVERSAL, player),
+        "player_locomotion": make_sheet("player_locomotion", (24, 24), PLAYER_LOCOMOTION, player),
+        "player_traversal": make_sheet("player_traversal", (24, 24), PLAYER_TRAVERSAL, player),
         "badlands_terrain": make_sheet("badlands_terrain", (24, 24), ["loess", "sandstone", "basalt", "fossil", "alloy", "brittle", "salt_glass", "ruin_mark"], tile),
         "burrower": make_sheet("burrower", (32, 24), ["burrow_0", "burrow_1", "burrow_2", "burrow_3"], burrower),
         "brittle_hazard": make_sheet("brittle_hazard", (24, 24), ["crack_0", "crack_1", "crack_2", "crack_3"], hazard),
-        "tools": make_sheet("tools", (24, 24), ["pick", "bomb", "rope", "grapple"], tool),
+        "tools": make_sheet("tools", (24, 24), ["pick", "bomb", "rope"], tool),
         "relics": make_sheet("relics", (24, 24), [f"relic_{i}" for i in range(6)], relic),
         "ruins": make_sheet("ruins", (48, 64), [f"ruin_{i}" for i in range(4)], ruin),
         "ui": make_sheet("ui", (24, 24), ["heart", "dash", "bomb", "rope", "archive"], ui),
     }
     manifest = {
-        "version": 1,
+        "version": 2,
         "license": "Project-owned original placeholders; license not specified",
         "generation": "python3 tools/generate_sprites.py (Pillow; deterministic; no external inputs)",
         "palette": PALETTE,

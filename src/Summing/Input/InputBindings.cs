@@ -58,7 +58,6 @@ public sealed class InputBindings
         [InputAction.Jump] = new() { Key = Keys.Space, Button = Buttons.A },
         [InputAction.Dash] = new() { Key = Keys.LeftShift, Button = Buttons.X },
         [InputAction.Grab] = new() { Key = Keys.LeftControl, Button = Buttons.LeftShoulder },
-        [InputAction.Grapple] = new() { Key = Keys.G, Button = Buttons.RightShoulder },
         [InputAction.Dig] = new() { Key = Keys.F, Button = Buttons.Y },
         [InputAction.Slide] = new() { Key = Keys.C, Button = Buttons.B },
         [InputAction.Rope] = new() { Key = Keys.R, Button = Buttons.LeftStick },
