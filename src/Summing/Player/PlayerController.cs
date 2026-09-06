@@ -37,6 +37,8 @@ public sealed class PlayerController
     private int _wallDirection;
     private bool _jumpHeldLastFrame;
     private bool _shortBody;
+    private MovementState _actionVisualState;
+    private float _actionVisualTimer;
 
     public PlayerController(Vector2 spawn)
     {
@@ -49,6 +51,7 @@ public sealed class PlayerController
     public Vector2 Position { get; private set; }
     public Vector2 Velocity { get; set; }
     public MovementState State { get; private set; } = MovementState.Falling;
+    public MovementState VisualState => _actionVisualTimer > 0f ? _actionVisualState : State;
     public bool Grounded { get; private set; }
     public bool TouchingLeftWall { get; private set; }
     public bool TouchingRightWall { get; private set; }
@@ -77,6 +80,7 @@ public sealed class PlayerController
     {
         UsedCoyoteThisFrame = false;
         UsedJumpBufferThisFrame = false;
+        _actionVisualTimer = MathF.Max(0f, _actionVisualTimer - dt);
         _stateTimer += dt;
         _coyoteTimer = MathF.Max(0f, _coyoteTimer - dt);
         _jumpBufferTimer = MathF.Max(0f, _jumpBufferTimer - dt);
@@ -161,7 +165,7 @@ public sealed class PlayerController
     {
         var bounds = Bounds;
         var body = new Rectangle((int)bounds.X, (int)bounds.Y, (int)bounds.Width, (int)bounds.Height);
-        var color = State switch
+        var color = VisualState switch
         {
             MovementState.Dash => new Color(151, 224, 219),
             MovementState.Grapple => new Color(220, 179, 90),
@@ -178,6 +182,12 @@ public sealed class PlayerController
             DrawLine(batch, pixel, Bounds.Center, GrappleAnchor, new Color(184, 166, 128), 2f);
             batch.Draw(pixel, new Rectangle((int)GrappleAnchor.X - 2, (int)GrappleAnchor.Y - 2, 5, 5), Color.White);
         }
+    }
+
+    public void ShowActionState(MovementState state, float duration)
+    {
+        _actionVisualState = state;
+        _actionVisualTimer = MathF.Max(_actionVisualTimer, duration);
     }
 
     private static Aabb BodyAt(Vector2 footPosition, bool shortBody)
