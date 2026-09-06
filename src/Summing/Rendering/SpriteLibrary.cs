@@ -4,6 +4,7 @@ using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Summing.Player;
+using Summing.Generation;
 
 namespace Summing.Rendering;
 
@@ -11,6 +12,8 @@ public sealed class SpriteLibrary : IDisposable
 {
     private readonly Texture2D _locomotion;
     private readonly Texture2D _traversal;
+    private readonly Texture2D _ruins;
+    private readonly Texture2D _relics;
     private readonly Dictionary<MovementState, (bool Traversal, int Frame)> _stateFrames = new()
     {
         [MovementState.Idle] = (false, 0), [MovementState.Run] = (false, 2),
@@ -30,6 +33,25 @@ public sealed class SpriteLibrary : IDisposable
     {
         _locomotion = Load(graphicsDevice, "Sprites/player_locomotion.png");
         _traversal = Load(graphicsDevice, "Sprites/player_traversal.png");
+        _ruins = Load(graphicsDevice, "Sprites/ruins.png");
+        _relics = Load(graphicsDevice, "Sprites/relics.png");
+    }
+
+    public void DrawFeature(SpriteBatch batch, WorldFeature feature)
+    {
+        if (feature.Kind is WorldFeatureKind.Ruin or WorldFeatureKind.ExposedMachine or WorldFeatureKind.FossilArch)
+        {
+            var frame = Math.Abs(feature.Variant) % 4;
+            batch.Draw(_ruins, new Rectangle((int)feature.Position.X - 24, (int)feature.Position.Y - 64, 48, 64),
+                new Rectangle(frame * 48, 0, 48, 64), Color.White);
+            return;
+        }
+        if (feature.Kind == WorldFeatureKind.RelicCandidate)
+        {
+            var frame = Math.Abs(feature.Variant) % 6;
+            batch.Draw(_relics, new Rectangle((int)feature.Position.X - 12, (int)feature.Position.Y - 24, 24, 24),
+                new Rectangle(frame * 24, 0, 24, 24), Color.White);
+        }
     }
 
     public void DrawPlayer(SpriteBatch batch, MovementState state, Vector2 feet, int facing, long frame)
@@ -50,6 +72,8 @@ public sealed class SpriteLibrary : IDisposable
     {
         _locomotion.Dispose();
         _traversal.Dispose();
+        _ruins.Dispose();
+        _relics.Dispose();
     }
 
     private static Texture2D Load(GraphicsDevice graphicsDevice, string relativePath)

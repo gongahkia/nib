@@ -5,6 +5,7 @@ using Summing.Camera;
 using Summing.Core;
 using Summing.Entities;
 using Summing.Gameplay;
+using Summing.Generation;
 using Summing.Input;
 using Summing.Player;
 using Summing.Rendering;
@@ -22,7 +23,8 @@ public sealed class Game1 : Game
     private SpriteLibrary _sprites = null!;
     private AtmosphereRenderer _atmosphere = null!;
     private InputManager _input = null!;
-    private readonly TileWorld _world = TileWorld.CreateMovementTest();
+    private TileWorld _world = null!;
+    private GeneratedWorld _generated = null!;
     private TileWorldRenderer _tileRenderer = null!;
     private readonly Camera2D _camera = new();
     private PlayerController _player = null!;
@@ -52,10 +54,12 @@ public sealed class Game1 : Game
     protected override void Initialize()
     {
         _input = new InputManager(InputBindings.LoadOrCreate("saves/bindings.json"));
+        _generated = WorldGeneratorRegistry.Generate(new WorldGenerationConfig());
+        _world = _generated.Terrain;
         var tuning = DifficultyTuning.For(_difficulty);
-        _player = new PlayerController(new Vector2(7f * GameConstants.TileSize, 15f * GameConstants.TileSize), tuning.StartingHealth);
+        _player = new PlayerController(_generated.Spawn, tuning.StartingHealth);
         _inventory = new PlayerInventory(tuning);
-        _camera.Snap(new Vector2(320f, 348f));
+        _camera.Snap(new Vector2(_generated.Spawn.X, _generated.Spawn.Y - 40f));
         base.Initialize();
     }
 
@@ -79,6 +83,8 @@ public sealed class Game1 : Game
         _frame++;
         if (_input.Pressed(InputAction.Pause)) Exit();
         _player.Update(_input, _world, GameConstants.FixedDelta);
+        var wind = _generated.WindAt(_player.Position.Y);
+        _player.Velocity += new Vector2(wind * GameConstants.FixedDelta, 0f);
         _ropeSystem.Update(_input, _player, _inventory, _world, GameConstants.FixedDelta);
         _digTool.Update(_input, _player, _world, GameConstants.FixedDelta);
         _bombSystem.Update(_input, _player, _inventory, _world, _frame, GameConstants.FixedDelta);
@@ -99,6 +105,7 @@ public sealed class Game1 : Game
         DrawBackdrop();
         _atmosphere.DrawWorldDither(_spriteBatch, _camera.Position, _frame);
         _tileRenderer.Draw(_spriteBatch, _world, _camera.Position);
+        foreach (var feature in _generated.Features) _sprites.DrawFeature(_spriteBatch, feature);
         _ropeSystem.Draw(_spriteBatch, _pixel);
         _bombSystem.Draw(_spriteBatch, _pixel);
         _player.Draw(_spriteBatch, _pixel, _sprites, _frame);
@@ -119,11 +126,11 @@ public sealed class Game1 : Game
 
     private void DrawBackdrop()
     {
-        _spriteBatch.Draw(_pixel, new Rectangle(-100, 0, 1400, 700), GamePalette.DeepSky);
-        for (var x = -80; x < 1300; x += 32)
+        _spriteBatch.Draw(_pixel, new Rectangle(-100, -100, _world.PixelWidth + 200, _world.PixelHeight + 200), GamePalette.DeepSky);
+        for (var x = -80; x < _world.PixelWidth + 80; x += 32)
         {
             var height = 30 + Math.Abs((x * 17) % 90);
-            _spriteBatch.Draw(_pixel, new Rectangle(x, 520 - height, 25, height), GamePalette.FarStone);
+            _spriteBatch.Draw(_pixel, new Rectangle(x, _world.PixelHeight - height - 30, 25, height), GamePalette.FarStone);
         }
     }
 
@@ -147,6 +154,8 @@ public sealed class Game1 : Game
         _font.Draw(_spriteBatch, $"TOOL {targetName}", new Vector2(12, 39), new Color(169, 124, 94));
         _font.Draw(_spriteBatch, $"HEALTH {_player.Health}/{_player.MaximumHealth}  BOMB {_inventory.Bombs}  ROPE {_inventory.Ropes}",
             new Vector2(12, 48), new Color(205, 111, 92));
+        _font.Draw(_spriteBatch, $"SEED {_generated.Configuration.Seed}  {Format(_generated.Configuration.Variant.ToString())}",
+            new Vector2(350, 12), GamePalette.UiMuted);
         _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  RMB GRAPPLE", new Vector2(12, 342), new Color(131, 132, 139));
     }
 
