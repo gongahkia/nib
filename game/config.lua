@@ -18,7 +18,7 @@ return {
   },
   assists = { inputBuffer = true, coyote = true, cornerCorrection = true },
   scoring = { parTimeSeconds = 240, timeWeight = 10, styleWeight = 1, collectibleWeight = 500 },
-  hand = { startGap = 96, baseSpeed = 18, pressureSpeed = 29, captureRadius = 8 },
+  hand = { startGap = 150, baseSpeed = 16, pressureSpeed = 23, captureRadius = 8 },
   audio = {
     footstep = { frequency = 130, duration = 0.045 }, jump = { frequency = 310, duration = 0.08 },
     land = { frequency = 90, duration = 0.07 }, dash = { frequency = 520, duration = 0.09 },

@@ -45,6 +45,11 @@ function love.load()
     end
     local before, oldState = game.session.status, game.session.player.state; game.session:update(snapshot); game.recorder:capture(game.session, snapshot)
     if oldState ~= game.session.player.state then local sounds = { jump_rise = "jump", air_dash = "dash", slide = game.session.player.rail and "grind" or "slide", grapple_attach = "grapple_attach", grapple_release = "grapple_release", tool_cutting = "tool_cut", recoil_impulse = "tool_impulse", stumble_recovery = "stumble" }; if sounds[game.session.player.state] then Audio.play(sounds[game.session.player.state]) end end
+    local player = game.session.player
+    if player.transitionReason == "landed" and player.stateTicks == 0 then Audio.play("land") end
+    if player.grounded and math.abs(player.vx) > 12 and game.session.tick % math.max(5, math.floor(26 - math.abs(player.vx) / 4)) == 0 then local _, material = game.session.world:surfaceAt(player.x, player.y); Audio.play("footstep", material and material.footstepPitch or 1) end
+    if player.toolEvent and player.toolEvent.destroyed then Audio.play("breakage") end
+    if game.session.tick % 45 == 0 and game.session.hand.activeContacts > 0 then Audio.play("hand_step") end
     if before == "running" and game.session.status ~= "running" then Audio.play(game.session.status == "finished" and "exit" or "capture"); finishRun() end
     game.cameraX = math.max(game.session.hand.x - 8, game.session.player.x - 43); game.cameraY = game.session.player.y - 88; game.gamepadPressed, game.mousePressed = {}, {}
   end)

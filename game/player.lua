@@ -148,7 +148,7 @@ function Player:update(world, input, dt)
       -- Low-obstacle corner correction doubles as a momentum vault.
       local oldY = self.y
       for lift = 1, config.cornerPixels + 3 do
-        if #world:queryRect(self.x + self.facing, oldY - self.h - lift, self.w, self.h) == 0 then
+        if #world:queryRect(self.x + self.facing - self.w / 2, oldY - self.h - lift, self.w, self.h) == 0 then
           self.y, self.vx, self.vy = oldY - lift, self.facing * config.vaultSpeedX, -config.vaultSpeedY
           self:setState("vault_mantle", "corner vault"); hitX = false; break
         end

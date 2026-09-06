@@ -4,8 +4,26 @@ local Render = { width = 128, height = 128 }
 
 function Render.load()
   Render.canvas = love.graphics.newCanvas(Render.width, Render.height)
+  Render.paletteCanvas = love.graphics.newCanvas(Render.width, Render.height)
   Render.canvas:setFilter("nearest", "nearest")
+  Render.paletteCanvas:setFilter("nearest", "nearest")
   love.graphics.setDefaultFilter("nearest", "nearest")
+  love.graphics.setLineStyle("rough")
+  Render.shader = love.graphics.newShader([[
+    extern vec3 colours[16];
+    vec4 effect(vec4 colour, Image texture, vec2 uv, vec2 screen) {
+      vec3 source = Texel(texture, uv).rgb;
+      vec3 best = colours[0];
+      float distance = dot(source - best, source - best);
+      for (int i = 1; i < 16; i++) {
+        float candidate = dot(source - colours[i], source - colours[i]);
+        if (candidate < distance) { distance = candidate; best = colours[i]; }
+      }
+      return vec4(best, 1.0);
+    }
+  ]])
+  local colours = {}; for i = 1, 16 do colours[i] = { palette[i][1] / 255, palette[i][2] / 255, palette[i][3] / 255 } end
+  Render.shader:send("colours", unpack(colours))
 end
 
 function Render.beginFrame()
@@ -15,12 +33,17 @@ function Render.beginFrame()
 end
 
 function Render.endFrame()
+  love.graphics.setCanvas(Render.paletteCanvas)
+  love.graphics.setShader(Render.shader)
+  palette.set(9)
+  love.graphics.draw(Render.canvas, 0, 0)
+  love.graphics.setShader()
   love.graphics.setCanvas()
   local w, h = love.graphics.getDimensions()
   local scale = math.max(1, math.floor(math.min(w / Render.width, h / Render.height)))
   local x, y = math.floor((w - Render.width * scale) / 2), math.floor((h - Render.height * scale) / 2)
   palette.set(9)
-  love.graphics.draw(Render.canvas, x, y, 0, scale, scale)
+  love.graphics.draw(Render.paletteCanvas, x, y, 0, scale, scale)
 end
 
 function Render.drawContract()

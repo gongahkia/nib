@@ -57,7 +57,7 @@ local function buildAttempt(seed, attempt)
       local oldX, oldY = x, y
       x = x + dx
       local wave = math.floor(math.sin((section * 7 + step) * 0.71) * 3)
-      if vertical then y = y + direction * rng:int(7, 11) else y = y + wave end
+      if vertical then y = y + direction * rng:int(7, 10) else y = y + wave end
       y = math.max(44, math.min(270, y))
       local mode = "run"
       if rhythm == "dash_gap" and step % 4 == 2 then mode = "dash"
@@ -81,7 +81,9 @@ local function buildAttempt(seed, attempt)
 
       local material = rng:choice(materialNames)
       local platformWidth = math.max(18, dx - (mode == "dash" and rng:int(8, 15) or 0))
-      addSolid(level, x - platformWidth / 2, y, platformWidth, rng:int(7, 15), material, current.provenance, mode == "slope" and (y - oldY) or nil)
+      local platformHeight = rng:int(7, 15)
+      addSolid(level, x - platformWidth / 2, y, platformWidth, platformHeight, material, current.provenance, mode == "slope" and (y - oldY) or nil)
+      addSolid(level, x - platformWidth / 2, y + platformHeight, platformWidth, 12, "stone", current.provenance .. "/understructure")
       if mode == "grind" then level.rails[#level.rails + 1] = { x1 = oldX, y1 = oldY - 10, x2 = x, y2 = y - 10, provenance = current.provenance } end
       if mode == "tool" then
         addSolid(level, x - 6, y - 28, 8, 28, rng:choice({ "brick", "glass" }), current.provenance .. "/breach")
