@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "license": "Original project placeholders; CC0-1.0",
+  "generation": "python3 tools/generate_sprites.py (Pillow; deterministic; no external inputs)",
+  "palette": {
+    "void": "#0a0d14",
+    "ink": "#151823",
+    "stone": "#403a48",
+    "stone_light": "#66545a",
+    "oxide": "#9f574a",
+    "blood": "#b84943",
+    "bone": "#cdb98a",
+    "gold": "#d8b866",
+    "cyan": "#8fcac4",
+    "salt": "#b9d3bc",
+    "white": "#ffffff",
+    "transparent": "#00000000"
+  },
+  "sheets": {
+    "player_locomotion": {
+      "file": "runtime/player_locomotion.png",
+      "source": "source/player_locomotion-white.png",
+      "cell": [
+        24,
+        48
+      ],
+      "frames": [
+        "idle_0",
+        "idle_1",
+        "run_0",
+        "run_1",
+        "run_2",
+        "run_3",
+        "takeoff",
+        "ascend",
+        "apex",
+        "fall",
+        "land"
+      ]
+    },
+    "player_traversal": {
+      "file": "runtime/player_traversal.png",
+      "source": "source/player_traversal-white.png",
+      "cell": [
+        24,
+        48
+      ],
+      "frames": [
+        "crouch",
+        "crawl",
+        "slide",
+        "ledge",
+        "mantle",
+        "wall_cling",
+        "wall_jump",
+        "dash",
+        "grapple",
+        "rope",
+        "dig_0",
+        "dig_1",
+        "bomb",
+        "hurt",
+        "death"
+      ]
+    },
+    "badlands_terrain": {
+      "file": "runtime/badlands_terrain.png",
+      "source": "source/badlands_terrain-white.png",
+      "cell": [
+        24,
+        24
+      ],
+      "frames": [
+        "loess",
+        "sandstone",
+        "basalt",
+        "fossil",
+        "alloy",
+        "brittle",
+        "salt_glass",
+        "ruin_mark"
+      ]
+    },
+    "burrower": {
+      "file": "runtime/burrower.png",
+      "source": "source/burrower-white.png",
+      "cell": [
+        32,
+        24
+      ],
+      "frames": [
+        "burrow_0",
+        "burrow_1",
+        "burrow_2",
+        "burrow_3"
+      ]
+    },
+    "brittle_hazard": {
+      "file": "runtime/brittle_hazard.png",
+      "source": "source/brittle_hazard-white.png",
+      "cell": [
+        24,
+        24
+      ],
+      "frames": [
+        "crack_0",
+        "crack_1",
+        "crack_2",
+        "crack_3"
+      ]
+    },
+    "tools": {
+      "file": "runtime/tools.png",
+      "source": "source/tools-white.png",
+      "cell": [
+        24,
+        24
+      ],
+      "frames": [
+        "pick",
+        "bomb",
+        "rope",
+        "grapple"
+      ]
+    },
+    "relics": {
+      "file": "runtime/relics.png",
+      "source": "source/relics-white.png",
+      "cell": [
+        24,
+        24
+      ],
+      "frames": [
+        "relic_0",
+        "relic_1",
+        "relic_2",
+        "relic_3",
+        "relic_4",
+        "relic_5"
+      ]
+    },
+    "ruins": {
+      "file": "runtime/ruins.png",
+      "source": "source/ruins-white.png",
+      "cell": [
+        48,
+        64
+      ],
+      "frames": [
+        "ruin_0",
+        "ruin_1",
+        "ruin_2",
+        "ruin_3"
+      ]
+    },
+    "ui": {
+      "file": "runtime/ui.png",
+      "source": "source/ui-white.png",
+      "cell": [
+        24,
+        24
+      ],
+      "frames": [
+        "heart",
+        "dash",
+        "bomb",
+        "rope",
+        "archive"
+      ]
+    }
+  },
+  "source_concept": "source/summing-concept-white.png",
+  "source_prompt_document": "docs/art/SPRITE-GENERATION.md"
+}
