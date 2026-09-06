@@ -55,8 +55,7 @@ function Render.drawWorld(world, cameraX, cameraY)
   end
   for _, solid in ipairs(world.solids) do
     if not solid.destroyed then
-      local colours = { stone = 5, brick = 6, metal = 11, sticky = 14, ice = 10, elastic = 16 }
-      palette.set(colours[solid.material] or 5)
+      palette.set(world.materials[solid.material] and world.materials[solid.material].colour or 5)
       love.graphics.rectangle("fill", math.floor(solid.x - cameraX), math.floor(solid.y - cameraY), solid.w, solid.h)
       palette.set(7)
       love.graphics.line(math.floor(solid.x - cameraX), math.floor(solid.y - cameraY), math.floor(solid.x + solid.w - cameraX), math.floor(solid.y - cameraY))
@@ -68,6 +67,8 @@ function Render.drawWorld(world, cameraX, cameraY)
   for _, rail in ipairs(world.rails) do
     palette.set(10); love.graphics.line(rail.x1 - cameraX, rail.y1 - cameraY, rail.x2 - cameraX, rail.y2 - cameraY)
   end
+  for _, object in ipairs(world.objects) do palette.set(7); love.graphics.rectangle("fill", object.x - object.w / 2 - cameraX, object.y - object.h - cameraY, object.w, object.h) end
+  for _, enemy in ipairs(world.enemies) do if enemy.alive then palette.set(16); love.graphics.rectangle("fill", enemy.x - 3 - cameraX, enemy.y - 6 - cameraY, 6, 6); palette.set(1); love.graphics.points(enemy.x - 1 - cameraX, enemy.y - 4 - cameraY) end end
 end
 
 return Render

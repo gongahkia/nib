@@ -1,4 +1,5 @@
 local config = require("game.config").player
+local Tool = require("game.tool")
 local Player = {}
 Player.__index = Player
 
@@ -13,7 +14,7 @@ function Player.new(x, y)
     state = "idle", previousState = "idle", transitionReason = "spawn", stateTicks = 0, tick = 0,
     grounded = false, wall = 0, coyote = 0, buffers = {}, dashes = config.dashResources,
     grapples = config.grappleResources, grapple = nil, facing = 1, contacts = {}, rejected = {},
-    footstepClock = 0, finished = false, captured = false,
+    footstepClock = 0, finished = false, captured = false, toolEvent = nil, styleEvents = {}, rail = nil,
   }, Player)
 end
 
@@ -91,8 +92,10 @@ function Player:update(world, input, dt)
     self.vx = approach(self.vx, 0, config.slideFriction * dt)
     if self.stateTicks >= config.slideTicks or not input.slide then self:setState("acceleration_run", "slide released") end
   else
+    local surface, material = world:surfaceAt(self.x, self.y)
     local target = mx * config.maxRunSpeed
-    local accel = self.grounded and (mx ~= 0 and (self.vx * mx < 0 and config.turnAcceleration or config.runAcceleration) or config.friction) or config.airAcceleration
+    local frictionScale = material and material.friction or 1
+    local accel = self.grounded and (mx ~= 0 and (self.vx * mx < 0 and config.turnAcceleration or config.runAcceleration) or config.friction * frictionScale) or config.airAcceleration
     self.vx = approach(self.vx, target, accel * dt)
     if not self.grounded then self.vy = math.min(config.maxFallSpeed, self.vy + config.gravity * dt) end
 
@@ -113,6 +116,13 @@ function Player:update(world, input, dt)
       local anchor = world:nearestAnchor(self.x, self.y - self.h / 2, ax, ay, config.grappleRange)
       if anchor then self.grapple, self.grapples = anchor, self.grapples - 1; self:setState("grapple_attach", "anchor acquired")
       else self.rejected[#self.rejected + 1] = { tick = self.tick, input = "grapple", reason = "no anchor" } end
+    elseif self.buffers.tool or self.buffers.pull then
+      local ax, ay = self:aim(input)
+      local mode = self.buffers.pull and "manipulate" or "cut"
+      self.buffers.tool, self.buffers.pull = nil, nil
+      self.toolEvent = Tool.use(self, world, ax, ay, mode)
+      self:setState(mode == "manipulate" and "tool_push_pull" or (self.toolEvent.kind == "cut" and "tool_cutting" or "recoil_impulse"), "tool " .. self.toolEvent.kind)
+      self.styleEvents[#self.styleEvents + 1] = { tick = self.tick, kind = self.toolEvent.destroyed and "creative_destruction" or "tool_use" }
     end
 
     if self.grapple then
@@ -151,10 +161,36 @@ function Player:update(world, input, dt)
   local hitY = moveAxis(self, world, self.vy * dt, "y")
   if hitY then
     if self.vy > 0 then
+      local impact = self.vy
+      local terrain = self.contacts[#self.contacts] and self.contacts[#self.contacts].terrain
+      local hitMaterial = terrain and world.materials[terrain.material]
+      if hitMaterial and impact >= hitMaterial.impactBreak and hitMaterial.destructible then
+        terrain.destroyed = true; self.styleEvents[#self.styleEvents + 1] = { tick = self.tick, kind = "impact_break" }
+      elseif hitMaterial and hitMaterial.launch then
+        self.vy = -hitMaterial.launch; self.grounded = false; self:setState("jump_rise", "elastic launch"); hitY = false
+      end
       if self.state == "dive" then self.vx = self.vx * 1.15 end
-      self.grounded = true; self.dashes, self.grapples = config.dashResources, config.grappleResources
+      if hitY then self.grounded = true; self.dashes, self.grapples = config.dashResources, config.grappleResources end
     end
-    self.vy = 0
+    if hitY then self.vy = 0 end
+  end
+
+  if input.slide and not self.grounded then
+    local rail, rdx, rdy = world:nearRail(self.x, self.y)
+    if rail then
+      local length = math.sqrt(rdx * rdx + rdy * rdy); local speed = math.max(42, math.abs(self.vx))
+      self.vx, self.vy, self.rail = rdx / length * speed * self.facing, rdy / length * speed * self.facing, rail
+      self:setState("slide", "rail grind")
+    end
+  else self.rail = nil end
+
+  for _, enemy in ipairs(world.enemies) do
+    if enemy.alive and math.abs(self.x - enemy.x) < (self.w + enemy.w) / 2 and math.abs((self.y - self.h / 2) - (enemy.y - enemy.h / 2)) < (self.h + enemy.h) / 2 then
+      if self.state == "dive" or self.state == "air_dash" or (self.vy > 25 and self.y < enemy.y) then
+        enemy.alive = false; self.vx = self.vx + self.facing * 22; self.vy = -50
+        self:setState("enemy_impact", "movement attack"); self.styleEvents[#self.styleEvents + 1] = { tick = self.tick, kind = "enemy_speed" }
+      else self.vx = -self.facing * 18; self:setState("stumble_recovery", "enemy collision") end
+    end
   end
 
   if not wasGrounded and self.grounded and self.state ~= "slide" then self:setState(math.abs(self.vx) > config.highSpeed and "high_speed_run" or "idle", "landed") end

@@ -28,6 +28,7 @@ function love.load()
     end
     local previous = game.player.state
     game.player:update(game.world, snapshot, dt)
+    game.world:updateObjects(dt)
     if previous ~= game.player.state then
       local sounds = { jump_rise = "jump", air_dash = "dash", slide = "slide", grapple_attach = "grapple_attach", grapple_release = "grapple_release", stumble_recovery = "stumble" }
       if sounds[game.player.state] then Audio.play(sounds[game.player.state]) end
