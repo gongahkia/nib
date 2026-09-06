@@ -16,7 +16,9 @@ if (Environment.GetCommandLineArgs().Contains("--verify-generation"))
         var configuration = new WorldGenerationConfig { Seed = 9042026, Variant = variant };
         var firstHash = WorldGeneratorRegistry.Generate(configuration).Terrain.Fingerprint();
         var secondHash = WorldGeneratorRegistry.Generate(configuration).Terrain.Fingerprint();
-        Console.WriteLine($"seed={configuration.Seed} variant={configuration.Variant} fingerprint={firstHash:x16}");
+        var validated = ValidatedWorldGenerator.Generate(configuration);
+        Console.WriteLine($"seed={configuration.Seed} variant={configuration.Variant} fingerprint={firstHash:x16} " +
+            $"route={validated.Diagnostics.Traversability.CheckedTransitions} rejected={validated.Diagnostics.RejectedSeeds.Count}");
         if (firstHash != secondHash) throw new InvalidOperationException("generation is not deterministic");
     }
     return;
@@ -51,5 +53,6 @@ if (Environment.GetCommandLineArgs().Contains("--verify-serialization"))
     return;
 }
 
-using var game = new Summing.Game1();
+var smokeRun = Environment.GetCommandLineArgs().Contains("--smoke-run");
+using var game = new Summing.Game1(smokeRun ? 30 : 0);
 game.Run();

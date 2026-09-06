@@ -21,6 +21,7 @@ public sealed class WorldSnapshot
     public required List<FeatureSnapshot> Features { get; set; }
     public required List<WeatherBand> Weather { get; set; }
     public required WorldHistory History { get; set; }
+    public required GenerationDiagnostics Diagnostics { get; set; }
     public required RuntimeSnapshot Runtime { get; set; }
 }
 

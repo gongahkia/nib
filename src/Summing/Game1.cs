@@ -14,6 +14,7 @@ using Summing.Input;
 using Summing.Player;
 using Summing.Persistence;
 using Summing.Rendering;
+using Summing.Telemetry;
 using Summing.World;
 
 namespace Summing;
@@ -45,9 +46,12 @@ public sealed class Game1 : Game
     private BrittleSystem _brittleSystem = null!;
     private readonly EditorSystem _editor = new();
     private readonly List<string> _terrainEvents = [];
+    private PlaytestRecorder? _telemetry;
+    private readonly long _autoExitFrame;
 
-    public Game1()
+    public Game1(long autoExitFrame = 0)
     {
+        _autoExitFrame = autoExitFrame;
         _graphics = new GraphicsDeviceManager(this)
         {
             PreferredBackBufferWidth = GameConstants.WindowWidth,
@@ -66,7 +70,7 @@ public sealed class Game1 : Game
     {
         _input = new InputManager(InputBindings.LoadOrCreate("saves/bindings.json"));
         _archive = new ArchiveStore("archive/archive.json");
-        LoadGeneratedWorld(WorldGeneratorRegistry.Generate(new WorldGenerationConfig()));
+        LoadGeneratedWorld(ValidatedWorldGenerator.Generate(new WorldGenerationConfig()));
         base.Initialize();
     }
 
@@ -104,12 +108,16 @@ public sealed class Game1 : Game
         _relicSystem.Update(_player, GameConstants.FixedDelta);
         _burrowerSystem.Update(_player, _world, GameConstants.FixedDelta);
         _brittleSystem.Update(_player, _world, GameConstants.FixedDelta);
+        if (_input.Pressed(InputAction.Dash)) _telemetry?.RecordEvent("dash", new { _player.Position, _player.Velocity, _player.DashCharges });
+        if (_input.Pressed(InputAction.Grapple)) _telemetry?.RecordEvent("grapple", new { _player.Position, _player.GrappleAttached, _player.GrappleAnchor });
         if (_player.Position.Y > _world.PixelHeight + 80f)
             _player.Reset(_generated.Spawn);
         var cameraTarget = new Vector2(
             Math.Clamp(_player.Position.X, GameConstants.VirtualWidth * 0.5f, _world.PixelWidth - GameConstants.VirtualWidth * 0.5f),
             Math.Clamp(_player.Position.Y - 25f, GameConstants.VirtualHeight * 0.5f, _world.PixelHeight - GameConstants.VirtualHeight * 0.5f));
         _camera.Update(cameraTarget, _player.Velocity, GameConstants.FixedDelta);
+        _telemetry?.RecordFrame(_frame, _input, _player, _camera, _world, _inventory, _generated);
+        if (_autoExitFrame > 0 && _frame >= _autoExitFrame) Exit();
         base.Update(gameTime);
     }
 
@@ -138,6 +146,7 @@ public sealed class Game1 : Game
         _editor.DrawOverlay(_spriteBatch, _pixel, _font, _generated);
         _spriteBatch.End();
         GraphicsDevice.SetRenderTarget(null);
+        _telemetry?.CaptureDue(_scene);
 
         GraphicsDevice.Clear(Color.Black);
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
@@ -158,6 +167,8 @@ public sealed class Game1 : Game
 
     private void LoadGeneratedWorld(GeneratedWorld generated)
     {
+        _telemetry?.Finish("world-replaced");
+        _frame = 0;
         _generated = generated;
         _world = generated.Terrain;
         _terrainEvents.Clear();
@@ -165,6 +176,8 @@ public sealed class Game1 : Game
         {
             _terrainEvents.Add($"{_frame}:{change.Cause}:{change.Tile.X},{change.Tile.Y}:{change.Material}:{change.Damage}:{change.Destroyed}");
             if (_terrainEvents.Count > 512) _terrainEvents.RemoveAt(0);
+            _telemetry?.RecordEvent(change.Destroyed ? "terrain-destroyed" : "terrain-damaged", change,
+                change.Destroyed);
         };
         var tuning = DifficultyTuning.For(_difficulty);
         _player = new PlayerController(generated.Spawn, tuning.StartingHealth);
@@ -175,12 +188,26 @@ public sealed class Game1 : Game
         _relicSystem = new RelicSystem(generated, _archive);
         _burrowerSystem = new BurrowerSystem(generated, tuning);
         _brittleSystem = new BrittleSystem(generated, tuning);
-        _bombSystem.Exploded += _burrowerSystem.ApplyExplosion;
+        _bombSystem.Exploded += explosion =>
+        {
+            _burrowerSystem.ApplyExplosion(explosion);
+            _telemetry?.RecordEvent("bomb-explosion", explosion);
+        };
+        _player.StatusEvent += status => _telemetry?.RecordEvent(status.StartsWith("death", StringComparison.Ordinal)
+            ? "death" : status.StartsWith("fall", StringComparison.Ordinal) ? "large-fall" : "damage", new { status, _player.Health });
+        _digTool.Impact += change => _telemetry?.RecordEvent("tool-impact", change, change.Destroyed);
+        _burrowerSystem.Event += value => _telemetry?.RecordEvent(value == "attack" ? "burrower-attack" : "burrower-interaction",
+            new { value }, value == "attack");
+        _brittleSystem.Triggered += tile => _telemetry?.RecordEvent("brittle-triggered", new { tile }, false);
+        _brittleSystem.Collapsed += tile => _telemetry?.RecordEvent("brittle-collapse", new { tile });
+        _relicSystem.Collected += relic => _telemetry?.RecordEvent("relic-collected", new { relic.Id, relic.Culture.Name });
         _camera.Snap(new Vector2(generated.Spawn.X, generated.Spawn.Y - 40f));
+        _telemetry = new PlaytestRecorder(generated, _difficulty, _input.Bindings);
+        SaveWorld(Path.Combine(_telemetry.DirectoryPath, "world-start.json"));
     }
 
     private void RegenerateWorld(WorldGenerationConfig configuration) =>
-        LoadGeneratedWorld(WorldGeneratorRegistry.Generate(configuration));
+        LoadGeneratedWorld(ValidatedWorldGenerator.Generate(configuration));
 
     private void SaveEditorWorld() => SaveWorld("saves/editor-world.json");
 
@@ -208,6 +235,12 @@ public sealed class Game1 : Game
         base.UnloadContent();
     }
 
+    protected override void OnExiting(object sender, ExitingEventArgs args)
+    {
+        _telemetry?.Finish("application-exit");
+        base.OnExiting(sender, args);
+    }
+
     private void DrawHud()
     {
         _spriteBatch.Draw(_pixel, new Rectangle(7, 7, 250, 39), new Color(6, 8, 13, 220));
@@ -222,6 +255,8 @@ public sealed class Game1 : Game
         _font.Draw(_spriteBatch, $"SEED {_generated.Configuration.Seed}  {Format(_generated.Configuration.Variant.ToString())}",
             new Vector2(350, 12), GamePalette.UiMuted);
         _font.Draw(_spriteBatch, $"ARCHIVE {_archive.Discoveries.Count}", new Vector2(520, 21), GamePalette.SacredGold);
+        _font.Draw(_spriteBatch, $"VALID ROUTE {_generated.Diagnostics.Traversability.CheckedTransitions}  REJECTED {_generated.Diagnostics.RejectedSeeds.Count}",
+            new Vector2(350, 30), _generated.Diagnostics.Traversability.Solvable ? GamePalette.SaltCyan : GamePalette.Danger);
         if (_relicSystem.DiscoveryVisible && _relicSystem.LastDiscovery != null)
         {
             _spriteBatch.Draw(_pixel, new Rectangle(125, 300, 390, 24), new Color(7, 10, 15, 230));

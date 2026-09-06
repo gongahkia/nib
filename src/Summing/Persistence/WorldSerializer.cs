@@ -62,7 +62,8 @@ public static class WorldSerializer
             Features = snapshot.Features.ConvertAll(feature => new WorldFeature(feature.Kind,
                 new Vector2(feature.X, feature.Y), feature.Variant, feature.ProvenanceId)),
             Weather = snapshot.Weather,
-            History = snapshot.History
+            History = snapshot.History,
+            Diagnostics = snapshot.Diagnostics
         };
     }
 
@@ -139,6 +140,7 @@ public static class WorldSerializer
                 feature.Position.X, feature.Position.Y, feature.Variant, feature.ProvenanceId)),
             Weather = generated.Weather,
             History = generated.History,
+            Diagnostics = generated.Diagnostics,
             Runtime = new RuntimeSnapshot(frame, difficulty.ToString(), playerEntity, inventory.Bombs, inventory.Ropes,
                 entities, new List<string>(terrainEvents))
         };

@@ -1,0 +1,166 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.Xna.Framework.Graphics;
+using Summing.Camera;
+using Summing.Entities;
+using Summing.Gameplay;
+using Summing.Generation;
+using Summing.Input;
+using Summing.Player;
+using Summing.World;
+
+namespace Summing.Telemetry;
+
+public sealed class PlaytestRecorder : IDisposable
+{
+    private sealed record ScreenshotRequest(long DueFrame, string Event, string Phase);
+    private readonly StreamWriter _frames;
+    private readonly StreamWriter _events;
+    private readonly StreamWriter _screenshots;
+    private readonly List<ScreenshotRequest> _pendingScreenshots = [];
+    private readonly JsonSerializerOptions _json = new()
+    {
+        WriteIndented = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+    private long _frame;
+    private int _screenshotSequence;
+    private bool _disposed;
+    private int _eventCount;
+
+    public PlaytestRecorder(GeneratedWorld generated, Difficulty difficulty, InputBindings bindings)
+    {
+        var name = $"{DateTimeOffset.Now:yyyyMMdd-HHmmss-fff}-{generated.Configuration.Seed}";
+        DirectoryPath = Path.Combine("playtests", name);
+        var suffix = 1;
+        while (Directory.Exists(DirectoryPath)) DirectoryPath = Path.Combine("playtests", $"{name}-{suffix++}");
+        Directory.CreateDirectory(DirectoryPath);
+        Directory.CreateDirectory(Path.Combine(DirectoryPath, "screenshots"));
+        _frames = new StreamWriter(Path.Combine(DirectoryPath, "frames.csv"));
+        _events = new StreamWriter(Path.Combine(DirectoryPath, "events.jsonl"));
+        _screenshots = new StreamWriter(Path.Combine(DirectoryPath, "screenshots", "index.csv"));
+        _frames.WriteLine("frame,time_s,input_down,move_x,move_y,aim_x,aim_y,player_x,player_y,velocity_x,velocity_y,movement_state,visual_state,camera_x,camera_y,lookahead_x,lookahead_y,grounded,left_wall,right_wall,collision_normals,wall_stamina,dash_charges,grapple,grapple_x,grapple_y,coyote_used,jump_buffer_used,health,stunned,bombs,ropes,wind,nearby_tiles");
+        _screenshots.WriteLine("frame,time_s,file,event,phase");
+        File.WriteAllText(Path.Combine(DirectoryPath, "metadata.json"), JsonSerializer.Serialize(new
+        {
+            schemaVersion = 1,
+            startedAtUtc = DateTimeOffset.UtcNow,
+            seed = generated.Configuration.Seed,
+            generator = WorldGeneratorRegistry.Identifier(generated.Configuration.Variant),
+            generated.Configuration,
+            difficulty,
+            historyId = generated.History.Id,
+            epoch = generated.History.EpochName,
+            generated.Diagnostics,
+            inputBindings = bindings.Actions,
+            fixedUpdateHz = 60,
+            periodicScreenshotFrames = 600,
+            eventScreenshotPhases = new[] { "event", "post-12-frames" },
+            notes = "positions are world pixels; tile size and full starting world are in world-start.json"
+        }, _json));
+        RequestScreenshot("session-start", true);
+    }
+
+    public string DirectoryPath { get; private set; }
+    public int EventCount => _eventCount;
+
+    public void RecordFrame(long frame, InputManager input, PlayerController player, Camera2D camera, TileWorld world,
+        PlayerInventory inventory, GeneratedWorld generated)
+    {
+        _frame = frame;
+        var actions = string.Join('|', Enum.GetValues<InputAction>().Where(input.Down));
+        var normals = player.Grounded ? "0,-1" : player.TouchingLeftWall ? "1,0" : player.TouchingRightWall ? "-1,0" : "";
+        var grappleX = player.GrappleAttached ? F(player.GrappleAnchor.X) : "";
+        var grappleY = player.GrappleAttached ? F(player.GrappleAnchor.Y) : "";
+        var nearby = NearbyTiles(world, player);
+        _frames.WriteLine(string.Join(',', frame, F(frame / 60f), Csv(actions), F(input.Move.X), F(input.Move.Y),
+            F(input.Aim.X), F(input.Aim.Y), F(player.Position.X), F(player.Position.Y), F(player.Velocity.X),
+            F(player.Velocity.Y), player.State, player.VisualState, F(camera.Position.X), F(camera.Position.Y),
+            F(camera.LookAhead.X), F(camera.LookAhead.Y), player.Grounded, player.TouchingLeftWall,
+            player.TouchingRightWall, Csv(normals), F(player.WallStamina), player.DashCharges,
+            player.GrappleAttached, grappleX, grappleY, player.UsedCoyoteThisFrame, player.UsedJumpBufferThisFrame,
+            player.Health, player.Stunned, inventory.Bombs, inventory.Ropes, F(generated.WindAt(player.Position.Y)), Csv(nearby)));
+        if (frame % 120 == 0) _frames.Flush();
+        if (frame % 600 == 0) RequestScreenshot("periodic", false);
+    }
+
+    public void RecordEvent(string type, object data, bool capture = true)
+    {
+        _eventCount++;
+        _events.WriteLine(JsonSerializer.Serialize(new { frame = _frame, timeSeconds = _frame / 60f, type, data }, _json));
+        _events.Flush();
+        if (capture) RequestScreenshot(type, true);
+    }
+
+    public void CaptureDue(RenderTarget2D scene)
+    {
+        for (var index = _pendingScreenshots.Count - 1; index >= 0; index--)
+        {
+            var request = _pendingScreenshots[index];
+            if (request.DueFrame > _frame) continue;
+            var safeEvent = new string(request.Event.Select(character => char.IsLetterOrDigit(character) ? character : '-').ToArray()).Trim('-');
+            var fileName = $"{_screenshotSequence++:D5}-f{_frame:D8}-{safeEvent}-{request.Phase}.png";
+            var relative = Path.Combine("screenshots", fileName);
+            using var stream = File.Create(Path.Combine(DirectoryPath, relative));
+            scene.SaveAsPng(stream, scene.Width, scene.Height);
+            _screenshots.WriteLine($"{_frame},{F(_frame / 60f)},{relative},{Csv(request.Event)},{request.Phase}");
+            _screenshots.Flush();
+            _pendingScreenshots.RemoveAt(index);
+        }
+    }
+
+    public void Finish(string outcome)
+    {
+        if (_disposed) return;
+        File.WriteAllText(Path.Combine(DirectoryPath, "summary.json"), JsonSerializer.Serialize(new
+        {
+            endedAtUtc = DateTimeOffset.UtcNow,
+            finalFrame = _frame,
+            durationSeconds = _frame / 60f,
+            outcome,
+            eventCount = _eventCount,
+            screenshotCount = _screenshotSequence
+        }, _json));
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        _frames.Dispose();
+        _events.Dispose();
+        _screenshots.Dispose();
+    }
+
+    private void RequestScreenshot(string eventName, bool withPost)
+    {
+        _pendingScreenshots.Add(new ScreenshotRequest(_frame, eventName, "event"));
+        if (withPost) _pendingScreenshots.Add(new ScreenshotRequest(_frame + 12, eventName, "post"));
+    }
+
+    private static string NearbyTiles(TileWorld world, PlayerController player)
+    {
+        var center = world.WorldToTile(player.Bounds.Center);
+        var rows = new List<string>();
+        for (var y = center.Y - 2; y <= center.Y + 2; y++)
+        {
+            var row = new List<string>();
+            for (var x = center.X - 3; x <= center.X + 3; x++)
+            {
+                var tile = world.GetTile(x, y);
+                row.Add($"{x}:{y}:{tile.Material}:{tile.Damage}");
+            }
+            rows.Add(string.Join('|', row));
+        }
+        return string.Join('/', rows);
+    }
+
+    private static string F(float value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+    private static string Csv(string value) => $"\"{value.Replace("\"", "\"\"")}\"";
+}
