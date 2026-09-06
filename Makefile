@@ -1,7 +1,7 @@
-DOTNET ?= dotnet
+DOTNET ?= ./tools/dotnet.sh
 PROJECT := src/Summing/Summing.csproj
 
-.PHONY: restore build run format test verify clean assets
+.PHONY: restore build run publish-fedora format test verify clean assets
 
 restore:
 	$(DOTNET) restore $(PROJECT)
@@ -11,6 +11,9 @@ build:
 
 run:
 	$(DOTNET) run --project $(PROJECT)
+
+publish-fedora:
+	$(DOTNET) publish $(PROJECT) -c Release -r linux-x64 --self-contained true -o artifacts/linux-x64
 
 format:
 	$(DOTNET) format $(PROJECT) --no-restore

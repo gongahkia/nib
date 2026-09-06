@@ -7,12 +7,14 @@ Summing is a silent 2D procedural action-platformer about ascending an open-air 
 MonoGame 3.8.5.1 requires .NET 9. Install `dotnet-sdk-9.0` through DNF, or use Microsoft's non-admin `dotnet-install.sh` workflow. Then:
 
 ```sh
-dotnet restore src/Summing/Summing.csproj
+make restore
 make build
 ./run.sh
 ```
 
-`run.sh` also detects the documented per-user install at `~/.local/share/dotnet` when `dotnet` is not on `PATH`. The game creates local `archive/`, `saves/`, `exports/`, and `playtests/` directories in the working directory. They are deliberately ignored by Git. Silence is intentional; no audio subsystem or audio assets exist in this slice.
+The project scripts detect the documented per-user install at `~/.local/share/dotnet` as well as a working SDK on `PATH`. The game creates local `archive/`, `saves/`, `exports/`, and `playtests/` directories in the working directory. They are deliberately ignored by Git. Silence is intentional; no audio subsystem or audio assets exist in this slice.
+
+Fedora's framework-dependent apphost cannot start when the system .NET host is incomplete. `run.sh` verifies the host before using it and prefers the working per-user SDK. To produce a runtime-independent local build, use `make publish-fedora`; afterward `./run.sh` launches `artifacts/linux-x64/Summing` directly.
 
 The title screen selects Easy/Hard, the deterministic seed, Heightmap/Cellular/Layered generation, climber palette, and in-game bindings. `Esc`/Start pauses during play. Death has no checkpoint; Easy repeats the world and Hard advances to another generated history. Reach the summit relay to complete the slice.
 

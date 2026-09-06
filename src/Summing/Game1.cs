@@ -271,7 +271,8 @@ public sealed class Game1 : Game
         _font.Draw(_spriteBatch, $"SEED        {_menuConfig.Seed}", new Vector2(210, 194), GamePalette.Bone, 2);
         _font.Draw(_spriteBatch, $"CLIMBER     {AppearanceNames[_appearanceIndex]}", new Vector2(210, 217), AppearanceTints[_appearanceIndex], 2);
         _font.Draw(_spriteBatch, "UP DOWN DIFFICULTY   LEFT RIGHT GENERATOR", new Vector2(187, 252), GamePalette.UiMuted);
-        _font.Draw(_spriteBatch, "T SET SEED   R RANDOM   C CLIMBER   B BINDINGS", new Vector2(169, 263), GamePalette.UiMuted);
+        _font.Draw(_spriteBatch, "T SET SEED   R OR LS RANDOM   C OR Y CLIMBER", new Vector2(172, 263), GamePalette.UiMuted);
+        _font.Draw(_spriteBatch, "B OR GAMEPAD B BINDINGS", new Vector2(235, 274), GamePalette.UiMuted);
         _font.Draw(_spriteBatch, "ENTER OR A TO ASCEND", new Vector2(224, 298), GamePalette.SacredGold, 2);
         _font.Draw(_spriteBatch, "F1 OPENS THE WORLD EDITOR DURING A RUN", new Vector2(202, 329), new Color(105, 116, 125));
         if (_typingTitleSeed)
@@ -352,9 +353,11 @@ public sealed class Game1 : Game
         if (_input.Pressed(InputAction.Right))
             _menuConfig.Variant = (GeneratorVariant)(((int)_menuConfig.Variant + 1) % 3);
         if (_input.KeyPressed(Keys.T)) { _typingTitleSeed = true; _titleSeedText = _menuConfig.Seed.ToString(); }
-        if (_input.KeyPressed(Keys.R)) _menuConfig.Seed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        if (_input.KeyPressed(Keys.C)) _appearanceIndex = (_appearanceIndex + 1) % AppearanceTints.Length;
-        if (_input.KeyPressed(Keys.B)) { _phase = GamePhase.Binding; return; }
+        if (_input.KeyPressed(Keys.R) || _input.Pressed(InputAction.Rope))
+            _menuConfig.Seed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (_input.KeyPressed(Keys.C) || _input.Pressed(InputAction.Dig))
+            _appearanceIndex = (_appearanceIndex + 1) % AppearanceTints.Length;
+        if (_input.KeyPressed(Keys.B) || _input.Pressed(InputAction.Slide)) { _phase = GamePhase.Binding; return; }
         if (_input.KeyPressed(Keys.Escape)) { Exit(); return; }
         if (_input.KeyPressed(Keys.Enter) || _input.Pressed(InputAction.Jump)) StartRun(CopyConfiguration(_menuConfig));
     }
@@ -421,6 +424,10 @@ public sealed class Game1 : Game
             _burrowerSystem.ApplyExplosion(explosion);
             _telemetry?.RecordEvent("bomb-explosion", explosion);
         };
+        _bombSystem.Placed += bomb => _telemetry?.RecordEvent("bomb-use",
+            new { bomb.Position, bomb.Velocity, bomb.Fuse }, false);
+        _ropeSystem.Placed += rope => _telemetry?.RecordEvent("rope-use",
+            new { rope.X, rope.Top, rope.Bottom });
         _player.StatusEvent += status => _telemetry?.RecordEvent(status.StartsWith("death", StringComparison.Ordinal)
             ? "death" : status.StartsWith("fall", StringComparison.Ordinal) ? "large-fall" : "damage", new { status, _player.Health });
         _digTool.Impact += change => _telemetry?.RecordEvent("tool-impact", change, change.Destroyed);
