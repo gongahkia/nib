@@ -15,10 +15,10 @@ public sealed class AtmosphereRenderer
         var top = (int)cameraPosition.Y - GameConstants.VirtualHeight / 2;
         var drift = (int)(frame / 12 % 8);
         for (var y = top + 8; y < top + GameConstants.VirtualHeight; y += 12)
-        for (var x = left + 8; x < left + GameConstants.VirtualWidth; x += 12)
-        {
-            if (((x / 12 + y / 12 + drift) & 3) != 0) continue;
-            batch.Draw(_pixel, new Rectangle(x, y, 1, 1), new Color(143, 202, 196, 27));
-        }
+            for (var x = left + 8; x < left + GameConstants.VirtualWidth; x += 12)
+            {
+                if (((x / 12 + y / 12 + drift) & 3) != 0) continue;
+                batch.Draw(_pixel, new Rectangle(x, y, 1, 1), new Color(143, 202, 196, 27));
+            }
     }
 }

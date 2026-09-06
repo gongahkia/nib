@@ -18,12 +18,14 @@ internal static class BadlandsBuilder
         var random = new DeterministicRandom(configuration.Seed ^ ((long)variant * 0x51f15e5dL));
         var route = BuildMacroRoute(parameters, random);
         var protectedTiles = new HashSet<Point>();
+        ProtectRouteClearance(route, protectedTiles);
 
         BuildFoundation(world, configuration.Seed);
         for (var i = 0; i < route.Count; i++)
             BuildRouteFormation(world, configuration, variant, random, route, protectedTiles, i);
         BuildGeologicalForms(world, configuration, variant, random, protectedTiles);
         ApplyErosion(world, configuration, variant, protectedTiles);
+        ClearRouteClearance(world, route);
         var history = WorldHistoryGenerator.Generate(configuration.Seed);
         var features = PlaceSurfaceFeatures(world, configuration, variant, random, route, history.Cultures.Count);
         var weather = BuildWeather(parameters, configuration.Seed);
@@ -69,7 +71,7 @@ internal static class BadlandsBuilder
     private static void BuildFoundation(TileWorld world, long seed)
     {
         for (var y = world.Height - 7; y < world.Height; y++)
-        for (var x = 0; x < world.Width; x++) SetGeologicalTile(world, seed, x, y, y - (world.Height - 7));
+            for (var x = 0; x < world.Width; x++) SetGeologicalTile(world, seed, x, y, y - (world.Height - 7));
     }
 
     private static void BuildRouteFormation(TileWorld world, WorldGenerationConfig config, GeneratorVariant variant,
@@ -78,8 +80,10 @@ internal static class BadlandsBuilder
         var anchor = route[index];
         var altitude = 1f - anchor.Y / (float)world.Height;
         var halfWidth = altitude < 0.34f ? random.Range(5, 8) : altitude < 0.67f ? random.Range(4, 7) : random.Range(3, 6);
-        var depth = variant == GeneratorVariant.Cellular ? random.Range(3, 7) : random.Range(5, 11);
-        var attachToSide = variant == GeneratorVariant.Heightmap || (variant == GeneratorVariant.Layered && index % 3 != 1);
+        var depth = variant == GeneratorVariant.Cellular ? random.Range(2, 5) : random.Range(2, 6);
+        var attachToSide = variant == GeneratorVariant.Heightmap
+            ? random.Chance(0.72f)
+            : variant == GeneratorVariant.Layered && random.Chance(0.48f);
         var attachLeft = ((index / 3) & 1) == 0;
         var left = anchor.X - halfWidth;
         var right = anchor.X + halfWidth;
@@ -94,7 +98,10 @@ internal static class BadlandsBuilder
             var edgeDistance = Math.Min(x - left, right - x);
             var localDepth = depth + (edgeDistance > 3 ? random.Range(0, 3) : 0);
             for (var y = anchor.Y; y < Math.Min(world.Height, anchor.Y + localDepth); y++)
+            {
+                if (y != anchor.Y && protectedTiles.Contains(new Point(x, y))) continue;
                 SetGeologicalTile(world, config.Seed, x, y, y - anchor.Y);
+            }
         }
 
         for (var x = anchor.X - 3; x <= anchor.X + 3; x++)
@@ -109,15 +116,15 @@ internal static class BadlandsBuilder
             var branchX = Math.Clamp(anchor.X + branchDirection * random.Range(9, 14), 5, world.Width - 6);
             var branchY = Math.Min(world.Height - 8, anchor.Y + random.Range(1, 4));
             for (var x = branchX - 3; x <= branchX + 3; x++)
-            for (var y = branchY; y < branchY + random.Range(2, 5); y++)
-                SetGeologicalTile(world, config.Seed, x, y, y - branchY);
+                for (var y = branchY; y < branchY + random.Range(2, 5); y++)
+                    SetGeologicalTile(world, config.Seed, x, y, y - branchY);
         }
     }
 
     private static void BuildGeologicalForms(TileWorld world, WorldGenerationConfig config, GeneratorVariant variant,
         DeterministicRandom random, HashSet<Point> protectedTiles)
     {
-        var count = variant == GeneratorVariant.Cellular ? 46 : variant == GeneratorVariant.Layered ? 32 : 18;
+        var count = variant == GeneratorVariant.Cellular ? 34 : variant == GeneratorVariant.Layered ? 22 : 12;
         for (var i = 0; i < count; i++)
         {
             var cx = random.Range(3, world.Width - 3);
@@ -125,14 +132,14 @@ internal static class BadlandsBuilder
             var radiusX = random.Range(2, variant == GeneratorVariant.Cellular ? 8 : 6);
             var radiusY = random.Range(2, 8);
             for (var y = cy - radiusY; y <= cy + radiusY; y++)
-            for (var x = cx - radiusX; x <= cx + radiusX; x++)
-            {
-                var nx = (x - cx) / (float)radiusX;
-                var ny = (y - cy) / (float)radiusY;
-                var irregularity = DeterministicRandom.Hash01(config.Seed, x, y, 11) * 0.34f;
-                if (nx * nx + ny * ny > 0.72f + irregularity || protectedTiles.Contains(new Point(x, y))) continue;
-                SetGeologicalTile(world, config.Seed, x, y, Math.Abs(y - cy));
-            }
+                for (var x = cx - radiusX; x <= cx + radiusX; x++)
+                {
+                    var nx = (x - cx) / (float)radiusX;
+                    var ny = (y - cy) / (float)radiusY;
+                    var irregularity = DeterministicRandom.Hash01(config.Seed, x, y, 11) * 0.34f;
+                    if (nx * nx + ny * ny > 0.72f + irregularity || protectedTiles.Contains(new Point(x, y))) continue;
+                    SetGeologicalTile(world, config.Seed, x, y, Math.Abs(y - cy));
+                }
         }
 
         var archCount = variant == GeneratorVariant.Layered ? 7 : 3;
@@ -143,27 +150,46 @@ internal static class BadlandsBuilder
             var width = random.Range(6, 12);
             var height = random.Range(4, 9);
             for (var column = 0; column < 2; column++)
-            for (var yy = y; yy < y + height; yy++)
-            {
-                SetGeologicalTile(world, config.Seed, x + column, yy, column);
-                SetGeologicalTile(world, config.Seed, x + width - column, yy, column);
-            }
+                for (var yy = y; yy < y + height; yy++)
+                {
+                    SetGeologicalTile(world, config.Seed, x + column, yy, column);
+                    SetGeologicalTile(world, config.Seed, x + width - column, yy, column);
+                }
             for (var xx = x; xx <= x + width; xx++) SetGeologicalTile(world, config.Seed, xx, y, 0);
         }
+    }
+
+    private static void ProtectRouteClearance(List<Point> route, HashSet<Point> protectedTiles)
+    {
+        foreach (var anchor in route)
+            for (var x = anchor.X - 3; x <= anchor.X + 3; x++)
+                for (var y = anchor.Y - 3; y <= anchor.Y + 1; y++) protectedTiles.Add(new Point(x, y));
+    }
+
+    private static void ClearRouteClearance(TileWorld world, List<Point> route)
+    {
+        // route clearance is a generation constraint, applied before validation; it is not a rejected-world repair
+        var supports = new HashSet<Point>();
+        foreach (var anchor in route)
+            for (var x = anchor.X - 3; x <= anchor.X + 3; x++) supports.Add(new Point(x, anchor.Y));
+        foreach (var anchor in route)
+            for (var x = anchor.X - 2; x <= anchor.X + 2; x++)
+                for (var y = anchor.Y - 3; y < anchor.Y; y++)
+                    if (!supports.Contains(new Point(x, y))) world.SetTile(x, y, MaterialId.Air);
     }
 
     private static void ApplyErosion(TileWorld world, WorldGenerationConfig config, GeneratorVariant variant, HashSet<Point> protectedTiles)
     {
         var erosion = config.Parameters.Erosion * (variant == GeneratorVariant.Cellular ? 1.35f : variant == GeneratorVariant.Heightmap ? 0.6f : 1f);
         for (var y = 2; y < world.Height - 5; y++)
-        for (var x = 2; x < world.Width - 2; x++)
-        {
-            if (!world.GetTile(x, y).Solid || protectedTiles.Contains(new Point(x, y))) continue;
-            var exposed = !world.GetTile(x - 1, y).Solid || !world.GetTile(x + 1, y).Solid || !world.GetTile(x, y - 1).Solid;
-            if (!exposed) continue;
-            var noise = DeterministicRandom.Hash01(config.Seed, x / 2, y / 2, 29);
-            if (noise < erosion * 0.11f) world.SetTile(x, y, MaterialId.Air);
-        }
+            for (var x = 2; x < world.Width - 2; x++)
+            {
+                if (!world.GetTile(x, y).Solid || protectedTiles.Contains(new Point(x, y))) continue;
+                var exposed = !world.GetTile(x - 1, y).Solid || !world.GetTile(x + 1, y).Solid || !world.GetTile(x, y - 1).Solid;
+                if (!exposed) continue;
+                var noise = DeterministicRandom.Hash01(config.Seed, x / 2, y / 2, 29);
+                if (noise < erosion * 0.11f) world.SetTile(x, y, MaterialId.Air);
+            }
     }
 
     private static List<WorldFeature> PlaceSurfaceFeatures(TileWorld world, WorldGenerationConfig config,

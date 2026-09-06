@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -24,7 +25,7 @@ public sealed class InputManager
     public Point MousePosition => _mouse.Position;
     public bool GamePadConnected => _pad.IsConnected;
 
-    public void Update(Vector2 playerScreenPosition)
+    public void Update(Vector2 playerScreenPosition, Vector2 displayScale)
     {
         _previousKeyboard = _keyboard;
         _previousPad = _pad;
@@ -56,7 +57,8 @@ public sealed class InputManager
         if (Move.LengthSquared() > 1f) Move.Normalize();
 
         var rightStick = new Vector2(_pad.ThumbSticks.Right.X, -_pad.ThumbSticks.Right.Y);
-        var mouseAim = _mouse.Position.ToVector2() * 0.5f - playerScreenPosition;
+        var mouseAim = new Vector2(_mouse.X / MathF.Max(0.01f, displayScale.X),
+            _mouse.Y / MathF.Max(0.01f, displayScale.Y)) - playerScreenPosition;
         var requestedAim = rightStick.LengthSquared() > 0.16f ? rightStick : mouseAim;
         if (requestedAim.LengthSquared() > 0.01f) Aim = Vector2.Normalize(requestedAim);
     }
@@ -68,6 +70,49 @@ public sealed class InputManager
     public bool KeyPressed(Keys key) => _keyboard.IsKeyDown(key) && !_previousKeyboard.IsKeyDown(key);
     public bool MouseLeftPressed => _mouse.LeftButton == ButtonState.Pressed && _previousMouse.LeftButton == ButtonState.Released;
     public bool MouseRightPressed => _mouse.RightButton == ButtonState.Pressed && _previousMouse.RightButton == ButtonState.Released;
+
+    public bool TryGetPressedKey(out Keys key)
+    {
+        foreach (var candidate in _keyboard.GetPressedKeys())
+        {
+            if (_previousKeyboard.IsKeyUp(candidate)) { key = candidate; return true; }
+        }
+        key = Keys.None;
+        return false;
+    }
+
+    public bool TryGetPressedButton(out Buttons button)
+    {
+        Buttons[] candidates =
+        [
+            Buttons.A, Buttons.B, Buttons.X, Buttons.Y, Buttons.LeftShoulder, Buttons.RightShoulder,
+            Buttons.LeftStick, Buttons.RightStick, Buttons.DPadUp, Buttons.DPadDown, Buttons.DPadLeft,
+            Buttons.DPadRight, Buttons.Start, Buttons.Back
+        ];
+        foreach (var candidate in candidates)
+        {
+            if (_pad.IsButtonDown(candidate) && _previousPad.IsButtonUp(candidate)) { button = candidate; return true; }
+        }
+        button = default;
+        return false;
+    }
+
+    public void SetSyntheticState(Vector2 move, Vector2 aim, params InputAction[] downActions)
+    {
+        var previous = new HashSet<InputAction>(_down);
+        _down.Clear();
+        _pressed.Clear();
+        _released.Clear();
+        foreach (var action in downActions)
+        {
+            _down.Add(action);
+            if (!previous.Contains(action)) _pressed.Add(action);
+        }
+        foreach (var action in previous)
+            if (!_down.Contains(action)) _released.Add(action);
+        Move = move;
+        if (aim.LengthSquared() > 0.01f) Aim = Vector2.Normalize(aim);
+    }
 
     private void SetMouseButton(InputAction action, ButtonState current, ButtonState previous)
     {

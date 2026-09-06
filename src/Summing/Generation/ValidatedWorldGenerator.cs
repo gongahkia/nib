@@ -33,8 +33,11 @@ public static class ValidatedWorldGenerator
         Variant = source.Variant,
         Parameters = new BadlandsParameters
         {
-            Width = source.Parameters.Width, Height = source.Parameters.Height, Erosion = source.Parameters.Erosion,
-            RuinDensity = source.Parameters.RuinDensity, EcologyDensity = source.Parameters.EcologyDensity,
+            Width = source.Parameters.Width,
+            Height = source.Parameters.Height,
+            Erosion = source.Parameters.Erosion,
+            RuinDensity = source.Parameters.RuinDensity,
+            EcologyDensity = source.Parameters.EcologyDensity,
             WindStrength = source.Parameters.WindStrength
         }
     };

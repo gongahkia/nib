@@ -40,18 +40,18 @@ public static class WorldSerializer
         if (snapshot.FormatVersion != 1) throw new InvalidDataException($"unsupported world snapshot version {snapshot.FormatVersion}");
         var world = new TileWorld(snapshot.World.Width, snapshot.World.Height);
         foreach (var chunk in snapshot.World.Chunks)
-        foreach (var tile in chunk.Tiles)
-        {
-            var x = chunk.X * snapshot.World.ChunkSize + tile.LocalX;
-            var y = chunk.Y * snapshot.World.ChunkSize + tile.LocalY;
-            world.SetTile(x, y, new TerrainTile
+            foreach (var tile in chunk.Tiles)
             {
-                Material = tile.Material,
-                Damage = tile.Damage,
-                Flags = tile.Flags,
-                ProvenanceId = tile.ProvenanceId
-            });
-        }
+                var x = chunk.X * snapshot.World.ChunkSize + tile.LocalX;
+                var y = chunk.Y * snapshot.World.ChunkSize + tile.LocalY;
+                world.SetTile(x, y, new TerrainTile
+                {
+                    Material = tile.Material,
+                    Damage = tile.Damage,
+                    Flags = tile.Flags,
+                    ProvenanceId = tile.ProvenanceId
+                });
+            }
         return new GeneratedWorld
         {
             Configuration = snapshot.Generator,
@@ -76,11 +76,11 @@ public static class WorldSerializer
         {
             var tiles = new List<TileSnapshot>();
             for (var localY = 0; localY < GameConstants.ChunkSize; localY++)
-            for (var localX = 0; localX < GameConstants.ChunkSize; localX++)
-            {
-                var tile = chunk.Get(localX, localY);
-                tiles.Add(new TileSnapshot(localX, localY, tile.Material, tile.Damage, tile.Flags, tile.ProvenanceId));
-            }
+                for (var localX = 0; localX < GameConstants.ChunkSize; localX++)
+                {
+                    var tile = chunk.Get(localX, localY);
+                    tiles.Add(new TileSnapshot(localX, localY, tile.Material, tile.Damage, tile.Flags, tile.ProvenanceId));
+                }
             chunks.Add(new ChunkSnapshot(coordinate.X, coordinate.Y, chunk.Revision, tiles));
         }
 
@@ -114,9 +114,12 @@ public static class WorldSerializer
         var playerEntity = new EntitySnapshot("player", "player", player.Position.X, player.Position.Y,
             player.VisualState.ToString(), new()
             {
-                ["velocityX"] = player.Velocity.X.ToString("0.###"), ["velocityY"] = player.Velocity.Y.ToString("0.###"),
-                ["health"] = player.Health.ToString(), ["grounded"] = player.Grounded.ToString(),
-                ["wallStamina"] = player.WallStamina.ToString("0.###"), ["dashCharges"] = player.DashCharges.ToString(),
+                ["velocityX"] = player.Velocity.X.ToString("0.###"),
+                ["velocityY"] = player.Velocity.Y.ToString("0.###"),
+                ["health"] = player.Health.ToString(),
+                ["grounded"] = player.Grounded.ToString(),
+                ["wallStamina"] = player.WallStamina.ToString("0.###"),
+                ["dashCharges"] = player.DashCharges.ToString(),
                 ["grappleAttached"] = player.GrappleAttached.ToString()
             });
 

@@ -32,6 +32,9 @@ public sealed class MovementSandbox : ICollisionWorld
         return false;
     }
 
+    public bool IsClimbable(Vector2 worldPosition) => IsGrappleCompatible(worldPosition);
+    public float FrictionAt(Vector2 worldPosition) => 0.9f;
+
     public bool RaycastGrapple(Vector2 origin, Vector2 direction, float maximumDistance, out Vector2 hit)
     {
         for (var distance = 4f; distance <= maximumDistance; distance += 4f)

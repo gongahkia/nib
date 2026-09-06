@@ -59,6 +59,8 @@ public sealed class PlayerController
     public bool Grounded { get; private set; }
     public bool TouchingLeftWall { get; private set; }
     public bool TouchingRightWall { get; private set; }
+    public bool LeftWallClimbable { get; private set; }
+    public bool RightWallClimbable { get; private set; }
     public int Facing { get; private set; }
     public int DashCharges { get; private set; }
     public int MaximumDashCharges { get; set; } = 1;
@@ -161,7 +163,8 @@ public sealed class PlayerController
         {
             var target = shortBody ? moveX * 72f : moveX * RunSpeed;
             var acceleration = Grounded ? GroundAcceleration : AirAcceleration;
-            if (MathF.Abs(moveX) < 0.12f && Grounded) acceleration = GroundFriction;
+            if (MathF.Abs(moveX) < 0.12f && Grounded)
+                acceleration = GroundFriction * Math.Clamp(world.FrictionAt(Position + new Vector2(0f, 2f)), 0.45f, 1.1f);
             Velocity = new Vector2(Approach(Velocity.X, target, acceleration * dt), Velocity.Y);
         }
 
@@ -182,9 +185,9 @@ public sealed class PlayerController
         ResolveState(moveX, shortBody);
     }
 
-    public void Draw(SpriteBatch batch, Texture2D pixel, SpriteLibrary sprites, long frame)
+    public void Draw(SpriteBatch batch, Texture2D pixel, SpriteLibrary sprites, long frame, Color tint)
     {
-        sprites.DrawPlayer(batch, VisualState, Position, Facing, frame);
+        sprites.DrawPlayer(batch, VisualState, Position, Facing, frame, tint);
         if (GrappleAttached)
         {
             DrawLine(batch, pixel, Bounds.Center, GrappleAnchor, new Color(184, 166, 128), 2f);
@@ -268,7 +271,7 @@ public sealed class PlayerController
 
     private void UpdateWallInteraction(InputManager input, float dt)
     {
-        var wall = TouchingLeftWall ? -1 : TouchingRightWall ? 1 : 0;
+        var wall = TouchingLeftWall && LeftWallClimbable ? -1 : TouchingRightWall && RightWallClimbable ? 1 : 0;
         var wantsWall = wall != 0 && !Grounded && (input.Down(InputAction.Grab) || Math.Sign(input.Move.X) == wall);
         if (wantsWall && WallStamina > 0f && Velocity.Y >= -60f)
         {
@@ -379,6 +382,8 @@ public sealed class PlayerController
         Grounded = world.OverlapsSolid(body.Offset(0f, 1f));
         TouchingLeftWall = world.OverlapsSolid(body.Offset(-1f, 0f));
         TouchingRightWall = world.OverlapsSolid(body.Offset(1f, 0f));
+        LeftWallClimbable = TouchingLeftWall && world.IsClimbable(new Vector2(body.Left - 1f, body.Center.Y));
+        RightWallClimbable = TouchingRightWall && world.IsClimbable(new Vector2(body.Right + 1f, body.Center.Y));
     }
 
     private void ResolveState(float moveX, bool shortBody)
