@@ -3,7 +3,7 @@ local Hash = require("game.hash")
 local Json = require("game.json")
 local Session = require("game.session")
 local Replay = {}; Replay.__index = Replay
-local inputKeys = { "moveX", "moveY", "aimDirX", "aimDirY", "aimX", "aimY", "mouseAim", "jump", "jumpPressed", "dash", "dashPressed", "slide", "slidePressed", "dive", "divePressed", "grapple", "grapplePressed", "tool", "toolPressed", "pull", "pullPressed" }
+local inputKeys = { "abort", "moveX", "moveY", "aimDirX", "aimDirY", "aimX", "aimY", "mouseAim", "jump", "jumpPressed", "dash", "dashPressed", "slide", "slidePressed", "dive", "divePressed", "grapple", "grapplePressed", "tool", "toolPressed", "pull", "pullPressed" }
 local function inputCopy(input) local out = {}; for _, key in ipairs(inputKeys) do if input[key] ~= nil and input[key] ~= false then out[key] = input[key] end end; return out end
 local function statePayload(session)
   local p, h, terrain, enemies, objects, fingers = session.player, session.hand, {}, {}, {}, {}

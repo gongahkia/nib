@@ -37,6 +37,12 @@ H.test("replay verification detects equality and divergence", function()
   replay.frames[math.min(10, #replay.frames)].hash = "00000000"; local divergent = Replay.verify(replay); H.ok(not divergent.valid); H.eq(divergent.reason, "state divergence")
 end)
 
+H.test("abandoned runs replay as an explicit deterministic input", function()
+  local session, replay = Session.new(66), Replay.new(66, {}, "abandon-fixture")
+  local input = { abort = true }; session:update(input); replay:capture(session, input)
+  local verified = Replay.verify(replay.data); H.ok(verified.valid); H.eq(verified.status, "abandoned")
+end)
+
 H.test("trajectory overlay exposes SVG and structured events", function()
   local replay = recordedRun(16, 35); local data, svg = Overlay.build(assert(Generator.generate(16)), replay)
   H.eq(data.kind, "trajectory-overlay"); H.eq(#data.trajectory, #replay.frames); H.ok(svg:match("<svg")); H.ok(svg:match("data%-solid"))

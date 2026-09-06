@@ -4,7 +4,7 @@ run:
 	love .
 
 smoke:
-	@sh -c 'timeout 3s love .; code=$$?; test $$code -eq 0 -o $$code -eq 124'
+	@timeout 10s love . --automated-smoke
 
 test:
 	luajit tests/run.lua
