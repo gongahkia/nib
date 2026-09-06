@@ -23,7 +23,7 @@ public sealed class MovementSandbox : ICollisionWorld
         return false;
     }
 
-    public bool IsGrappleCompatible(Vector2 worldPosition)
+    public bool IsClimbable(Vector2 worldPosition)
     {
         foreach (var solid in _solids)
         {
@@ -32,21 +32,7 @@ public sealed class MovementSandbox : ICollisionWorld
         return false;
     }
 
-    public bool IsClimbable(Vector2 worldPosition) => IsGrappleCompatible(worldPosition);
     public float FrictionAt(Vector2 worldPosition) => 0.9f;
-
-    public bool RaycastGrapple(Vector2 origin, Vector2 direction, float maximumDistance, out Vector2 hit)
-    {
-        for (var distance = 4f; distance <= maximumDistance; distance += 4f)
-        {
-            var sample = origin + direction * distance;
-            if (!IsGrappleCompatible(sample)) continue;
-            hit = sample;
-            return true;
-        }
-        hit = default;
-        return false;
-    }
 
     public void Draw(SpriteBatch batch, Texture2D pixel)
     {

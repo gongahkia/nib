@@ -33,13 +33,12 @@ public sealed class SpriteLibrary : IDisposable
         [MovementState.WallCling] = (true, 5),
         [MovementState.WallJump] = (true, 6),
         [MovementState.Dash] = (true, 7),
-        [MovementState.Grapple] = (true, 8),
-        [MovementState.RopeInteraction] = (true, 9),
-        [MovementState.Digging] = (true, 10),
-        [MovementState.BombUse] = (true, 12),
-        [MovementState.Hurt] = (true, 13),
-        [MovementState.Stunned] = (true, 13),
-        [MovementState.Death] = (true, 14)
+        [MovementState.RopeInteraction] = (true, 8),
+        [MovementState.Digging] = (true, 9),
+        [MovementState.BombUse] = (true, 11),
+        [MovementState.Hurt] = (true, 12),
+        [MovementState.Stunned] = (true, 12),
+        [MovementState.Death] = (true, 13)
     };
 
     public SpriteLibrary(GraphicsDevice graphicsDevice)
@@ -97,8 +96,8 @@ public sealed class SpriteLibrary : IDisposable
         if (state == MovementState.Idle) sourceFrame += (int)(frame / 38 % 2);
         if (state == MovementState.Run) sourceFrame += (int)(frame / 5 % 4);
         if (state == MovementState.Digging) sourceFrame += (int)(frame / 5 % 2);
-        var source = new Rectangle(sourceFrame * 24, 0, 24, 48);
-        var destination = new Rectangle((int)MathF.Round(feet.X - 12f), (int)MathF.Round(feet.Y - 48f), 24, 48);
+        var source = new Rectangle(sourceFrame * 24, 0, 24, 24);
+        var destination = new Rectangle((int)MathF.Round(feet.X - 12f), (int)MathF.Round(feet.Y - 24f), 24, 24);
         var effects = facing < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
         batch.Draw(texture, destination, source, tint, 0f, Vector2.Zero, effects, 0f);
     }

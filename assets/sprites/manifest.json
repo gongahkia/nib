@@ -22,7 +22,7 @@
       "source": "source/player_locomotion-white.png",
       "cell": [
         24,
-        48
+        24
       ],
       "frames": [
         "idle_0",
@@ -43,7 +43,7 @@
       "source": "source/player_traversal-white.png",
       "cell": [
         24,
-        48
+        24
       ],
       "frames": [
         "crouch",
@@ -54,7 +54,6 @@
         "wall_cling",
         "wall_jump",
         "dash",
-        "grapple",
         "rope",
         "dig_0",
         "dig_1",
@@ -119,8 +118,7 @@
       "frames": [
         "pick",
         "bomb",
-        "rope",
-        "grapple"
+        "rope"
       ]
     },
     "relics": {

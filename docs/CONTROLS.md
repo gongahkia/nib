@@ -9,13 +9,12 @@ On the title screen, D-pad/left stick selects difficulty and generator, A starts
 | Move / crouch / aim | WASD or arrows | left stick / D-pad; right stick aims |
 | Jump / mantle | Space | A |
 | Dash | Left Shift | X |
-| Wall cling / grapple modifier | Left Ctrl | left shoulder |
-| Active grapple | right mouse | right shoulder |
+| Wall cling / climb | Left Ctrl | left shoulder |
 | Dig | left mouse or F | Y |
 | Slide | C | B |
 | Place rope | R | left-stick click |
 | Bomb | Q | right-stick click |
-| Look | mouse / movement direction | right stick |
+| Aim dash direction | mouse / movement direction | right stick |
 | Debug/editor | F1 | Back |
 | Pause | Escape | Start |
 

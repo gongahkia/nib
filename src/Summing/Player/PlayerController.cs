@@ -11,8 +11,8 @@ namespace Summing.Player;
 public sealed class PlayerController
 {
     private const float StandingWidth = 18f;
-    private const float StandingHeight = 42f;
-    private const float CrouchingHeight = 21f;
+    private const float StandingHeight = 22f;
+    private const float CrouchingHeight = 14f;
     private const float RunSpeed = 150f;
     private const float GroundAcceleration = 1300f;
     private const float AirAcceleration = 760f;
@@ -22,8 +22,6 @@ public sealed class PlayerController
     private const float JumpSpeed = 330f;
     private const float WallJumpX = 230f;
     private const float DashSpeed = 390f;
-    private const float GrappleSpeed = 275f;
-    private const float GrappleRange = 250f;
     private const float CoyoteDuration = 0.10f;
     private const float JumpBufferDuration = 0.12f;
     private const float DashDuration = 0.13f;
@@ -66,8 +64,6 @@ public sealed class PlayerController
     public int DashCharges { get; private set; }
     public int MaximumDashCharges { get; set; } = 1;
     public float WallStamina { get; private set; }
-    public bool GrappleAttached { get; private set; }
-    public Vector2 GrappleAnchor { get; private set; }
     public bool UsedCoyoteThisFrame { get; private set; }
     public bool UsedJumpBufferThisFrame { get; private set; }
     public Aabb Bounds => BodyAt(Position, _shortBody);
@@ -82,7 +78,6 @@ public sealed class PlayerController
         Position = spawn;
         Velocity = Vector2.Zero;
         Grounded = false;
-        GrappleAttached = false;
         DashCharges = MaximumDashCharges;
         WallStamina = WallStaminaMaximum;
         State = MovementState.Falling;
@@ -130,7 +125,6 @@ public sealed class PlayerController
             return;
         }
         if (input.Pressed(InputAction.Dash) && DashCharges > 0) BeginDash(input);
-        UpdateGrapple(input, world);
 
         if (_dashTimer > 0f)
         {
@@ -171,10 +165,7 @@ public sealed class PlayerController
 
         UpdateWallInteraction(input, dt);
         ConsumeBufferedJump(input);
-        if (!GrappleAttached)
-            Velocity = new Vector2(Velocity.X, MathF.Min(MaximumFallSpeed, Velocity.Y + Gravity * dt));
-        else
-            PullTowardGrapple(dt);
+        Velocity = new Vector2(Velocity.X, MathF.Min(MaximumFallSpeed, Velocity.Y + Gravity * dt));
 
         if (!input.Down(InputAction.Jump) && _jumpHeldLastFrame && Velocity.Y < -115f)
             Velocity = new Vector2(Velocity.X, Velocity.Y * 0.48f);
@@ -186,15 +177,8 @@ public sealed class PlayerController
         ResolveState(moveX, shortBody);
     }
 
-    public void Draw(SpriteBatch batch, Texture2D pixel, SpriteLibrary sprites, long frame, Color tint)
-    {
+    public void Draw(SpriteBatch batch, SpriteLibrary sprites, long frame, Color tint) =>
         sprites.DrawPlayer(batch, VisualState, Position, Facing, frame, tint);
-        if (GrappleAttached)
-        {
-            DrawLine(batch, pixel, Bounds.Center, GrappleAnchor, new Color(184, 166, 128), 2f);
-            batch.Draw(pixel, new Rectangle((int)GrappleAnchor.X - 2, (int)GrappleAnchor.Y - 2, 5, 5), Color.White);
-        }
-    }
 
     public void ShowActionState(MovementState state, float duration)
     {
@@ -207,7 +191,6 @@ public sealed class PlayerController
         if (!Alive || damage <= 0) return;
         Health = Math.Max(0, Health - damage);
         Velocity = knockback;
-        GrappleAttached = false;
         _stunTimer = Health > 0 ? 0.48f : 0f;
         SetState(Health > 0 ? MovementState.Hurt : MovementState.Death);
         ShowActionState(State, Health > 0 ? 0.3f : 99f);
@@ -227,7 +210,6 @@ public sealed class PlayerController
     {
         Position = position;
         Velocity = Vector2.Zero;
-        GrappleAttached = false;
     }
 
     private static Aabb BodyAt(Vector2 footPosition, bool shortBody)
@@ -244,30 +226,7 @@ public sealed class PlayerController
         DashCharges--;
         _dashTimer = DashDuration;
         Velocity = direction * DashSpeed;
-        GrappleAttached = false;
         SetState(MovementState.Dash);
-    }
-
-    private void UpdateGrapple(InputManager input, ICollisionWorld world)
-    {
-        if (input.Pressed(InputAction.Grapple) && world.RaycastGrapple(Bounds.Center, input.Aim, GrappleRange, out var anchor))
-        {
-            GrappleAttached = true;
-            GrappleAnchor = anchor;
-            SetState(MovementState.Grapple);
-        }
-        if (input.Released(InputAction.Grapple)) GrappleAttached = false;
-    }
-
-    private void PullTowardGrapple(float dt)
-    {
-        var toAnchor = GrappleAnchor - Bounds.Center;
-        if (toAnchor.LengthSquared() < 12f * 12f) { Velocity *= 0.85f; return; }
-        var direction = Vector2.Normalize(toAnchor);
-        var tangential = Velocity - direction * Vector2.Dot(Velocity, direction);
-        Velocity = tangential * 0.94f + direction * GrappleSpeed;
-        Velocity += new Vector2(0f, Gravity * 0.18f * dt);
-        SetState(MovementState.Grapple);
     }
 
     private void UpdateWallInteraction(InputManager input, float dt)
@@ -291,7 +250,6 @@ public sealed class PlayerController
             Velocity = new Vector2(-wall * WallJumpX, -JumpSpeed * 0.92f);
             Facing = -wall;
             _jumpBufferTimer = 0f;
-            GrappleAttached = false;
             SetState(MovementState.WallJump);
         }
     }
@@ -304,7 +262,6 @@ public sealed class PlayerController
         Velocity = new Vector2(Velocity.X, -JumpSpeed);
         _jumpBufferTimer = 0f;
         _coyoteTimer = 0f;
-        GrappleAttached = false;
         SetState(MovementState.Takeoff);
     }
 
@@ -313,8 +270,8 @@ public sealed class PlayerController
         if (Grounded || Velocity.Y < 0f || State == MovementState.Dash) return;
         var direction = MathF.Abs(input.Move.X) > 0.2f ? Math.Sign(input.Move.X) : Facing;
         var body = Bounds;
-        var chestProbe = new Aabb(direction > 0 ? body.Right : body.Left - 2f, body.Top + 15f, 2f, 16f);
-        var headProbe = new Aabb(chestProbe.X, body.Top - 5f, 2f, 12f);
+        var chestProbe = new Aabb(direction > 0 ? body.Right : body.Left - 2f, body.Top + 6f, 2f, 13f);
+        var headProbe = new Aabb(chestProbe.X, body.Top - 7f, 2f, 10f);
         var clearance = BodyAt(new Vector2(Position.X, Position.Y - 18f), false);
         if (!world.OverlapsSolid(chestProbe) || world.OverlapsSolid(headProbe) || world.OverlapsSolid(clearance)) return;
         _wallDirection = direction;
@@ -394,7 +351,7 @@ public sealed class PlayerController
 
     private void ResolveState(float moveX, bool shortBody)
     {
-        if (_dashTimer > 0f || GrappleAttached || State is MovementState.LedgeHang or MovementState.Mantle) return;
+        if (_dashTimer > 0f || State is MovementState.LedgeHang or MovementState.Mantle) return;
         if (State == MovementState.WallCling && !Grounded && (TouchingLeftWall || TouchingRightWall)) return;
         if (Grounded)
         {
@@ -417,10 +374,4 @@ public sealed class PlayerController
     private static float Approach(float value, float target, float amount) =>
         value < target ? MathF.Min(value + amount, target) : MathF.Max(value - amount, target);
 
-    private static void DrawLine(SpriteBatch batch, Texture2D pixel, Vector2 start, Vector2 end, Color color, float width)
-    {
-        var delta = end - start;
-        batch.Draw(pixel, start, null, color, MathF.Atan2(delta.Y, delta.X), Vector2.Zero,
-            new Vector2(delta.Length(), width), SpriteEffects.None, 0f);
-    }
 }

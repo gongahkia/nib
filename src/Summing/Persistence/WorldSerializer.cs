@@ -38,7 +38,8 @@ public static class WorldSerializer
     {
         var snapshot = JsonSerializer.Deserialize<WorldSnapshot>(File.ReadAllText(path), Options) ??
             throw new InvalidDataException("world snapshot is empty");
-        if (snapshot.FormatVersion != 1) throw new InvalidDataException($"unsupported world snapshot version {snapshot.FormatVersion}");
+        if (snapshot.FormatVersion is not (1 or 2))
+            throw new InvalidDataException($"unsupported world snapshot version {snapshot.FormatVersion}");
         var world = new TileWorld(snapshot.World.Width, snapshot.World.Height);
         foreach (var chunk in snapshot.World.Chunks)
             foreach (var tile in chunk.Tiles)
@@ -120,15 +121,14 @@ public static class WorldSerializer
                 ["health"] = player.Health.ToString(),
                 ["grounded"] = player.Grounded.ToString(),
                 ["wallStamina"] = F(player.WallStamina),
-                ["dashCharges"] = player.DashCharges.ToString(),
-                ["grappleAttached"] = player.GrappleAttached.ToString()
+                ["dashCharges"] = player.DashCharges.ToString()
             });
 
         var materialSnapshots = new List<MaterialSnapshot>();
         foreach (var material in MaterialCatalog.All)
             materialSnapshots.Add(new MaterialSnapshot(material.Id, material.Name, material.Solid, material.Hardness,
                 material.Friction, material.Brittleness, material.Heat, material.Conductivity, material.Climbable,
-                material.GrappleCompatible, material.Structural));
+                material.Structural));
         return new WorldSnapshot
         {
             SavedAtUtc = DateTimeOffset.UtcNow,

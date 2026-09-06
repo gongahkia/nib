@@ -12,7 +12,6 @@ public sealed record MaterialDefinition(
     float Heat,
     float Conductivity,
     bool Climbable,
-    bool GrappleCompatible,
     bool Structural,
     Color BaseColor,
     Color AccentColor);

@@ -56,8 +56,8 @@ internal static class BadlandsBuilder
         {
             route.Add(new Point(x, y));
             var altitude = 1f - y / (float)parameters.Height;
-            var verticalStep = altitude < 0.34f ? random.Range(3, 5) : altitude < 0.67f ? random.Range(3, 6) : random.Range(4, 6);
-            var horizontalRange = altitude < 0.34f ? 5 : altitude < 0.67f ? 7 : 8;
+            var verticalStep = altitude < 0.34f ? random.Range(2, 4) : random.Range(3, 5);
+            var horizontalRange = altitude < 0.34f ? 4 : altitude < 0.67f ? 5 : 6;
             if (random.Chance(0.22f)) direction *= -1;
             x += direction * random.Range(2, horizontalRange + 1);
             if (x < 11) { x = 11 + random.Range(0, 5); direction = 1; }
