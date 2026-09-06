@@ -6,6 +6,7 @@ using Summing.Core;
 using Summing.Entities;
 using Summing.Gameplay;
 using Summing.Generation;
+using Summing.History;
 using Summing.Input;
 using Summing.Player;
 using Summing.Rendering;
@@ -34,6 +35,8 @@ public sealed class Game1 : Game
     private PlayerInventory _inventory = null!;
     private readonly Difficulty _difficulty = Difficulty.Easy;
     private long _frame;
+    private ArchiveStore _archive = null!;
+    private RelicSystem _relicSystem = null!;
 
     public Game1()
     {
@@ -56,6 +59,8 @@ public sealed class Game1 : Game
         _input = new InputManager(InputBindings.LoadOrCreate("saves/bindings.json"));
         _generated = WorldGeneratorRegistry.Generate(new WorldGenerationConfig());
         _world = _generated.Terrain;
+        _archive = new ArchiveStore("archive/archive.json");
+        _relicSystem = new RelicSystem(_generated, _archive);
         var tuning = DifficultyTuning.For(_difficulty);
         _player = new PlayerController(_generated.Spawn, tuning.StartingHealth);
         _inventory = new PlayerInventory(tuning);
@@ -88,6 +93,7 @@ public sealed class Game1 : Game
         _ropeSystem.Update(_input, _player, _inventory, _world, GameConstants.FixedDelta);
         _digTool.Update(_input, _player, _world, GameConstants.FixedDelta);
         _bombSystem.Update(_input, _player, _inventory, _world, _frame, GameConstants.FixedDelta);
+        _relicSystem.Update(_player, GameConstants.FixedDelta);
         if (_player.Position.Y > _world.PixelHeight + 80f)
             _player.Reset(new Vector2(7f * GameConstants.TileSize, 15f * GameConstants.TileSize));
         var cameraTarget = new Vector2(
@@ -105,7 +111,9 @@ public sealed class Game1 : Game
         DrawBackdrop();
         _atmosphere.DrawWorldDither(_spriteBatch, _camera.Position, _frame);
         _tileRenderer.Draw(_spriteBatch, _world, _camera.Position);
-        foreach (var feature in _generated.Features) _sprites.DrawFeature(_spriteBatch, feature);
+        foreach (var feature in _generated.Features)
+            if (feature.Kind != WorldFeatureKind.RelicCandidate) _sprites.DrawFeature(_spriteBatch, feature);
+        _relicSystem.Draw(_spriteBatch, _sprites);
         _ropeSystem.Draw(_spriteBatch, _pixel);
         _bombSystem.Draw(_spriteBatch, _pixel);
         _player.Draw(_spriteBatch, _pixel, _sprites, _frame);
@@ -156,6 +164,12 @@ public sealed class Game1 : Game
             new Vector2(12, 48), new Color(205, 111, 92));
         _font.Draw(_spriteBatch, $"SEED {_generated.Configuration.Seed}  {Format(_generated.Configuration.Variant.ToString())}",
             new Vector2(350, 12), GamePalette.UiMuted);
+        _font.Draw(_spriteBatch, $"ARCHIVE {_archive.Discoveries.Count}", new Vector2(520, 21), GamePalette.SacredGold);
+        if (_relicSystem.DiscoveryVisible && _relicSystem.LastDiscovery != null)
+        {
+            _spriteBatch.Draw(_pixel, new Rectangle(125, 300, 390, 24), new Color(7, 10, 15, 230));
+            _font.Draw(_spriteBatch, _relicSystem.LastDiscovery, new Vector2(141, 309), GamePalette.SacredGold);
+        }
         _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  RMB GRAPPLE", new Vector2(12, 342), new Color(131, 132, 139));
     }
 
