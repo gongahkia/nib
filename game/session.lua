@@ -9,7 +9,11 @@ Session.__index = Session
 
 function Session.new(seed)
   local level = assert(Generator.generate(seed))
-  return setmetatable({ seed = seed, level = level, world = World.new(level), player = Player.new(level.spawn.x, level.spawn.y), hand = Hand.new(level.hand, seed), score = Scoring.new(), tick = 0, status = "running", result = nil, collected = {}, incidents = {} }, Session)
+  return Session.fromLevel(level)
+end
+
+function Session.fromLevel(level)
+  return setmetatable({ seed = level.seed, level = level, world = World.new(level), player = Player.new(level.spawn.x, level.spawn.y), hand = Hand.new(level.hand, level.seed), score = Scoring.new(), tick = 0, status = "running", result = nil, collected = {}, incidents = {} }, Session)
 end
 
 function Session:update(input)

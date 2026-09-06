@@ -67,7 +67,7 @@ local function moveAxis(self, world, amount, axis)
 end
 
 function Player:update(world, input, dt)
-  self.tick, self.stateTicks, self.contacts, self.rejected = self.tick + 1, self.stateTicks + 1, {}, {}
+  self.tick, self.stateTicks, self.contacts, self.rejected, self.toolEvent = self.tick + 1, self.stateTicks + 1, {}, {}, nil
   self:buffer(input)
   local wasGrounded = self.grounded
   self.grounded = #world:queryRect(self.x - self.w / 2, self.y + 0.1, self.w, 1) > 0

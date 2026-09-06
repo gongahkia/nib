@@ -83,4 +83,10 @@ function Render.drawLife(level, cameraX, cameraY, collected)
   palette.set(7); love.graphics.rectangle("line", level.exit.x - cameraX, level.exit.y - 18 - cameraY, 8, 18)
 end
 
+function Render.drawGenerationDebug(level, world, cameraX, cameraY)
+  for _, solid in ipairs(world.solids) do if not solid.destroyed then palette.set(world.materials[solid.material].destructible and 16 or 10); love.graphics.rectangle("line", solid.x - cameraX, solid.y - cameraY, solid.w, solid.h) end end
+  for _, link in ipairs(level.links) do local a, b = level.nodes[link.from], level.nodes[link.to]; if a and b then palette.set(10, 0.7); love.graphics.line(a.x - cameraX, a.y - cameraY - 2, b.x - cameraX, b.y - cameraY - 2) end end
+  for _, n in ipairs(level.nodes) do palette.set(level.validation.nodeReachable[n.id] and 7 or 16); love.graphics.points(n.x - cameraX, n.y - cameraY - 2) end
+end
+
 return Render
