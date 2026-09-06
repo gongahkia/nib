@@ -119,6 +119,25 @@ public sealed class TileWorld : ICollisionWorld
     public static int WorldToTile(float coordinate) => (int)MathF.Floor(coordinate / GameConstants.TileSize);
     public bool Contains(int x, int y) => x >= 0 && x < Width && y >= 0 && y < Height;
 
+    public ulong Fingerprint()
+    {
+        const ulong offset = 14695981039346656037UL;
+        const ulong prime = 1099511628211UL;
+        var hash = offset;
+        for (var y = 0; y < Height; y++)
+        for (var x = 0; x < Width; x++)
+        {
+            var tile = GetTile(x, y);
+            hash ^= (byte)tile.Material;
+            hash *= prime;
+            hash ^= (byte)tile.Flags;
+            hash *= prime;
+            hash ^= unchecked((ushort)tile.ProvenanceId);
+            hash *= prime;
+        }
+        return hash;
+    }
+
     public static TileWorld CreateMovementTest()
     {
         var world = new TileWorld(52, 22);
