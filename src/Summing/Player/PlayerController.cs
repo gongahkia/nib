@@ -39,13 +39,16 @@ public sealed class PlayerController
     private bool _shortBody;
     private MovementState _actionVisualState;
     private float _actionVisualTimer;
+    private float _stunTimer;
 
-    public PlayerController(Vector2 spawn)
+    public PlayerController(Vector2 spawn, int maximumHealth = 5)
     {
         Position = spawn;
         WallStamina = WallStaminaMaximum;
         DashCharges = 1;
         Facing = 1;
+        MaximumHealth = maximumHealth;
+        Health = maximumHealth;
     }
 
     public Vector2 Position { get; private set; }
@@ -64,6 +67,11 @@ public sealed class PlayerController
     public bool UsedCoyoteThisFrame { get; private set; }
     public bool UsedJumpBufferThisFrame { get; private set; }
     public Aabb Bounds => BodyAt(Position, _shortBody);
+    public int Health { get; private set; }
+    public int MaximumHealth { get; }
+    public bool Alive => Health > 0;
+    public bool Stunned => _stunTimer > 0f;
+    public event Action<string>? StatusEvent;
 
     public void Reset(Vector2 spawn)
     {
@@ -74,6 +82,8 @@ public sealed class PlayerController
         DashCharges = MaximumDashCharges;
         WallStamina = WallStaminaMaximum;
         State = MovementState.Falling;
+        Health = MaximumHealth;
+        _stunTimer = 0f;
     }
 
     public void Update(InputManager input, ICollisionWorld world, float dt)
@@ -81,6 +91,16 @@ public sealed class PlayerController
         UsedCoyoteThisFrame = false;
         UsedJumpBufferThisFrame = false;
         _actionVisualTimer = MathF.Max(0f, _actionVisualTimer - dt);
+        if (!Alive) return;
+        if (_stunTimer > 0f)
+        {
+            _stunTimer = MathF.Max(0f, _stunTimer - dt);
+            Velocity = new Vector2(Velocity.X * 0.985f, MathF.Min(MaximumFallSpeed, Velocity.Y + Gravity * dt));
+            MoveAndCollide(world, Velocity * dt);
+            RefreshContacts(world);
+            SetState(MovementState.Stunned);
+            return;
+        }
         _stateTimer += dt;
         _coyoteTimer = MathF.Max(0f, _coyoteTimer - dt);
         _jumpBufferTimer = MathF.Max(0f, _jumpBufferTimer - dt);
@@ -188,6 +208,34 @@ public sealed class PlayerController
     {
         _actionVisualState = state;
         _actionVisualTimer = MathF.Max(_actionVisualTimer, duration);
+    }
+
+    public void ApplyDamage(int damage, Vector2 knockback, string cause)
+    {
+        if (!Alive || damage <= 0) return;
+        Health = Math.Max(0, Health - damage);
+        Velocity = knockback;
+        GrappleAttached = false;
+        _stunTimer = Health > 0 ? 0.48f : 0f;
+        SetState(Health > 0 ? MovementState.Hurt : MovementState.Death);
+        ShowActionState(State, Health > 0 ? 0.3f : 99f);
+        StatusEvent?.Invoke(Health > 0 ? $"damage:{cause}:{damage}" : $"death:{cause}");
+    }
+
+    public bool TryRopeMove(Vector2 nextPosition, ICollisionWorld world)
+    {
+        if (!Alive || world.OverlapsSolid(BodyAt(nextPosition, _shortBody))) return false;
+        Position = nextPosition;
+        Velocity = Vector2.Zero;
+        ShowActionState(MovementState.RopeInteraction, 0.08f);
+        return true;
+    }
+
+    public void Teleport(Vector2 position)
+    {
+        Position = position;
+        Velocity = Vector2.Zero;
+        GrappleAttached = false;
     }
 
     private static Aabb BodyAt(Vector2 footPosition, bool shortBody)
@@ -309,8 +357,18 @@ public sealed class PlayerController
         if (hitY)
         {
             if (delta.Y > 0f && !wasGrounded) _landingTimer = 0.09f;
+            if (delta.Y > 0f) HandleLanding(Velocity.Y);
             Velocity = new Vector2(Velocity.X, 0f);
         }
+    }
+
+    private void HandleLanding(float fallSpeed)
+    {
+        if (fallSpeed < 335f) return;
+        var damage = fallSpeed >= 395f ? 2 : 1;
+        ApplyDamage(damage, new Vector2(Velocity.X * 0.3f, -105f), "fall");
+        _stunTimer = fallSpeed >= 395f ? 0.9f : 0.55f;
+        StatusEvent?.Invoke($"fall:{(int)fallSpeed}");
     }
 
     private bool MoveAxis(ICollisionWorld world, float amount, bool horizontal)
