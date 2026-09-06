@@ -3,11 +3,12 @@ local PRNG = require("game.prng")
 local Fixed = require("game.fixed_step")
 local Player = require("game.player")
 local World = require("game.world")
-local config = require("game.config")
+local rootConfig = require("game.config")
+local config = rootConfig.player
 
 local function blank() return { moveX = 0, moveY = 0, aimDirX = 1, aimDirY = 0 } end
 local function settle(player, world)
-  for _ = 1, 60 do player:update(world, blank(), config.step) end
+  for _ = 1, 60 do player:update(world, blank(), rootConfig.step) end
 end
 
 H.test("project PRNG is repeatable", function()
@@ -24,28 +25,28 @@ H.test("fixed step ignores frame partition", function()
 end)
 
 H.test("buffered jump fires on landing", function()
-  local world, p = World.playground(), Player.new(20, 98)
+  local world, p = World.playground(), Player.new(20, 100)
   p:update(world, { moveX = 0, jumpPressed = true, aimDirX = 1, aimDirY = 0 }, config.step)
-  settle(p, world)
-  H.ok(p.tick > 0)
+  for _ = 1, 8 do p:update(world, blank(), rootConfig.step) end
+  H.ok(p.vy < 0, "buffered jump should launch after contact")
 end)
 
 H.test("coyote jump is accepted", function()
   local world, p = World.playground(), Player.new(20, 104)
   settle(p, world); p.x, p.coyote, p.grounded = 210, config.coyoteTicks, false
-  p:update(world, { moveX = 1, jumpPressed = true, aimDirX = 1, aimDirY = 0 }, config.step)
+  p:update(world, { moveX = 1, jumpPressed = true, aimDirX = 1, aimDirY = 0 }, rootConfig.step)
   H.eq(p.state, "jump_rise"); H.ok(p.vy < 0)
 end)
 
 H.test("dash resource refreshes on wall contact", function()
-  local world, p = World.playground(), Player.new(121, 80)
-  p.dashes = 0; p:update(world, blank(), config.step)
+  local world, p = World.playground(), Player.new(121.7, 80)
+  p.dashes = 0; p:update(world, blank(), rootConfig.step)
   H.eq(p.dashes, config.dashResources)
 end)
 
 H.test("eight direction grapple selects marked anchor", function()
   local world, p = World.playground(), Player.new(60, 83)
-  p:update(world, { moveX = 0, grapplePressed = true, grapple = true, aimDirX = 0, aimDirY = -1 }, config.step)
+  p:update(world, { moveX = 0, grapplePressed = true, grapple = true, aimDirX = 0, aimDirY = -1 }, rootConfig.step)
   H.ok(p.grapple ~= nil); H.eq(p.state, "grapple_attach")
 end)
 
