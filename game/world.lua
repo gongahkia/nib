@@ -19,6 +19,7 @@ function World.playground()
       { x = 142, y = 99, w = 18, h = 5, material = "elastic" },
       { x = 164, y = 96, w = 26, h = 8, material = "ice" },
       { x = 202, y = 88, w = 10, h = 16, material = "glass" },
+      { x = 218, y = 96, w = 28, h = 8, material = "brick", slope = -8 },
     },
     anchors = { { x = 68, y = 59 }, { x = 113, y = 55 }, { x = 151, y = 43 } },
     rails = { { x1 = 72, y1 = 72, x2 = 112, y2 = 68 } },

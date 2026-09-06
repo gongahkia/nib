@@ -56,9 +56,11 @@ function Render.drawWorld(world, cameraX, cameraY)
   for _, solid in ipairs(world.solids) do
     if not solid.destroyed then
       palette.set(world.materials[solid.material] and world.materials[solid.material].colour or 5)
-      love.graphics.rectangle("fill", math.floor(solid.x - cameraX), math.floor(solid.y - cameraY), solid.w, solid.h)
+      if solid.slope then
+        love.graphics.polygon("fill", solid.x - cameraX, solid.y - cameraY, solid.x + solid.w - cameraX, solid.y + solid.slope - cameraY, solid.x + solid.w - cameraX, solid.y + solid.h - cameraY, solid.x - cameraX, solid.y + solid.h - cameraY)
+      else love.graphics.rectangle("fill", math.floor(solid.x - cameraX), math.floor(solid.y - cameraY), solid.w, solid.h) end
       palette.set(7)
-      love.graphics.line(math.floor(solid.x - cameraX), math.floor(solid.y - cameraY), math.floor(solid.x + solid.w - cameraX), math.floor(solid.y - cameraY))
+      love.graphics.line(math.floor(solid.x - cameraX), math.floor(solid.y - cameraY), math.floor(solid.x + solid.w - cameraX), math.floor(solid.y + (solid.slope or 0) - cameraY))
     end
   end
   for _, anchor in ipairs(world.anchors) do
