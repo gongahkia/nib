@@ -26,6 +26,13 @@ public sealed class PlaytestRecorder : IDisposable
     private readonly JsonSerializerOptions _json = new()
     {
         WriteIndented = true,
+        IncludeFields = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+    private readonly JsonSerializerOptions _jsonLine = new()
+    {
+        WriteIndented = false,
+        IncludeFields = true,
         Converters = { new JsonStringEnumConverter() }
     };
     private long _frame;
@@ -44,7 +51,7 @@ public sealed class PlaytestRecorder : IDisposable
         _frames = new StreamWriter(Path.Combine(DirectoryPath, "frames.csv"));
         _events = new StreamWriter(Path.Combine(DirectoryPath, "events.jsonl"));
         _screenshots = new StreamWriter(Path.Combine(DirectoryPath, "screenshots", "index.csv"));
-        _frames.WriteLine("frame,time_s,input_down,move_x,move_y,aim_x,aim_y,player_x,player_y,velocity_x,velocity_y,movement_state,visual_state,camera_x,camera_y,lookahead_x,lookahead_y,grounded,left_wall,right_wall,collision_normals,wall_stamina,dash_charges,grapple,grapple_x,grapple_y,coyote_used,jump_buffer_used,health,stunned,bombs,ropes,wind,nearby_tiles");
+        _frames.WriteLine("frame,time_s,input_down,move_x,move_y,aim_x,aim_y,player_x,player_y,velocity_x,velocity_y,movement_state,visual_state,camera_x,camera_y,lookahead_x,lookahead_y,grounded,left_wall,right_wall,left_climbable,right_climbable,collision_normals,wall_stamina,dash_charges,grapple,grapple_x,grapple_y,coyote_used,jump_buffer_used,health,stunned,bombs,ropes,wind,nearby_tiles");
         _screenshots.WriteLine("frame,time_s,file,event,phase");
         File.WriteAllText(Path.Combine(DirectoryPath, "metadata.json"), JsonSerializer.Serialize(new
         {
@@ -68,6 +75,9 @@ public sealed class PlaytestRecorder : IDisposable
 
     public string DirectoryPath { get; private set; }
     public int EventCount => _eventCount;
+    public bool IsFinished => _disposed;
+
+    public void BeginFrame(long frame) => _frame = frame;
 
     public void RecordFrame(long frame, InputManager input, PlayerController player, Camera2D camera, TileWorld world,
         PlayerInventory inventory, GeneratedWorld generated)
@@ -82,7 +92,7 @@ public sealed class PlaytestRecorder : IDisposable
             F(input.Aim.X), F(input.Aim.Y), F(player.Position.X), F(player.Position.Y), F(player.Velocity.X),
             F(player.Velocity.Y), player.State, player.VisualState, F(camera.Position.X), F(camera.Position.Y),
             F(camera.LookAhead.X), F(camera.LookAhead.Y), player.Grounded, player.TouchingLeftWall,
-            player.TouchingRightWall, Csv(normals), F(player.WallStamina), player.DashCharges,
+            player.TouchingRightWall, player.LeftWallClimbable, player.RightWallClimbable, Csv(normals), F(player.WallStamina), player.DashCharges,
             player.GrappleAttached, grappleX, grappleY, player.UsedCoyoteThisFrame, player.UsedJumpBufferThisFrame,
             player.Health, player.Stunned, inventory.Bombs, inventory.Ropes, F(generated.WindAt(player.Position.Y)), Csv(nearby)));
         if (frame % 120 == 0) _frames.Flush();
@@ -92,7 +102,7 @@ public sealed class PlaytestRecorder : IDisposable
     public void RecordEvent(string type, object data, bool capture = true)
     {
         _eventCount++;
-        _events.WriteLine(JsonSerializer.Serialize(new { frame = _frame, timeSeconds = _frame / 60f, type, data }, _json));
+        _events.WriteLine(JsonSerializer.Serialize(new { frame = _frame, timeSeconds = _frame / 60f, type, data }, _jsonLine));
         _events.Flush();
         if (capture) RequestScreenshot(type, true);
     }
@@ -140,8 +150,10 @@ public sealed class PlaytestRecorder : IDisposable
 
     private void RequestScreenshot(string eventName, bool withPost)
     {
-        _pendingScreenshots.Add(new ScreenshotRequest(_frame, eventName, "event"));
-        if (withPost) _pendingScreenshots.Add(new ScreenshotRequest(_frame + 12, eventName, "post"));
+        if (!_pendingScreenshots.Exists(request => request.DueFrame == _frame && request.Event == eventName && request.Phase == "event"))
+            _pendingScreenshots.Add(new ScreenshotRequest(_frame, eventName, "event"));
+        if (withPost && !_pendingScreenshots.Exists(request => request.DueFrame == _frame + 12 && request.Event == eventName && request.Phase == "post"))
+            _pendingScreenshots.Add(new ScreenshotRequest(_frame + 12, eventName, "post"));
     }
 
     private static string NearbyTiles(TileWorld world, PlayerController player)

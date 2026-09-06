@@ -18,17 +18,28 @@ public sealed class SpriteLibrary : IDisposable
     private readonly Texture2D _brittle;
     private readonly Dictionary<MovementState, (bool Traversal, int Frame)> _stateFrames = new()
     {
-        [MovementState.Idle] = (false, 0), [MovementState.Run] = (false, 2),
-        [MovementState.Takeoff] = (false, 6), [MovementState.AscendingJump] = (false, 7),
-        [MovementState.Apex] = (false, 8), [MovementState.Falling] = (false, 9),
-        [MovementState.Landing] = (false, 10), [MovementState.Crouch] = (true, 0),
-        [MovementState.Crawl] = (true, 1), [MovementState.Slide] = (true, 2),
-        [MovementState.LedgeHang] = (true, 3), [MovementState.Mantle] = (true, 4),
-        [MovementState.WallCling] = (true, 5), [MovementState.WallJump] = (true, 6),
-        [MovementState.Dash] = (true, 7), [MovementState.Grapple] = (true, 8),
-        [MovementState.RopeInteraction] = (true, 9), [MovementState.Digging] = (true, 10),
-        [MovementState.BombUse] = (true, 12), [MovementState.Hurt] = (true, 13),
-        [MovementState.Stunned] = (true, 13), [MovementState.Death] = (true, 14)
+        [MovementState.Idle] = (false, 0),
+        [MovementState.Run] = (false, 2),
+        [MovementState.Takeoff] = (false, 6),
+        [MovementState.AscendingJump] = (false, 7),
+        [MovementState.Apex] = (false, 8),
+        [MovementState.Falling] = (false, 9),
+        [MovementState.Landing] = (false, 10),
+        [MovementState.Crouch] = (true, 0),
+        [MovementState.Crawl] = (true, 1),
+        [MovementState.Slide] = (true, 2),
+        [MovementState.LedgeHang] = (true, 3),
+        [MovementState.Mantle] = (true, 4),
+        [MovementState.WallCling] = (true, 5),
+        [MovementState.WallJump] = (true, 6),
+        [MovementState.Dash] = (true, 7),
+        [MovementState.Grapple] = (true, 8),
+        [MovementState.RopeInteraction] = (true, 9),
+        [MovementState.Digging] = (true, 10),
+        [MovementState.BombUse] = (true, 12),
+        [MovementState.Hurt] = (true, 13),
+        [MovementState.Stunned] = (true, 13),
+        [MovementState.Death] = (true, 14)
     };
 
     public SpriteLibrary(GraphicsDevice graphicsDevice)
@@ -78,7 +89,7 @@ public sealed class SpriteLibrary : IDisposable
             new Rectangle(Math.Abs(frame) % 4 * 24, 0, 24, 24), Color.White);
     }
 
-    public void DrawPlayer(SpriteBatch batch, MovementState state, Vector2 feet, int facing, long frame)
+    public void DrawPlayer(SpriteBatch batch, MovementState state, Vector2 feet, int facing, long frame, Color tint)
     {
         var mapping = _stateFrames[state];
         var texture = mapping.Traversal ? _traversal : _locomotion;
@@ -89,7 +100,7 @@ public sealed class SpriteLibrary : IDisposable
         var source = new Rectangle(sourceFrame * 24, 0, 24, 48);
         var destination = new Rectangle((int)MathF.Round(feet.X - 12f), (int)MathF.Round(feet.Y - 48f), 24, 48);
         var effects = facing < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
-        batch.Draw(texture, destination, source, Color.White, 0f, Vector2.Zero, effects, 0f);
+        batch.Draw(texture, destination, source, tint, 0f, Vector2.Zero, effects, 0f);
     }
 
     public void Dispose()

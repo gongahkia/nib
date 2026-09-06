@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Summing.Camera;
 using Summing.Core;
 using Summing.Entities;
@@ -38,7 +39,7 @@ public sealed class Game1 : Game
     private BombSystem _bombSystem = null!;
     private RopeSystem _ropeSystem = null!;
     private PlayerInventory _inventory = null!;
-    private readonly Difficulty _difficulty = Difficulty.Easy;
+    private Difficulty _difficulty = Difficulty.Easy;
     private long _frame;
     private ArchiveStore _archive = null!;
     private RelicSystem _relicSystem = null!;
@@ -48,10 +49,26 @@ public sealed class Game1 : Game
     private readonly List<string> _terrainEvents = [];
     private PlaytestRecorder? _telemetry;
     private readonly long _autoExitFrame;
+    private readonly bool _autoStart;
+    private readonly bool _captureTitleSmoke;
+    private readonly bool _syntheticSmoke;
+    private readonly BindingMenu _bindingMenu = new();
+    private readonly WorldGenerationConfig _menuConfig = new();
+    private GamePhase _phase = GamePhase.Title;
+    private float _phaseTimer;
+    private bool _typingTitleSeed;
+    private string _titleSeedText = "";
+    private int _appearanceIndex;
+    private float _smoothedFps = 60f;
+    private static readonly Color[] AppearanceTints = [Color.White, new Color(205, 232, 222), new Color(238, 191, 168)];
+    private static readonly string[] AppearanceNames = ["BONE WRAPS", "SALT WRAPS", "OXIDE WRAPS"];
 
-    public Game1(long autoExitFrame = 0)
+    public Game1(long autoExitFrame = 0, bool autoStart = true, bool captureTitleSmoke = false)
     {
         _autoExitFrame = autoExitFrame;
+        _autoStart = autoStart;
+        _captureTitleSmoke = captureTitleSmoke;
+        _syntheticSmoke = autoExitFrame > 0 && autoStart;
         _graphics = new GraphicsDeviceManager(this)
         {
             PreferredBackBufferWidth = GameConstants.WindowWidth,
@@ -70,7 +87,8 @@ public sealed class Game1 : Game
     {
         _input = new InputManager(InputBindings.LoadOrCreate("saves/bindings.json"));
         _archive = new ArchiveStore("archive/archive.json");
-        LoadGeneratedWorld(ValidatedWorldGenerator.Generate(new WorldGenerationConfig()));
+        LoadGeneratedWorld(ValidatedWorldGenerator.Generate(_menuConfig), false);
+        if (_autoExitFrame > 0 && _autoStart) StartRun(CopyConfiguration(_menuConfig));
         base.Initialize();
     }
 
@@ -90,12 +108,58 @@ public sealed class Game1 : Game
     protected override void Update(GameTime gameTime)
     {
         var playerScreen = _camera.WorldToScreen(_player.Bounds.Center);
-        _input.Update(playerScreen);
+        _input.Update(playerScreen, new Vector2(GraphicsDevice.Viewport.Width / (float)GameConstants.VirtualWidth,
+            GraphicsDevice.Viewport.Height / (float)GameConstants.VirtualHeight));
         _frame++;
+        _telemetry?.BeginFrame(_frame);
+        if (_syntheticSmoke) ApplySyntheticSmokeInput();
+        if (_autoExitFrame > 0 && _frame >= _autoExitFrame && _phase is GamePhase.Title or GamePhase.Binding) Exit();
+        _smoothedFps = MathHelper.Lerp(_smoothedFps,
+            (float)(1.0 / Math.Max(0.0001, gameTime.ElapsedGameTime.TotalSeconds)), 0.03f);
+
+        if (_phase == GamePhase.Binding)
+        {
+            if (_bindingMenu.Update(_input, "saves/bindings.json")) _phase = GamePhase.Title;
+            base.Update(gameTime);
+            return;
+        }
+        if (_phase == GamePhase.Title)
+        {
+            UpdateTitle();
+            base.Update(gameTime);
+            return;
+        }
+        if (_phase == GamePhase.Paused)
+        {
+            if (_input.Pressed(InputAction.Pause) || _input.Pressed(InputAction.Jump)) _phase = GamePhase.Playing;
+            base.Update(gameTime);
+            return;
+        }
+        if (_phase is GamePhase.Dead or GamePhase.Complete)
+        {
+            _phaseTimer += GameConstants.FixedDelta;
+            if (_phaseTimer >= 0.4f && _telemetry is { IsFinished: false })
+                _telemetry.Finish(_phase == GamePhase.Dead ? "death" : "summit");
+            if (_phaseTimer >= 0.55f && (_input.KeyPressed(Microsoft.Xna.Framework.Input.Keys.Enter) || _input.Pressed(InputAction.Jump)))
+            {
+                if (_phase == GamePhase.Dead) RestartAfterDeath();
+                else _phase = GamePhase.Title;
+            }
+            if (_autoExitFrame > 0 && _frame >= _autoExitFrame) Exit();
+            base.Update(gameTime);
+            return;
+        }
+
         _editor.Update(_input, _camera, GraphicsDevice.Viewport, _generated, RegenerateWorld,
             SaveEditorWorld, LoadEditorWorld, ExportWorld, GameConstants.FixedDelta);
         if (_editor.Active)
         {
+            base.Update(gameTime);
+            return;
+        }
+        if (_input.Pressed(InputAction.Pause))
+        {
+            _phase = GamePhase.Paused;
             base.Update(gameTime);
             return;
         }
@@ -110,13 +174,25 @@ public sealed class Game1 : Game
         _brittleSystem.Update(_player, _world, GameConstants.FixedDelta);
         if (_input.Pressed(InputAction.Dash)) _telemetry?.RecordEvent("dash", new { _player.Position, _player.Velocity, _player.DashCharges });
         if (_input.Pressed(InputAction.Grapple)) _telemetry?.RecordEvent("grapple", new { _player.Position, _player.GrappleAttached, _player.GrappleAnchor });
-        if (_player.Position.Y > _world.PixelHeight + 80f)
-            _player.Reset(_generated.Spawn);
+        if (_player.Position.Y > _world.PixelHeight + 80f && _player.Alive)
+            _player.ApplyDamage(99, Vector2.Zero, "void");
         var cameraTarget = new Vector2(
             Math.Clamp(_player.Position.X, GameConstants.VirtualWidth * 0.5f, _world.PixelWidth - GameConstants.VirtualWidth * 0.5f),
             Math.Clamp(_player.Position.Y - 25f, GameConstants.VirtualHeight * 0.5f, _world.PixelHeight - GameConstants.VirtualHeight * 0.5f));
         _camera.Update(cameraTarget, _player.Velocity, GameConstants.FixedDelta);
         _telemetry?.RecordFrame(_frame, _input, _player, _camera, _world, _inventory, _generated);
+        if (!_player.Alive)
+        {
+            _phase = GamePhase.Dead;
+            _phaseTimer = 0f;
+        }
+        else if (_player.Bounds.Intersects(new Aabb(_generated.SummitBounds.X, _generated.SummitBounds.Y,
+                     _generated.SummitBounds.Width, _generated.SummitBounds.Height)))
+        {
+            _telemetry?.RecordEvent("summit-completion", new { _player.Position, frame = _frame });
+            _phase = GamePhase.Complete;
+            _phaseTimer = 0f;
+        }
         if (_autoExitFrame > 0 && _frame >= _autoExitFrame) Exit();
         base.Update(gameTime);
     }
@@ -124,35 +200,121 @@ public sealed class Game1 : Game
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.SetRenderTarget(_scene);
-        GraphicsDevice.Clear(new Color(10, 13, 20));
-        _spriteBatch.Begin(transformMatrix: _camera.View, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-        DrawBackdrop();
-        _atmosphere.DrawWorldDither(_spriteBatch, _camera.Position, _frame);
-        _tileRenderer.Draw(_spriteBatch, _world, _camera.Position);
-        foreach (var feature in _generated.Features)
-            if (feature.Kind != WorldFeatureKind.RelicCandidate) _sprites.DrawFeature(_spriteBatch, feature);
-        _brittleSystem.Draw(_spriteBatch, _sprites);
-        _relicSystem.Draw(_spriteBatch, _sprites);
-        _ropeSystem.Draw(_spriteBatch, _pixel);
-        _bombSystem.Draw(_spriteBatch, _pixel);
-        _burrowerSystem.Draw(_spriteBatch, _sprites);
-        _player.Draw(_spriteBatch, _pixel, _sprites, _frame);
-        _digTool.Draw(_spriteBatch, _pixel, _player);
-        _editor.DrawWorld(_spriteBatch, _pixel);
-        _spriteBatch.End();
+        GraphicsDevice.Clear(GamePalette.Void);
+        if (_phase == GamePhase.Binding)
+        {
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+            _bindingMenu.Draw(_spriteBatch, _pixel, _font, _input.Bindings);
+            _spriteBatch.End();
+        }
+        else if (_phase == GamePhase.Title)
+        {
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+            DrawTitle();
+            _spriteBatch.End();
+        }
+        else
+        {
+            _spriteBatch.Begin(transformMatrix: _camera.View, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
+            DrawBackdrop();
+            _atmosphere.DrawWorldDither(_spriteBatch, _camera.Position, _frame);
+            _tileRenderer.Draw(_spriteBatch, _world, _camera.Position);
+            foreach (var feature in _generated.Features)
+                if (feature.Kind != WorldFeatureKind.RelicCandidate) _sprites.DrawFeature(_spriteBatch, feature);
+            DrawSummitMarker();
+            _brittleSystem.Draw(_spriteBatch, _sprites);
+            _relicSystem.Draw(_spriteBatch, _sprites);
+            _ropeSystem.Draw(_spriteBatch, _pixel);
+            _bombSystem.Draw(_spriteBatch, _pixel);
+            _burrowerSystem.Draw(_spriteBatch, _sprites);
+            _player.Draw(_spriteBatch, _pixel, _sprites, _frame, AppearanceTints[_appearanceIndex]);
+            _digTool.Draw(_spriteBatch, _pixel, _player);
+            _editor.DrawWorld(_spriteBatch, _pixel);
+            _spriteBatch.End();
 
-        _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-        DrawHud();
-        _editor.DrawOverlay(_spriteBatch, _pixel, _font, _generated);
-        _spriteBatch.End();
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+            DrawHud();
+            _editor.DrawOverlay(_spriteBatch, _pixel, _font, _generated);
+            DrawPhaseOverlay();
+            _spriteBatch.End();
+        }
         GraphicsDevice.SetRenderTarget(null);
         _telemetry?.CaptureDue(_scene);
+        if (_captureTitleSmoke && _frame == 12)
+        {
+            Directory.CreateDirectory("artifacts");
+            using var stream = File.Create("artifacts/title-smoke.png");
+            _scene.SaveAsPng(stream, _scene.Width, _scene.Height);
+        }
 
         GraphicsDevice.Clear(Color.Black);
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
         _spriteBatch.Draw(_scene, GraphicsDevice.Viewport.Bounds, Color.White);
         _spriteBatch.End();
         base.Draw(gameTime);
+    }
+
+    private void DrawTitle()
+    {
+        _spriteBatch.Draw(_pixel, new Rectangle(0, 0, 640, 360), GamePalette.DeepSky);
+        for (var x = 0; x < 640; x += 22)
+        {
+            var height = 35 + Math.Abs((x * 13) % 95);
+            _spriteBatch.Draw(_pixel, new Rectangle(x, 360 - height, 17, height), GamePalette.FarStone);
+        }
+        _spriteBatch.Draw(_pixel, new Rectangle(0, 280, 640, 80), new Color(10, 13, 20, 210));
+        _font.Draw(_spriteBatch, "SUMMING", new Vector2(182, 40), GamePalette.Bone, 6);
+        _font.Draw(_spriteBatch, "THE LORN REACH", new Vector2(244, 79), GamePalette.SacredGold);
+        _font.Draw(_spriteBatch, "A SILENT ASCENT THROUGH THE REMAINS OF WEATHER", new Vector2(166, 102), GamePalette.UiMuted);
+        _font.Draw(_spriteBatch, $"DIFFICULTY  {_difficulty}", new Vector2(210, 148), _difficulty == Difficulty.Easy ? GamePalette.SaltCyan : GamePalette.Danger, 2);
+        _font.Draw(_spriteBatch, $"GENERATOR   {_menuConfig.Variant}", new Vector2(210, 171), Color.White, 2);
+        _font.Draw(_spriteBatch, $"SEED        {_menuConfig.Seed}", new Vector2(210, 194), GamePalette.Bone, 2);
+        _font.Draw(_spriteBatch, $"CLIMBER     {AppearanceNames[_appearanceIndex]}", new Vector2(210, 217), AppearanceTints[_appearanceIndex], 2);
+        _font.Draw(_spriteBatch, "UP DOWN DIFFICULTY   LEFT RIGHT GENERATOR", new Vector2(187, 252), GamePalette.UiMuted);
+        _font.Draw(_spriteBatch, "T SET SEED   R RANDOM   C CLIMBER   B BINDINGS", new Vector2(169, 263), GamePalette.UiMuted);
+        _font.Draw(_spriteBatch, "ENTER OR A TO ASCEND", new Vector2(224, 298), GamePalette.SacredGold, 2);
+        _font.Draw(_spriteBatch, "F1 OPENS THE WORLD EDITOR DURING A RUN", new Vector2(202, 329), new Color(105, 116, 125));
+        if (_typingTitleSeed)
+        {
+            _spriteBatch.Draw(_pixel, new Rectangle(154, 132, 332, 92), new Color(7, 9, 14, 245));
+            _font.Draw(_spriteBatch, "ENTER WORLD SEED", new Vector2(218, 151), GamePalette.SacredGold, 2);
+            _font.Draw(_spriteBatch, _titleSeedText + "_", new Vector2(218, 183), Color.White, 2);
+            _font.Draw(_spriteBatch, "ENTER ACCEPTS  ESC CANCELS", new Vector2(236, 210), GamePalette.UiMuted);
+        }
+    }
+
+    private void DrawSummitMarker()
+    {
+        var bounds = _generated.SummitBounds;
+        var center = bounds.Center;
+        _spriteBatch.Draw(_pixel, new Rectangle(center.X - 18, bounds.Bottom - 62, 36, 62), new Color(48, 45, 55));
+        _spriteBatch.Draw(_pixel, new Rectangle(center.X - 4, bounds.Bottom - 92, 8, 34), GamePalette.SacredGold);
+        _spriteBatch.Draw(_pixel, new Rectangle(center.X - 12, bounds.Bottom - 88, 24, 3), GamePalette.SaltCyan);
+        _spriteBatch.Draw(_pixel, new Rectangle(center.X - 20, bounds.Bottom - 66, 40, 4), GamePalette.Bone);
+    }
+
+    private void DrawPhaseOverlay()
+    {
+        if (_phase is not (GamePhase.Paused or GamePhase.Dead or GamePhase.Complete)) return;
+        _spriteBatch.Draw(_pixel, new Rectangle(0, 0, 640, 360), new Color(5, 7, 12, 190));
+        if (_phase == GamePhase.Paused)
+        {
+            _font.Draw(_spriteBatch, "PAUSED", new Vector2(248, 126), GamePalette.Bone, 4);
+            _font.Draw(_spriteBatch, "ESC START OR A TO RETURN", new Vector2(229, 181), GamePalette.UiMuted);
+        }
+        else if (_phase == GamePhase.Dead)
+        {
+            _font.Draw(_spriteBatch, "BODY LOST", new Vector2(208, 118), GamePalette.Danger, 4);
+            _font.Draw(_spriteBatch, "THE ARCHIVE REMAINS", new Vector2(238, 170), GamePalette.SacredGold);
+            _font.Draw(_spriteBatch, _difficulty == Difficulty.Easy ? "ENTER REPEATS THIS WORLD" : "ENTER ACCEPTS ANOTHER DEAD WORLD",
+                new Vector2(_difficulty == Difficulty.Easy ? 228 : 205, 203), GamePalette.UiMuted);
+        }
+        else
+        {
+            _font.Draw(_spriteBatch, "SUMMIT REACHED", new Vector2(164, 115), GamePalette.SacredGold, 4);
+            _font.Draw(_spriteBatch, $"ASCENT TIME {_frame / 60f:0.0} SECONDS", new Vector2(232, 172), GamePalette.Bone);
+            _font.Draw(_spriteBatch, "ENTER RETURNS TO THE REACH", new Vector2(220, 204), GamePalette.UiMuted);
+        }
     }
 
     private void DrawBackdrop()
@@ -165,9 +327,75 @@ public sealed class Game1 : Game
         }
     }
 
-    private void LoadGeneratedWorld(GeneratedWorld generated)
+    private void UpdateTitle()
+    {
+        if (_typingTitleSeed)
+        {
+            var digits = new[] { Keys.D0, Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9 };
+            for (var index = 0; index < digits.Length; index++)
+                if (_input.KeyPressed(digits[index]) && _titleSeedText.Length < 18) _titleSeedText += index;
+            if (_input.KeyPressed(Keys.OemMinus) && _titleSeedText.Length == 0) _titleSeedText = "-";
+            if (_input.KeyPressed(Keys.Back) && _titleSeedText.Length > 0) _titleSeedText = _titleSeedText[..^1];
+            if (_input.KeyPressed(Keys.Escape)) { _typingTitleSeed = false; return; }
+            if (_input.KeyPressed(Keys.Enter) && long.TryParse(_titleSeedText, out var seed))
+            {
+                _menuConfig.Seed = seed;
+                _typingTitleSeed = false;
+            }
+            return;
+        }
+
+        if (_input.Pressed(InputAction.Up) || _input.Pressed(InputAction.Down))
+            _difficulty = _difficulty == Difficulty.Easy ? Difficulty.Hard : Difficulty.Easy;
+        if (_input.Pressed(InputAction.Left))
+            _menuConfig.Variant = (GeneratorVariant)(((int)_menuConfig.Variant + 2) % 3);
+        if (_input.Pressed(InputAction.Right))
+            _menuConfig.Variant = (GeneratorVariant)(((int)_menuConfig.Variant + 1) % 3);
+        if (_input.KeyPressed(Keys.T)) { _typingTitleSeed = true; _titleSeedText = _menuConfig.Seed.ToString(); }
+        if (_input.KeyPressed(Keys.R)) _menuConfig.Seed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (_input.KeyPressed(Keys.C)) _appearanceIndex = (_appearanceIndex + 1) % AppearanceTints.Length;
+        if (_input.KeyPressed(Keys.B)) { _phase = GamePhase.Binding; return; }
+        if (_input.KeyPressed(Keys.Escape)) { Exit(); return; }
+        if (_input.KeyPressed(Keys.Enter) || _input.Pressed(InputAction.Jump)) StartRun(CopyConfiguration(_menuConfig));
+    }
+
+    private void ApplySyntheticSmokeInput()
+    {
+        var actions = new List<InputAction>();
+        var move = _frame is >= 12 and <= 155 ? Vector2.UnitX : Vector2.Zero;
+        if (move.X > 0f) actions.Add(InputAction.Right);
+        if (_frame is >= 18 and <= 34) actions.Add(InputAction.Jump);
+        if (_frame == 8) actions.Add(InputAction.Bomb);
+        if (_frame == 42) actions.Add(InputAction.Dash);
+        if (_frame == 65) actions.Add(InputAction.Grapple);
+        if (_frame == 82) actions.Add(InputAction.Dig);
+        if (_frame == 108) actions.Add(InputAction.Slide);
+        if (_frame == 126) actions.Add(InputAction.Rope);
+        _input.SetSyntheticState(move, _frame == 65 ? new Vector2(1f, -1f) : Vector2.UnitX, actions.ToArray());
+    }
+
+    private void StartRun(WorldGenerationConfig configuration)
+    {
+        var generated = ValidatedWorldGenerator.Generate(configuration);
+        _menuConfig.Seed = generated.Configuration.Seed;
+        _menuConfig.Variant = generated.Configuration.Variant;
+        LoadGeneratedWorld(generated);
+        _phase = GamePhase.Playing;
+        _phaseTimer = 0f;
+    }
+
+    private void RestartAfterDeath()
+    {
+        var configuration = CopyConfiguration(_generated.Configuration);
+        if (_difficulty == Difficulty.Hard)
+            configuration.Seed = unchecked(configuration.Seed + (long)0x61c8864680b583ebUL);
+        StartRun(configuration);
+    }
+
+    private void LoadGeneratedWorld(GeneratedWorld generated, bool startTelemetry = true)
     {
         _telemetry?.Finish("world-replaced");
+        _telemetry = null;
         _frame = 0;
         _generated = generated;
         _world = generated.Terrain;
@@ -202,8 +430,11 @@ public sealed class Game1 : Game
         _brittleSystem.Collapsed += tile => _telemetry?.RecordEvent("brittle-collapse", new { tile });
         _relicSystem.Collected += relic => _telemetry?.RecordEvent("relic-collected", new { relic.Id, relic.Culture.Name });
         _camera.Snap(new Vector2(generated.Spawn.X, generated.Spawn.Y - 40f));
-        _telemetry = new PlaytestRecorder(generated, _difficulty, _input.Bindings);
-        SaveWorld(Path.Combine(_telemetry.DirectoryPath, "world-start.json"));
+        if (startTelemetry)
+        {
+            _telemetry = new PlaytestRecorder(generated, _difficulty, _input.Bindings);
+            SaveWorld(Path.Combine(_telemetry.DirectoryPath, "world-start.json"));
+        }
     }
 
     private void RegenerateWorld(WorldGenerationConfig configuration) =>
@@ -226,6 +457,22 @@ public sealed class Game1 : Game
     private void SaveWorld(string path) => WorldSerializer.Save(path, _generated, _player, _inventory,
         _burrowerSystem, _brittleSystem, _relicSystem, _ropeSystem, _bombSystem, _difficulty, _frame, _terrainEvents);
 
+    private static WorldGenerationConfig CopyConfiguration(WorldGenerationConfig source) => new()
+    {
+        Seed = source.Seed,
+        GeneratorVersion = source.GeneratorVersion,
+        Variant = source.Variant,
+        Parameters = new BadlandsParameters
+        {
+            Width = source.Parameters.Width,
+            Height = source.Parameters.Height,
+            Erosion = source.Parameters.Erosion,
+            RuinDensity = source.Parameters.RuinDensity,
+            EcologyDensity = source.Parameters.EcologyDensity,
+            WindStrength = source.Parameters.WindStrength
+        }
+    };
+
     protected override void UnloadContent()
     {
         _sprites.Dispose();
@@ -243,7 +490,7 @@ public sealed class Game1 : Game
 
     private void DrawHud()
     {
-        _spriteBatch.Draw(_pixel, new Rectangle(7, 7, 250, 39), new Color(6, 8, 13, 220));
+        _spriteBatch.Draw(_pixel, new Rectangle(7, 7, 310, 51), new Color(6, 8, 13, 220));
         _font.Draw(_spriteBatch, $"STATE {Format(_player.VisualState.ToString())}", new Vector2(12, 12), new Color(226, 207, 158));
         _font.Draw(_spriteBatch, $"VEL {(int)_player.Velocity.X},{(int)_player.Velocity.Y}  DASH {_player.DashCharges}", new Vector2(12, 21), new Color(144, 158, 166));
         _font.Draw(_spriteBatch, $"WALL {(int)(_player.WallStamina * 100f / PlayerController.WallStaminaMaximum)}%  GRAPPLE {(_player.GrappleAttached ? "ON" : "OFF")}", new Vector2(12, 30), new Color(144, 158, 166));
@@ -257,6 +504,8 @@ public sealed class Game1 : Game
         _font.Draw(_spriteBatch, $"ARCHIVE {_archive.Discoveries.Count}", new Vector2(520, 21), GamePalette.SacredGold);
         _font.Draw(_spriteBatch, $"VALID ROUTE {_generated.Diagnostics.Traversability.CheckedTransitions}  REJECTED {_generated.Diagnostics.RejectedSeeds.Count}",
             new Vector2(350, 30), _generated.Diagnostics.Traversability.Solvable ? GamePalette.SaltCyan : GamePalette.Danger);
+        var altitude = Math.Clamp((int)((1f - _player.Position.Y / _world.PixelHeight) * 100f), 0, 100);
+        _font.Draw(_spriteBatch, $"ALTITUDE {altitude}%  FPS {(int)_smoothedFps}", new Vector2(480, 39), GamePalette.UiMuted);
         if (_relicSystem.DiscoveryVisible && _relicSystem.LastDiscovery != null)
         {
             _spriteBatch.Draw(_pixel, new Rectangle(125, 300, 390, 24), new Color(7, 10, 15, 230));

@@ -15,8 +15,8 @@ public sealed class TileWorld : ICollisionWorld
         Width = width;
         Height = height;
         for (var cy = 0; cy < (height + GameConstants.ChunkSize - 1) / GameConstants.ChunkSize; cy++)
-        for (var cx = 0; cx < (width + GameConstants.ChunkSize - 1) / GameConstants.ChunkSize; cx++)
-            _chunks[new ChunkCoordinate(cx, cy)] = new TileChunk(new ChunkCoordinate(cx, cy));
+            for (var cx = 0; cx < (width + GameConstants.ChunkSize - 1) / GameConstants.ChunkSize; cx++)
+                _chunks[new ChunkCoordinate(cx, cy)] = new TileChunk(new ChunkCoordinate(cx, cy));
     }
 
     public int Width { get; }
@@ -76,11 +76,11 @@ public sealed class TileWorld : ICollisionWorld
         var maxY = WorldToTile(center.Y + radius);
         var destroyed = 0;
         for (var y = minY; y <= maxY; y++)
-        for (var x = minX; x <= maxX; x++)
-        {
-            var tileCenter = new Vector2((x + 0.5f) * GameConstants.TileSize, (y + 0.5f) * GameConstants.TileSize);
-            if (Vector2.DistanceSquared(center, tileCenter) <= radius * radius && DamageTile(x, y, damage, cause)) destroyed++;
-        }
+            for (var x = minX; x <= maxX; x++)
+            {
+                var tileCenter = new Vector2((x + 0.5f) * GameConstants.TileSize, (y + 0.5f) * GameConstants.TileSize);
+                if (Vector2.DistanceSquared(center, tileCenter) <= radius * radius && DamageTile(x, y, damage, cause)) destroyed++;
+            }
         return destroyed;
     }
 
@@ -91,8 +91,8 @@ public sealed class TileWorld : ICollisionWorld
         var minY = WorldToTile(bounds.Top + 0.01f);
         var maxY = WorldToTile(bounds.Bottom - 0.01f);
         for (var y = minY; y <= maxY; y++)
-        for (var x = minX; x <= maxX; x++)
-            if (GetTile(x, y).Solid) return true;
+            for (var x = minX; x <= maxX; x++)
+                if (GetTile(x, y).Solid) return true;
         return false;
     }
 
@@ -100,6 +100,18 @@ public sealed class TileWorld : ICollisionWorld
     {
         var tile = GetTile(WorldToTile(worldPosition.X), WorldToTile(worldPosition.Y));
         return tile.Solid && MaterialCatalog.Get(tile.Material).GrappleCompatible;
+    }
+
+    public bool IsClimbable(Vector2 worldPosition)
+    {
+        var tile = GetTile(WorldToTile(worldPosition.X), WorldToTile(worldPosition.Y));
+        return tile.Solid && MaterialCatalog.Get(tile.Material).Climbable;
+    }
+
+    public float FrictionAt(Vector2 worldPosition)
+    {
+        var tile = GetTile(WorldToTile(worldPosition.X), WorldToTile(worldPosition.Y));
+        return tile.Solid ? MaterialCatalog.Get(tile.Material).Friction : 1f;
     }
 
     public bool RaycastGrapple(Vector2 origin, Vector2 direction, float maximumDistance, out Vector2 hit)
@@ -125,16 +137,16 @@ public sealed class TileWorld : ICollisionWorld
         const ulong prime = 1099511628211UL;
         var hash = offset;
         for (var y = 0; y < Height; y++)
-        for (var x = 0; x < Width; x++)
-        {
-            var tile = GetTile(x, y);
-            hash ^= (byte)tile.Material;
-            hash *= prime;
-            hash ^= (byte)tile.Flags;
-            hash *= prime;
-            hash ^= unchecked((ushort)tile.ProvenanceId);
-            hash *= prime;
-        }
+            for (var x = 0; x < Width; x++)
+            {
+                var tile = GetTile(x, y);
+                hash ^= (byte)tile.Material;
+                hash *= prime;
+                hash ^= (byte)tile.Flags;
+                hash *= prime;
+                hash ^= unchecked((ushort)tile.ProvenanceId);
+                hash *= prime;
+            }
         return hash;
     }
 
@@ -163,6 +175,6 @@ public sealed class TileWorld : ICollisionWorld
     private static void Fill(TileWorld world, int x, int y, int width, int height, MaterialId material)
     {
         for (var tileY = y; tileY < y + height; tileY++)
-        for (var tileX = x; tileX < x + width; tileX++) world.SetTile(tileX, tileY, material);
+            for (var tileX = x; tileX < x + width; tileX++) world.SetTile(tileX, tileY, material);
     }
 }

@@ -80,8 +80,8 @@ public static class WorldHistoryGenerator
 
         var relations = new List<CultureRelation>();
         for (short first = 1; first <= cultureCount; first++)
-        for (short second = (short)(first + 1); second <= cultureCount; second++)
-            relations.Add(new CultureRelation(first, second, Pick(Dispositions, random), Pick(Grudges, random)));
+            for (short second = (short)(first + 1); second <= cultureCount; second++)
+                relations.Add(new CultureRelation(first, second, Pick(Dispositions, random), Pick(Grudges, random)));
 
         var events = new List<HistoricalEvent>();
         var years = random.Range(840, 1600);

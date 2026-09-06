@@ -46,12 +46,12 @@ public sealed class BrittleSystem
     public void Draw(SpriteBatch batch, SpriteLibrary sprites)
     {
         foreach (var structure in _structures)
-        foreach (var tile in structure.Tiles)
-        {
-            if (structure.Collapsed) continue;
-            sprites.DrawBrittle(batch, new Vector2(tile.X * Core.GameConstants.TileSize,
-                tile.Y * Core.GameConstants.TileSize), structure.CrackFrame);
-        }
+            foreach (var tile in structure.Tiles)
+            {
+                if (structure.Collapsed) continue;
+                sprites.DrawBrittle(batch, new Vector2(tile.X * Core.GameConstants.TileSize,
+                    tile.Y * Core.GameConstants.TileSize), structure.CrackFrame);
+            }
     }
 
     private void OnTerrainChanged(TerrainChange change)

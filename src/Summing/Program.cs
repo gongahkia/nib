@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using Summing.Entities;
+using Summing.Diagnostics;
 using Summing.Gameplay;
 using Summing.Generation;
 using Summing.History;
@@ -14,8 +15,11 @@ if (Environment.GetCommandLineArgs().Contains("--verify-generation"))
     foreach (var variant in Enum.GetValues<GeneratorVariant>())
     {
         var configuration = new WorldGenerationConfig { Seed = 9042026, Variant = variant };
-        var firstHash = WorldGeneratorRegistry.Generate(configuration).Terrain.Fingerprint();
+        var firstWorld = WorldGeneratorRegistry.Generate(configuration);
+        var firstHash = firstWorld.Terrain.Fingerprint();
         var secondHash = WorldGeneratorRegistry.Generate(configuration).Terrain.Fingerprint();
+        var rawReport = TraversabilityValidator.Validate(firstWorld);
+        Console.WriteLine($"raw variant={variant} solvable={rawReport.Solvable} failure={rawReport.Failure}");
         var validated = ValidatedWorldGenerator.Generate(configuration);
         Console.WriteLine($"seed={configuration.Seed} variant={configuration.Variant} fingerprint={firstHash:x16} " +
             $"route={validated.Diagnostics.Traversability.CheckedTransitions} rejected={validated.Diagnostics.RejectedSeeds.Count}");
@@ -53,6 +57,13 @@ if (Environment.GetCommandLineArgs().Contains("--verify-serialization"))
     return;
 }
 
+if (Environment.GetCommandLineArgs().Contains("--verify-systems"))
+{
+    HeadlessVerification.RunSystems();
+    return;
+}
+
 var smokeRun = Environment.GetCommandLineArgs().Contains("--smoke-run");
-using var game = new Summing.Game1(smokeRun ? 30 : 0);
+var smokeTitle = Environment.GetCommandLineArgs().Contains("--smoke-title");
+using var game = new Summing.Game1(smokeRun ? 240 : smokeTitle ? 30 : 0, smokeRun, smokeTitle);
 game.Run();

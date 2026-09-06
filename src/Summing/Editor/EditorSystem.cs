@@ -125,12 +125,14 @@ public sealed class EditorSystem
     private void ApplyTool(GeneratedWorld generated)
     {
         if (!generated.Terrain.Contains(CursorTile.X, CursorTile.Y)) return;
-        var position = new Vector2((CursorTile.X + 0.5f) * GameConstants.TileSize, (CursorTile.Y + 1f) * GameConstants.TileSize);
+        var position = new Vector2((CursorTile.X + 0.5f) * GameConstants.TileSize, CursorTile.Y * GameConstants.TileSize);
         switch (Tool)
         {
             case EditorTool.Inspect:
                 var tile = generated.Terrain.GetTile(CursorTile.X, CursorTile.Y);
-                SetNotice($"{tile.Material} DAMAGE {tile.Damage} PROVENANCE {tile.ProvenanceId}");
+                var material = MaterialCatalog.Get(tile.Material);
+                SetNotice($"{tile.Material} HARD {material.Hardness} FRICTION {material.Friction:0.00} " +
+                    $"CLIMB {material.Climbable} GRAPPLE {material.GrappleCompatible} PROV {tile.ProvenanceId}");
                 break;
             case EditorTool.Paint:
                 generated.Terrain.SetTile(CursorTile.X, CursorTile.Y, SelectedMaterial, TileFlags.PlayerBuilt);
@@ -210,6 +212,7 @@ public sealed class EditorSystem
         var digits = new[] { Keys.D0, Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9 };
         for (var index = 0; index < digits.Length; index++)
             if (input.KeyPressed(digits[index]) && _seedText.Length < 18) _seedText += index;
+        if (input.KeyPressed(Keys.OemMinus) && _seedText.Length == 0) _seedText = "-";
         if (input.KeyPressed(Keys.Back) && _seedText.Length > 0) _seedText = _seedText[..^1];
         if (input.KeyPressed(Keys.Escape)) { _typingSeed = false; return; }
         if (!input.KeyPressed(Keys.Enter)) return;
@@ -234,8 +237,11 @@ public sealed class EditorSystem
         Variant = source.Variant,
         Parameters = new BadlandsParameters
         {
-            Width = source.Parameters.Width, Height = source.Parameters.Height, Erosion = source.Parameters.Erosion,
-            RuinDensity = source.Parameters.RuinDensity, EcologyDensity = source.Parameters.EcologyDensity,
+            Width = source.Parameters.Width,
+            Height = source.Parameters.Height,
+            Erosion = source.Parameters.Erosion,
+            RuinDensity = source.Parameters.RuinDensity,
+            EcologyDensity = source.Parameters.EcologyDensity,
             WindStrength = source.Parameters.WindStrength
         }
     };
