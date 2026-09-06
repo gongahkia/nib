@@ -17,9 +17,9 @@ public sealed class PixelFont
         var y = (int)position.Y;
         foreach (var raw in text.ToUpperInvariant())
         {
-            if (raw == '\n') { x = originX; y += 8 * scale; continue; }
+            if (raw == '\n') { x = originX; y += 7 * scale; continue; }
             var rows = Glyphs[Glyphs.ContainsKey(raw) ? raw : '?'];
-            for (var row = 0; row < 7; row++)
+            for (var row = 0; row < 5; row++)
             for (var column = 0; column < 5; column++)
             {
                 if (rows[row][column] == '1')
@@ -34,7 +34,7 @@ public sealed class PixelFont
         var lines = text.Split('\n');
         var width = 0;
         foreach (var line in lines) width = System.Math.Max(width, line.Length * 6 * scale);
-        return new Point(width, lines.Length * 8 * scale);
+        return new Point(width, lines.Length * 7 * scale);
     }
 
     private static Dictionary<char, string[]> BuildGlyphs()
@@ -62,8 +62,8 @@ public sealed class PixelFont
         var result = new Dictionary<char, string[]>();
         foreach (var (key, bits) in packed)
         {
-            var rows = new string[7];
-            for (var row = 0; row < 7; row++) rows[row] = bits.Substring(row * 5, 5);
+            var rows = new string[5];
+            for (var row = 0; row < 5; row++) rows[row] = bits.Substring(row * 5, 5);
             result[key] = rows;
         }
         return result;
