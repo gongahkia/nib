@@ -1,18 +1,13 @@
-PYTHON ?= python3
+.PHONY: run test smoke cli
 
-.PHONY: generate check-generated shaders preview verify
+run:
+	love .
 
-generate:
-	$(PYTHON) scripts/generate.py
+smoke:
+	SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy timeout 3s love .
 
-check-generated:
-	$(PYTHON) scripts/generate.py --check
+test:
+	luajit tests/run.lua
 
-shaders:
-	$(PYTHON) scripts/validate_shaders.py
-
-preview: check-generated
-	$(PYTHON) -m http.server 8765 --bind 127.0.0.1
-
-verify:
-	$(PYTHON) tests/verify.py
+cli:
+	luajit cli.lua help
