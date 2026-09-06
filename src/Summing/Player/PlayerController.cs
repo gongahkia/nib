@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Summing.Core;
 using Summing.Input;
+using Summing.Rendering;
 using Summing.World;
 
 namespace Summing.Player;
@@ -181,22 +182,9 @@ public sealed class PlayerController
         ResolveState(moveX, shortBody);
     }
 
-    public void Draw(SpriteBatch batch, Texture2D pixel)
+    public void Draw(SpriteBatch batch, Texture2D pixel, SpriteLibrary sprites, long frame)
     {
-        var bounds = Bounds;
-        var body = new Rectangle((int)bounds.X, (int)bounds.Y, (int)bounds.Width, (int)bounds.Height);
-        var color = VisualState switch
-        {
-            MovementState.Dash => new Color(151, 224, 219),
-            MovementState.Grapple => new Color(220, 179, 90),
-            MovementState.WallCling => new Color(180, 137, 111),
-            MovementState.Slide => new Color(228, 97, 75),
-            MovementState.LedgeHang or MovementState.Mantle => new Color(216, 203, 154),
-            _ => new Color(206, 185, 112)
-        };
-        batch.Draw(pixel, body, color);
-        batch.Draw(pixel, new Rectangle(body.X + (Facing > 0 ? body.Width - 5 : 1), body.Y + 7, 4, 4), new Color(18, 20, 27));
-        batch.Draw(pixel, new Rectangle(body.X + 3, body.Bottom - 5, body.Width - 6, 3), new Color(109, 50, 52));
+        sprites.DrawPlayer(batch, VisualState, Position, Facing, frame);
         if (GrappleAttached)
         {
             DrawLine(batch, pixel, Bounds.Center, GrappleAnchor, new Color(184, 166, 128), 2f);
