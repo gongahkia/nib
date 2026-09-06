@@ -37,6 +37,8 @@ public sealed class Game1 : Game
     private long _frame;
     private ArchiveStore _archive = null!;
     private RelicSystem _relicSystem = null!;
+    private BurrowerSystem _burrowerSystem = null!;
+    private BrittleSystem _brittleSystem = null!;
 
     public Game1()
     {
@@ -64,6 +66,9 @@ public sealed class Game1 : Game
         var tuning = DifficultyTuning.For(_difficulty);
         _player = new PlayerController(_generated.Spawn, tuning.StartingHealth);
         _inventory = new PlayerInventory(tuning);
+        _burrowerSystem = new BurrowerSystem(_generated, tuning);
+        _brittleSystem = new BrittleSystem(_generated, tuning);
+        _bombSystem.Exploded += _burrowerSystem.ApplyExplosion;
         _camera.Snap(new Vector2(_generated.Spawn.X, _generated.Spawn.Y - 40f));
         base.Initialize();
     }
@@ -94,6 +99,8 @@ public sealed class Game1 : Game
         _digTool.Update(_input, _player, _world, GameConstants.FixedDelta);
         _bombSystem.Update(_input, _player, _inventory, _world, _frame, GameConstants.FixedDelta);
         _relicSystem.Update(_player, GameConstants.FixedDelta);
+        _burrowerSystem.Update(_player, _world, GameConstants.FixedDelta);
+        _brittleSystem.Update(_player, _world, GameConstants.FixedDelta);
         if (_player.Position.Y > _world.PixelHeight + 80f)
             _player.Reset(new Vector2(7f * GameConstants.TileSize, 15f * GameConstants.TileSize));
         var cameraTarget = new Vector2(
@@ -113,9 +120,11 @@ public sealed class Game1 : Game
         _tileRenderer.Draw(_spriteBatch, _world, _camera.Position);
         foreach (var feature in _generated.Features)
             if (feature.Kind != WorldFeatureKind.RelicCandidate) _sprites.DrawFeature(_spriteBatch, feature);
+        _brittleSystem.Draw(_spriteBatch, _sprites);
         _relicSystem.Draw(_spriteBatch, _sprites);
         _ropeSystem.Draw(_spriteBatch, _pixel);
         _bombSystem.Draw(_spriteBatch, _pixel);
+        _burrowerSystem.Draw(_spriteBatch, _sprites);
         _player.Draw(_spriteBatch, _pixel, _sprites, _frame);
         _digTool.Draw(_spriteBatch, _pixel, _player);
         _spriteBatch.End();

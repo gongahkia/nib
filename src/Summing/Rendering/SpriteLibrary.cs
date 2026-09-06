@@ -14,6 +14,8 @@ public sealed class SpriteLibrary : IDisposable
     private readonly Texture2D _traversal;
     private readonly Texture2D _ruins;
     private readonly Texture2D _relics;
+    private readonly Texture2D _burrower;
+    private readonly Texture2D _brittle;
     private readonly Dictionary<MovementState, (bool Traversal, int Frame)> _stateFrames = new()
     {
         [MovementState.Idle] = (false, 0), [MovementState.Run] = (false, 2),
@@ -35,6 +37,8 @@ public sealed class SpriteLibrary : IDisposable
         _traversal = Load(graphicsDevice, "Sprites/player_traversal.png");
         _ruins = Load(graphicsDevice, "Sprites/ruins.png");
         _relics = Load(graphicsDevice, "Sprites/relics.png");
+        _burrower = Load(graphicsDevice, "Sprites/burrower.png");
+        _brittle = Load(graphicsDevice, "Sprites/brittle_hazard.png");
     }
 
     public void DrawFeature(SpriteBatch batch, WorldFeature feature)
@@ -61,6 +65,19 @@ public sealed class SpriteLibrary : IDisposable
             new Rectangle(frame * 24, 0, 24, 24), Color.White);
     }
 
+    public void DrawBurrower(SpriteBatch batch, Vector2 position, int frame, bool hurt)
+    {
+        var color = hurt ? GamePalette.Danger : Color.White;
+        batch.Draw(_burrower, new Rectangle((int)position.X - 16, (int)position.Y - 12, 32, 24),
+            new Rectangle(Math.Abs(frame) % 4 * 32, 0, 32, 24), color);
+    }
+
+    public void DrawBrittle(SpriteBatch batch, Vector2 topLeft, int frame)
+    {
+        batch.Draw(_brittle, new Rectangle((int)topLeft.X, (int)topLeft.Y, 24, 24),
+            new Rectangle(Math.Abs(frame) % 4 * 24, 0, 24, 24), Color.White);
+    }
+
     public void DrawPlayer(SpriteBatch batch, MovementState state, Vector2 feet, int facing, long frame)
     {
         var mapping = _stateFrames[state];
@@ -81,6 +98,8 @@ public sealed class SpriteLibrary : IDisposable
         _traversal.Dispose();
         _ruins.Dispose();
         _relics.Dispose();
+        _burrower.Dispose();
+        _brittle.Dispose();
     }
 
     private static Texture2D Load(GraphicsDevice graphicsDevice, string relativePath)
