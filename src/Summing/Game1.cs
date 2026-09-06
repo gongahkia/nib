@@ -19,6 +19,8 @@ public sealed class Game1 : Game
     private RenderTarget2D _scene = null!;
     private Texture2D _pixel = null!;
     private PixelFont _font = null!;
+    private SpriteLibrary _sprites = null!;
+    private AtmosphereRenderer _atmosphere = null!;
     private InputManager _input = null!;
     private readonly TileWorld _world = TileWorld.CreateMovementTest();
     private TileWorldRenderer _tileRenderer = null!;
@@ -66,6 +68,8 @@ public sealed class Game1 : Game
         _pixel.SetData([Color.White]);
         _font = new PixelFont(_pixel);
         _tileRenderer = new TileWorldRenderer(_pixel);
+        _sprites = new SpriteLibrary(GraphicsDevice);
+        _atmosphere = new AtmosphereRenderer(_pixel);
     }
 
     protected override void Update(GameTime gameTime)
@@ -93,10 +97,11 @@ public sealed class Game1 : Game
         GraphicsDevice.Clear(new Color(10, 13, 20));
         _spriteBatch.Begin(transformMatrix: _camera.View, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
         DrawBackdrop();
+        _atmosphere.DrawWorldDither(_spriteBatch, _camera.Position, _frame);
         _tileRenderer.Draw(_spriteBatch, _world, _camera.Position);
         _ropeSystem.Draw(_spriteBatch, _pixel);
         _bombSystem.Draw(_spriteBatch, _pixel);
-        _player.Draw(_spriteBatch, _pixel);
+        _player.Draw(_spriteBatch, _pixel, _sprites, _frame);
         _digTool.Draw(_spriteBatch, _pixel, _player);
         _spriteBatch.End();
 
@@ -114,12 +119,21 @@ public sealed class Game1 : Game
 
     private void DrawBackdrop()
     {
-        _spriteBatch.Draw(_pixel, new Rectangle(-100, 0, 1400, 400), new Color(13, 17, 27));
+        _spriteBatch.Draw(_pixel, new Rectangle(-100, 0, 1400, 700), GamePalette.DeepSky);
         for (var x = -80; x < 1300; x += 32)
         {
             var height = 30 + Math.Abs((x * 17) % 90);
-            _spriteBatch.Draw(_pixel, new Rectangle(x, 320 - height, 25, height), new Color(25, 28, 38));
+            _spriteBatch.Draw(_pixel, new Rectangle(x, 520 - height, 25, height), GamePalette.FarStone);
         }
+    }
+
+    protected override void UnloadContent()
+    {
+        _sprites.Dispose();
+        _scene.Dispose();
+        _pixel.Dispose();
+        _spriteBatch.Dispose();
+        base.UnloadContent();
     }
 
     private void DrawHud()
