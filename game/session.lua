@@ -13,7 +13,8 @@ function Session.new(seed)
 end
 
 function Session.fromLevel(level)
-  return setmetatable({ seed = level.seed, level = level, world = World.new(level), player = Player.new(level.spawn.x, level.spawn.y), hand = Hand.new(level.hand, level.seed), score = Scoring.new(), tick = 0, status = "running", result = nil, collected = {}, incidents = {} }, Session)
+  local maxY = level.spawn.y; for _, n in ipairs(level.nodes) do maxY = math.max(maxY, n.y) end
+  return setmetatable({ seed = level.seed, level = level, world = World.new(level), player = Player.new(level.spawn.x, level.spawn.y), hand = Hand.new(level.hand, level.seed), score = Scoring.new(), tick = 0, status = "running", result = nil, collected = {}, incidents = {}, safeX = level.spawn.x, safeY = level.spawn.y, maxRouteY = maxY }, Session)
 end
 
 function Session:update(input)
@@ -21,6 +22,10 @@ function Session:update(input)
   self.tick = self.tick + 1
   local p, oldState = self.player, self.player.state
   p:update(self.world, input, config.step); self.world:updateObjects(config.step)
+  if p.grounded then self.safeX, self.safeY = p.x, p.y end
+  if p.y > self.maxRouteY + 70 then
+    p.x, p.y, p.vx, p.vy = self.safeX, self.safeY - 2, p.vx * 0.25, 0; p:setState("stumble_recovery", "void recovery"); Scoring.event(self.score, self.tick, "stumble")
+  end
   if p.state ~= oldState then Scoring.event(self.score, self.tick, p.state == "high_speed_run" and "high_speed" or "state_chain") end
   for _, event in ipairs(p.styleEvents) do if not event.scored then Scoring.event(self.score, self.tick, event.kind); event.scored = true end end
   for _, hazard in ipairs(self.level.hazards) do
@@ -39,7 +44,7 @@ function Session:update(input)
   end
   if self.hand:update(self.world, self.level, p, config.step) then
     self.status, p.captured = "captured", true; p:setState("hand_capture", self.hand.captureReason); self.result = Scoring.result(self.score, self.tick)
-  elseif p.x >= self.level.exit.x then
+  elseif math.abs(p.x - self.level.exit.x) < 10 and math.abs(p.y - self.level.exit.y) < 22 then
     self.status, p.finished = "finished", true; p:setState("exit_finish", "real exit reached"); self.result = Scoring.result(self.score, self.tick)
   end
 end

@@ -5,7 +5,7 @@ local Generator = {}
 
 Generator.version = 1
 Generator.params = {
-  sectionCount = 14, horizontalLength = { 560, 760 }, verticalLength = { 260, 360 },
+  sectionCount = 22, horizontalLength = { 650, 850 }, verticalLength = { 350, 450 },
   targetDuration = { 180, 300 }, collectibleEvery = 2,
 }
 
@@ -100,7 +100,7 @@ local function buildAttempt(seed, attempt)
   end
   level.exit = { x = x + 18, y = y, node = previous.id }
   addSolid(level, x - 16, y, 70, 32, "bedrock", "exit apron")
-  level.hand = { x = level.spawn.x - 72, y = level.spawn.y, phase = rng:float() * math.pi * 2 }
+  level.hand = { x = level.spawn.x - require("game.config").hand.startGap, y = level.spawn.y, phase = rng:float() * math.pi * 2 }
   level.sectionKinds = sectionKinds
   return level
 end
@@ -115,7 +115,7 @@ local function metrics(level, validation, elapsed)
   local vertical = 0; for _, kind in ipairs(level.sectionKinds) do if kind == "vertical" then vertical = vertical + 1 end end
   local elevation = level.nodes[#level.nodes].y - level.nodes[1].y
   return {
-    routeLength = level.exit.x - level.spawn.x, expectedDuration = (level.exit.x - level.spawn.x) / 31,
+    routeLength = level.exit.x - level.spawn.x, expectedDuration = (level.exit.x - level.spawn.x) / 55,
     horizontalRatio = (#level.sectionKinds - vertical) / #level.sectionKinds, verticalRatio = vertical / #level.sectionKinds,
     branchCount = math.max(0, #level.links - (#level.nodes - 1)), reconnectionCount = math.max(0, #level.links - (#level.nodes - 1)), elevationChange = elevation, materialDistribution = counts,
     destructibleRatio = destructible / #level.solids, requiredMovementStates = validation.used,
@@ -132,14 +132,17 @@ function Generator.generate(seed)
   for attempt = 0, 5 do
     local level = buildAttempt(seed, attempt)
     local validation = Reach.validate(level)
-    if not validation.valid then
-      -- Deterministic local repair: replace failing required links with conservative tool corridors.
+    local repairPass = 0
+    while not validation.valid and repairPass < 12 do
+      -- Repair the current frontier, then validate again so later blocked frontiers become inspectable.
+      local changed = false
       for _, evidence in ipairs(validation.evidence) do
         if not evidence.reachable then
-          for _, link in ipairs(level.links) do if link.id == evidence.id or (link.from == evidence.from and link.to == evidence.to) then link.mode, link.distance, link.hardness = "tool", 1, 3; repairs = repairs + 1 end end
+          for _, link in ipairs(level.links) do if link.from == evidence.from and link.to == evidence.to then link.mode, link.distance, link.hardness = "tool", 1, 3; repairs, changed = repairs + 1, true end end
         end
       end
-      validation = Reach.validate(level)
+      if not changed then break end
+      repairPass, validation = repairPass + 1, Reach.validate(level)
     end
     if validation.valid then
       level.validation = validation
