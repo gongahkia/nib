@@ -34,7 +34,7 @@ end)
 
 H.test("coyote jump is accepted", function()
   local world, p = World.playground(), Player.new(20, 104)
-  settle(p, world); p.x, p.coyote, p.grounded = 210, config.coyoteTicks, false
+  settle(p, world); p.x, p.coyote, p.grounded = 300, config.coyoteTicks, false
   p:update(world, { moveX = 1, jumpPressed = true, aimDirX = 1, aimDirY = 0 }, rootConfig.step)
   H.eq(p.state, "jump_rise"); H.ok(p.vy < 0)
 end)

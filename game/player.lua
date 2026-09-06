@@ -97,6 +97,7 @@ function Player:update(world, input, dt)
     local frictionScale = material and material.friction or 1
     local accel = self.grounded and (mx ~= 0 and (self.vx * mx < 0 and config.turnAcceleration or config.runAcceleration) or config.friction * frictionScale) or config.airAcceleration
     self.vx = approach(self.vx, target, accel * dt)
+    if self.grounded and surface and surface.slope then self.vx = self.vx + (-surface.slope / surface.w) * 36 * dt end
     if not self.grounded then self.vy = math.min(config.maxFallSpeed, self.vy + config.gravity * dt) end
 
     if self.coyote > 0 and self:consume("jump") then
@@ -195,7 +196,7 @@ function Player:update(world, input, dt)
 
   if not wasGrounded and self.grounded and self.state ~= "slide" then self:setState(math.abs(self.vx) > config.highSpeed and "high_speed_run" or "idle", "landed") end
   if self.wall ~= 0 and not self.grounded and self.vy > 0 and self.state ~= "air_dash" then self.vy = math.min(self.vy, config.wallSlideSpeed); self:setState("wall_traversal", "wall contact")
-  elseif not self.grounded and self.state ~= "air_dash" and self.state ~= "dive" and not self.grapple then self:setState(self.vy < 0 and "jump_rise" or "fall", "airborne")
+  elseif not self.grounded and self.state ~= "air_dash" and self.state ~= "dive" and self.state ~= "enemy_impact" and not self.grapple then self:setState(self.vy < 0 and "jump_rise" or "fall", "airborne")
   elseif self.grounded and self.state ~= "slide" and self.state ~= "stumble_recovery" then
     if mx ~= 0 and self.vx * mx < -2 then self:setState("turn_skid", "reversed input")
     elseif math.abs(self.vx) >= config.highSpeed then self:setState("high_speed_run", "speed threshold")
