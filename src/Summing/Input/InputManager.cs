@@ -64,6 +64,10 @@ public sealed class InputManager
     public bool Down(InputAction action) => _down.Contains(action);
     public bool Pressed(InputAction action) => _pressed.Contains(action);
     public bool Released(InputAction action) => _released.Contains(action);
+    public bool KeyDown(Keys key) => _keyboard.IsKeyDown(key);
+    public bool KeyPressed(Keys key) => _keyboard.IsKeyDown(key) && !_previousKeyboard.IsKeyDown(key);
+    public bool MouseLeftPressed => _mouse.LeftButton == ButtonState.Pressed && _previousMouse.LeftButton == ButtonState.Released;
+    public bool MouseRightPressed => _mouse.RightButton == ButtonState.Pressed && _previousMouse.RightButton == ButtonState.Released;
 
     private void SetMouseButton(InputAction action, ButtonState current, ButtonState previous)
     {

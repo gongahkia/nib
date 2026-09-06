@@ -25,5 +25,8 @@ public sealed class Camera2D
         Position = Vector2.Lerp(Position, target + LookAhead, 1f - MathF.Exp(-7.5f * dt));
     }
 
+    public void Pan(Vector2 delta) => Position += delta;
+
     public Vector2 WorldToScreen(Vector2 world) => world - Position + new Vector2(GameConstants.VirtualWidth, GameConstants.VirtualHeight) * 0.5f;
+    public Vector2 ScreenToWorld(Vector2 screen) => screen + Position - new Vector2(GameConstants.VirtualWidth, GameConstants.VirtualHeight) * 0.5f;
 }

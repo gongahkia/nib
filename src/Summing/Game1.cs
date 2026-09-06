@@ -1,14 +1,18 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Summing.Camera;
 using Summing.Core;
 using Summing.Entities;
+using Summing.Editor;
 using Summing.Gameplay;
 using Summing.Generation;
 using Summing.History;
 using Summing.Input;
 using Summing.Player;
+using Summing.Persistence;
 using Summing.Rendering;
 using Summing.World;
 
@@ -29,9 +33,9 @@ public sealed class Game1 : Game
     private TileWorldRenderer _tileRenderer = null!;
     private readonly Camera2D _camera = new();
     private PlayerController _player = null!;
-    private readonly DigTool _digTool = new();
-    private readonly BombSystem _bombSystem = new();
-    private readonly RopeSystem _ropeSystem = new();
+    private DigTool _digTool = null!;
+    private BombSystem _bombSystem = null!;
+    private RopeSystem _ropeSystem = null!;
     private PlayerInventory _inventory = null!;
     private readonly Difficulty _difficulty = Difficulty.Easy;
     private long _frame;
@@ -39,6 +43,8 @@ public sealed class Game1 : Game
     private RelicSystem _relicSystem = null!;
     private BurrowerSystem _burrowerSystem = null!;
     private BrittleSystem _brittleSystem = null!;
+    private readonly EditorSystem _editor = new();
+    private readonly List<string> _terrainEvents = [];
 
     public Game1()
     {
@@ -59,17 +65,8 @@ public sealed class Game1 : Game
     protected override void Initialize()
     {
         _input = new InputManager(InputBindings.LoadOrCreate("saves/bindings.json"));
-        _generated = WorldGeneratorRegistry.Generate(new WorldGenerationConfig());
-        _world = _generated.Terrain;
         _archive = new ArchiveStore("archive/archive.json");
-        _relicSystem = new RelicSystem(_generated, _archive);
-        var tuning = DifficultyTuning.For(_difficulty);
-        _player = new PlayerController(_generated.Spawn, tuning.StartingHealth);
-        _inventory = new PlayerInventory(tuning);
-        _burrowerSystem = new BurrowerSystem(_generated, tuning);
-        _brittleSystem = new BrittleSystem(_generated, tuning);
-        _bombSystem.Exploded += _burrowerSystem.ApplyExplosion;
-        _camera.Snap(new Vector2(_generated.Spawn.X, _generated.Spawn.Y - 40f));
+        LoadGeneratedWorld(WorldGeneratorRegistry.Generate(new WorldGenerationConfig()));
         base.Initialize();
     }
 
@@ -91,7 +88,13 @@ public sealed class Game1 : Game
         var playerScreen = _camera.WorldToScreen(_player.Bounds.Center);
         _input.Update(playerScreen);
         _frame++;
-        if (_input.Pressed(InputAction.Pause)) Exit();
+        _editor.Update(_input, _camera, GraphicsDevice.Viewport, _generated, RegenerateWorld,
+            SaveEditorWorld, LoadEditorWorld, ExportWorld, GameConstants.FixedDelta);
+        if (_editor.Active)
+        {
+            base.Update(gameTime);
+            return;
+        }
         _player.Update(_input, _world, GameConstants.FixedDelta);
         var wind = _generated.WindAt(_player.Position.Y);
         _player.Velocity += new Vector2(wind * GameConstants.FixedDelta, 0f);
@@ -102,7 +105,7 @@ public sealed class Game1 : Game
         _burrowerSystem.Update(_player, _world, GameConstants.FixedDelta);
         _brittleSystem.Update(_player, _world, GameConstants.FixedDelta);
         if (_player.Position.Y > _world.PixelHeight + 80f)
-            _player.Reset(new Vector2(7f * GameConstants.TileSize, 15f * GameConstants.TileSize));
+            _player.Reset(_generated.Spawn);
         var cameraTarget = new Vector2(
             Math.Clamp(_player.Position.X, GameConstants.VirtualWidth * 0.5f, _world.PixelWidth - GameConstants.VirtualWidth * 0.5f),
             Math.Clamp(_player.Position.Y - 25f, GameConstants.VirtualHeight * 0.5f, _world.PixelHeight - GameConstants.VirtualHeight * 0.5f));
@@ -127,10 +130,12 @@ public sealed class Game1 : Game
         _burrowerSystem.Draw(_spriteBatch, _sprites);
         _player.Draw(_spriteBatch, _pixel, _sprites, _frame);
         _digTool.Draw(_spriteBatch, _pixel, _player);
+        _editor.DrawWorld(_spriteBatch, _pixel);
         _spriteBatch.End();
 
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
         DrawHud();
+        _editor.DrawOverlay(_spriteBatch, _pixel, _font, _generated);
         _spriteBatch.End();
         GraphicsDevice.SetRenderTarget(null);
 
@@ -150,6 +155,49 @@ public sealed class Game1 : Game
             _spriteBatch.Draw(_pixel, new Rectangle(x, _world.PixelHeight - height - 30, 25, height), GamePalette.FarStone);
         }
     }
+
+    private void LoadGeneratedWorld(GeneratedWorld generated)
+    {
+        _generated = generated;
+        _world = generated.Terrain;
+        _terrainEvents.Clear();
+        _world.TerrainChanged += change =>
+        {
+            _terrainEvents.Add($"{_frame}:{change.Cause}:{change.Tile.X},{change.Tile.Y}:{change.Material}:{change.Damage}:{change.Destroyed}");
+            if (_terrainEvents.Count > 512) _terrainEvents.RemoveAt(0);
+        };
+        var tuning = DifficultyTuning.For(_difficulty);
+        _player = new PlayerController(generated.Spawn, tuning.StartingHealth);
+        _inventory = new PlayerInventory(tuning);
+        _digTool = new DigTool();
+        _bombSystem = new BombSystem();
+        _ropeSystem = new RopeSystem();
+        _relicSystem = new RelicSystem(generated, _archive);
+        _burrowerSystem = new BurrowerSystem(generated, tuning);
+        _brittleSystem = new BrittleSystem(generated, tuning);
+        _bombSystem.Exploded += _burrowerSystem.ApplyExplosion;
+        _camera.Snap(new Vector2(generated.Spawn.X, generated.Spawn.Y - 40f));
+    }
+
+    private void RegenerateWorld(WorldGenerationConfig configuration) =>
+        LoadGeneratedWorld(WorldGeneratorRegistry.Generate(configuration));
+
+    private void SaveEditorWorld() => SaveWorld("saves/editor-world.json");
+
+    private void LoadEditorWorld()
+    {
+        const string path = "saves/editor-world.json";
+        if (File.Exists(path)) LoadGeneratedWorld(WorldSerializer.Load(path));
+    }
+
+    private void ExportWorld()
+    {
+        var path = $"exports/world-{_generated.Configuration.Seed}-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}.json";
+        SaveWorld(path);
+    }
+
+    private void SaveWorld(string path) => WorldSerializer.Save(path, _generated, _player, _inventory,
+        _burrowerSystem, _brittleSystem, _relicSystem, _ropeSystem, _bombSystem, _difficulty, _frame, _terrainEvents);
 
     protected override void UnloadContent()
     {
