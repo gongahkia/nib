@@ -54,6 +54,13 @@ public sealed class SpriteLibrary : IDisposable
         }
     }
 
+    public void DrawRelic(SpriteBatch batch, Vector2 position, int variant)
+    {
+        var frame = Math.Abs(variant) % 6;
+        batch.Draw(_relics, new Rectangle((int)position.X - 12, (int)position.Y - 24, 24, 24),
+            new Rectangle(frame * 24, 0, 24, 24), Color.White);
+    }
+
     public void DrawPlayer(SpriteBatch batch, MovementState state, Vector2 feet, int facing, long frame)
     {
         var mapping = _stateFrames[state];
