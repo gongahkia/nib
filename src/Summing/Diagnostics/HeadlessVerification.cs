@@ -28,7 +28,18 @@ public static class HeadlessVerification
         VerifyBrittleAndArchive();
         VerifyInputBindingPersistence();
         VerifyImpactFeedback();
-        Console.WriteLine("systems=ok movement=one-tile-jump-dash fall=one-heart rope=anchor-grip-jump-transfer dig=fast-four-directions camera=zoomed-out material=one-two-hit terrain=bomb-rocket-burrower hazard=brittle archive=persistent-json input=remap-json feedback=shake-debris");
+        VerifySpriteAnchorMirroring();
+        Console.WriteLine("systems=ok movement=one-tile-jump-dash fall=one-heart rope=anchor-grip-jump-transfer punch=fast-four-directions camera=zoomed-out material=one-two-hit terrain=bomb-rocket-burrower hazard=brittle archive=persistent-json input=remap-json feedback=shake-debris sprite=facing-anchor");
+    }
+
+    private static void VerifySpriteAnchorMirroring()
+    {
+        var crop = new Rectangle(42, 36, 78, 48);
+        var authoredAnchor = new Vector2(22f, 44f);
+        var right = PlayerSpriteRenderer.FacingAnchor(crop, authoredAnchor, false);
+        var left = PlayerSpriteRenderer.FacingAnchor(crop, authoredAnchor, true);
+        if (right != authoredAnchor || MathF.Abs(right.X + left.X - crop.Width) > 0.001f || right.Y != left.Y)
+            throw new InvalidOperationException("horizontal sprite flip did not mirror the pack foot anchor");
     }
 
     private static void VerifyMovementTransitions()
@@ -64,7 +75,7 @@ public static class HeadlessVerification
         VerifyCoyoteAndJumpBuffer();
         VerifyDashStopsAtTerrain();
         VerifyWallAndLedgeTransitions();
-        VerifyToolReachStopsAtAdjacentTile();
+        VerifyPunchReachStopsAtAdjacentTile();
         VerifyFallDamageTuning();
     }
 
@@ -190,7 +201,7 @@ public static class HeadlessVerification
                 $"state={ledgePlayer.State} grounded={ledgePlayer.Grounded} position={ledgePlayer.Position} bounds={ledgePlayer.Bounds}");
     }
 
-    private static void VerifyToolReachStopsAtAdjacentTile()
+    private static void VerifyPunchReachStopsAtAdjacentTile()
     {
         var world = new TileWorld(12, 10);
         for (var x = 0; x < world.Width; x++) world.SetTile(x, 7, MaterialId.RedSandstone);
@@ -207,21 +218,21 @@ public static class HeadlessVerification
         if (world.GetTile(5, 6).Damage != 1 || world.GetTile(3, 6).Damage != 1 ||
             world.GetTile(4, 5).Damage != 1 || world.GetTile(4, 7).Solid ||
             world.GetTile(6, 6).Damage != 0)
-            throw new InvalidOperationException("tool swing did not hit only the adjacent terrain tile in all four directions");
+            throw new InvalidOperationException("terrain punch did not hit only the adjacent tile in all four directions");
     }
 
     private static void Strike(TileWorld world, PlayerController player, Vector2 direction, InputAction directionAction)
     {
         var input = new InputManager(new InputBindings());
-        var tool = new DigTool();
+        var strike = new TerrainStrike();
         input.SetSyntheticState(direction, direction, directionAction, InputAction.Dig);
-        tool.Update(input, player, world, GameConstants.FixedDelta);
+        strike.Update(input, player, world, GameConstants.FixedDelta);
         for (var frame = 0; frame < 12; frame++)
         {
             input.SetSyntheticState(direction, direction, directionAction);
-            tool.Update(input, player, world, GameConstants.FixedDelta);
+            strike.Update(input, player, world, GameConstants.FixedDelta);
         }
-        if (tool.Swinging) throw new InvalidOperationException("tool recovery still exceeds 0.2 seconds");
+        if (strike.Striking) throw new InvalidOperationException("terrain punch recovery still exceeds 0.2 seconds");
     }
 
     private static void VerifyRopePlacementAndClimbing()
@@ -525,7 +536,7 @@ public static class HeadlessVerification
             throw new InvalidOperationException("movement-test camera screen/world transforms disagree");
 
         var effects = new TerrainBreakEffects();
-        effects.Emit(new TerrainChange(new Point(4, 5), MaterialId.RedSandstone, "tool", 1, true));
+        effects.Emit(new TerrainChange(new Point(4, 5), MaterialId.RedSandstone, "punch", 1, true));
         if (effects.ActiveDebris < 12)
             throw new InvalidOperationException("block break did not produce a substantial debris burst");
     }

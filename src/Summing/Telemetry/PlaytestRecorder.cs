@@ -13,6 +13,7 @@ using Summing.Gameplay;
 using Summing.Generation;
 using Summing.Input;
 using Summing.Player;
+using Summing.Rendering;
 using Summing.World;
 
 namespace Summing.Telemetry;
@@ -56,13 +57,14 @@ public sealed class PlaytestRecorder : IDisposable
         _screenshots.WriteLine("frame,time_s,file,event,phase");
         File.WriteAllText(Path.Combine(DirectoryPath, "metadata.json"), JsonSerializer.Serialize(new
         {
-            schemaVersion = 8,
+            schemaVersion = 9,
             startedAtUtc = DateTimeOffset.UtcNow,
             seed = generated.Configuration.Seed,
             generator = WorldGeneratorRegistry.Identifier(generated.Configuration.Variant),
             generated.Configuration,
             difficulty,
-            renderMode = "sanitized-terrain-template-free-player",
+            renderMode = "sanitized-terrain-profiled-player",
+            playerSpriteProfile = PlayerSpriteRenderer.ActiveProfileId(),
             historyId = generated.History.Id,
             epoch = generated.History.EpochName,
             generated.Diagnostics,

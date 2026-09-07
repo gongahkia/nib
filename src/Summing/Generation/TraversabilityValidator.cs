@@ -91,10 +91,10 @@ public static class TraversabilityValidator
             return Failure("summit trigger is detached from the validated ascent", anchors.Count - 1, obstructions);
 
         return new TraversabilityReport(true, anchors.Count - 1, obstructions, "",
-            ["run", "jump", "coyote", "jump-buffer", "ledge-mantle", "wall-cling", "wall-jump", "dash", "digging-tool"]);
+            ["run", "jump", "coyote", "jump-buffer", "ledge-mantle", "wall-cling", "wall-jump", "dash", "terrain-punch"]);
     }
 
     private static TraversabilityReport Failure(string failure, int transitions, int obstructions) =>
         new(false, transitions, obstructions, failure,
-            ["run", "jump", "coyote", "jump-buffer", "ledge-mantle", "wall-cling", "wall-jump", "dash", "digging-tool"]);
+            ["run", "jump", "coyote", "jump-buffer", "ledge-mantle", "wall-cling", "wall-jump", "dash", "terrain-punch"]);
 }

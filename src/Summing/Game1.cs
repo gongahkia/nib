@@ -27,7 +27,7 @@ public sealed class Game1 : Game
     private RenderTarget2D _scene = null!;
     private Texture2D _pixel = null!;
     private PixelFont _font = null!;
-    private TemplatePlayerRenderer _playerRenderer = null!;
+    private PlayerSpriteRenderer _playerRenderer = null!;
     private InputManager _input = null!;
     private TileWorld _world = null!;
     private GeneratedWorld _generated = null!;
@@ -35,7 +35,7 @@ public sealed class Game1 : Game
     private readonly Camera2D _camera = new();
     private readonly TerrainBreakEffects _terrainBreakEffects = new();
     private PlayerController _player = null!;
-    private DigTool _digTool = null!;
+    private TerrainStrike _terrainStrike = null!;
     private BombSystem _bombSystem = null!;
     private RopeSystem _ropeSystem = null!;
     private PlayerInventory _inventory = null!;
@@ -102,7 +102,7 @@ public sealed class Game1 : Game
         _pixel.SetData([Color.White]);
         _font = new PixelFont(_pixel);
         _tileRenderer = new TileWorldRenderer(_pixel);
-        _playerRenderer = new TemplatePlayerRenderer(GraphicsDevice);
+        _playerRenderer = new PlayerSpriteRenderer(GraphicsDevice);
     }
 
     protected override void Update(GameTime gameTime)
@@ -166,7 +166,7 @@ public sealed class Game1 : Game
         var wind = _generated.WindAt(_player.Position.Y);
         _player.Velocity += new Vector2(wind * GameConstants.FixedDelta, 0f);
         _ropeSystem.Update(_input, _player, _inventory, _world, GameConstants.FixedDelta);
-        _digTool.Update(_input, _player, _world, GameConstants.FixedDelta);
+        _terrainStrike.Update(_input, _player, _world, GameConstants.FixedDelta);
         _bombSystem.Update(_input, _player, _inventory, _world, _frame, GameConstants.FixedDelta);
         _relicSystem.Update(_player, GameConstants.FixedDelta);
         _burrowerSystem.Update(_player, _world, GameConstants.FixedDelta);
@@ -291,7 +291,6 @@ public sealed class Game1 : Game
                         (int)MathF.Round(burrower.Position.Y - 9f), 18, 18),
                     new Color(174, 75, 75));
         _playerRenderer.Draw(_spriteBatch, _player, _frame);
-        _digTool.Draw(_spriteBatch, _pixel, _player);
     }
 
     private void DrawPhaseOverlay()
@@ -407,7 +406,7 @@ public sealed class Game1 : Game
                 "brittle-collapse" => 9f,
                 "burrower" => 5f,
                 _ => 7.5f
-            } : change.Cause == "tool" ? 2.5f : 0f;
+            } : change.Cause == "punch" ? 2.5f : 0f;
             if (shake > 0f) _camera.AddShake(shake);
             _terrainEvents.Add($"{_frame}:{change.Cause}:{change.Tile.X},{change.Tile.Y}:{change.Material}:{change.Damage}:{change.Destroyed}");
             if (_terrainEvents.Count > 512) _terrainEvents.RemoveAt(0);
@@ -417,7 +416,7 @@ public sealed class Game1 : Game
         var tuning = DifficultyTuning.For(_difficulty);
         _player = new PlayerController(generated.Spawn, tuning.StartingHealth);
         _inventory = new PlayerInventory(tuning);
-        _digTool = new DigTool();
+        _terrainStrike = new TerrainStrike();
         _bombSystem = new BombSystem();
         _ropeSystem = new RopeSystem();
         _relicSystem = new RelicSystem(generated, _archive);
@@ -457,7 +456,7 @@ public sealed class Game1 : Game
             ? "death" : status.StartsWith("fall", StringComparison.Ordinal) ? "large-fall" : "damage", new { status, _player.Health });
         _player.Dashed += () => _telemetry?.RecordEvent("dash",
             new { _player.Position, _player.Velocity, _player.DashCharges });
-        _digTool.Impact += change => _telemetry?.RecordEvent("tool-impact", change, change.Destroyed);
+        _terrainStrike.Impact += change => _telemetry?.RecordEvent("punch-impact", change, change.Destroyed);
         _burrowerSystem.Event += value => _telemetry?.RecordEvent(value == "attack" ? "burrower-attack" : "burrower-interaction",
             new { value }, value == "attack");
         _brittleSystem.Triggered += tile => _telemetry?.RecordEvent("brittle-triggered", new { tile }, false);

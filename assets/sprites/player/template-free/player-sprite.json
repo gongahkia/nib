@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "id": "ozzbit-template-free",
+  "cellWidth": 128,
+  "cellHeight": 128,
+  "crop": {
+    "x": 42,
+    "y": 36,
+    "width": 78,
+    "height": 48
+  },
+  "footAnchor": {
+    "x": 22.0,
+    "y": 44.0
+  },
+  "scale": 0.5,
+  "authoredFacing": 1,
+  "collision": {
+    "standingWidth": 18.0,
+    "standingHeight": 22.0,
+    "crouchingHeight": 14.0
+  },
+  "clips": {
+    "idle": { "file": "male_hero_template-idle.png", "frames": 10 },
+    "walk": { "file": "male_hero_template-walk.png", "frames": 10 },
+    "run": { "file": "male_hero_template-run.png", "frames": 10 },
+    "jump": { "file": "male_hero_template-jump.png", "frames": 6 },
+    "fall": { "file": "male_hero_template-fall.png", "frames": 4 },
+    "fall_loop": { "file": "male_hero_template-fall_loop.png", "frames": 3 },
+    "combo_1": { "file": "male_hero_template-combo_1.png", "frames": 3 },
+    "combo_1_end": { "file": "male_hero_template-combo_1_end.png", "frames": 4 }
+  },
+  "states": {
+    "Idle": { "clip": "idle", "firstFrame": 0, "frameCount": 10, "ticksPerFrame": 8 },
+    "Run": { "clip": "run", "firstFrame": 0, "frameCount": 10, "ticksPerFrame": 4 },
+    "Takeoff": { "clip": "jump", "firstFrame": 0, "frameCount": 1, "ticksPerFrame": 5 },
+    "AscendingJump": { "clip": "jump", "firstFrame": 0, "frameCount": 4, "ticksPerFrame": 5 },
+    "Apex": { "clip": "jump", "firstFrame": 4, "frameCount": 1, "ticksPerFrame": 5 },
+    "Falling": { "clip": "fall_loop", "firstFrame": 0, "frameCount": 3, "ticksPerFrame": 8 },
+    "Landing": { "clip": "fall", "firstFrame": 3, "frameCount": 1, "ticksPerFrame": 6 },
+    "Crouch": { "clip": "jump", "firstFrame": 0, "frameCount": 1, "ticksPerFrame": 5 },
+    "Crawl": { "clip": "walk", "firstFrame": 0, "frameCount": 10, "ticksPerFrame": 7 },
+    "Slide": { "clip": "run", "firstFrame": 7, "frameCount": 1, "ticksPerFrame": 4 },
+    "LedgeHang": { "clip": "fall", "firstFrame": 3, "frameCount": 1, "ticksPerFrame": 6 },
+    "Mantle": { "clip": "jump", "firstFrame": 2, "frameCount": 1, "ticksPerFrame": 5 },
+    "WallCling": { "clip": "fall_loop", "firstFrame": 0, "frameCount": 3, "ticksPerFrame": 8 },
+    "WallJump": { "clip": "jump", "firstFrame": 2, "frameCount": 1, "ticksPerFrame": 5 },
+    "Dash": { "clip": "run", "firstFrame": 0, "frameCount": 10, "ticksPerFrame": 3 },
+    "RopeInteraction": { "clip": "fall", "firstFrame": 3, "frameCount": 1, "ticksPerFrame": 6 },
+    "RopeJump": { "clip": "jump", "firstFrame": 3, "frameCount": 1, "ticksPerFrame": 5 },
+    "Punching": { "clip": "combo_1", "firstFrame": 0, "frameCount": 3, "ticksPerFrame": 4 },
+    "BombUse": { "clip": "combo_1_end", "firstFrame": 0, "frameCount": 4, "ticksPerFrame": 5 },
+    "Hurt": { "clip": "fall", "firstFrame": 1, "frameCount": 1, "ticksPerFrame": 6 },
+    "Stunned": { "clip": "fall", "firstFrame": 2, "frameCount": 1, "ticksPerFrame": 6 },
+    "Death": { "clip": "fall", "firstFrame": 3, "frameCount": 1, "ticksPerFrame": 6 }
+  }
+}
