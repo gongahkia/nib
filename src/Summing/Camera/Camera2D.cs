@@ -62,6 +62,8 @@ public sealed class Camera2D
 
     public Vector2 WorldToScreen(Vector2 world) => world * WorldZoom + ScreenTranslation(true);
     public Vector2 ScreenToWorld(Vector2 screen) => (screen - ScreenTranslation(true)) / WorldZoom;
+    public Vector2 WorldToStableScreen(Vector2 world) => world * WorldZoom + ScreenTranslation(false);
+    public Vector2 StableScreenToWorld(Vector2 screen) => (screen - ScreenTranslation(false)) / WorldZoom;
 
     private Vector2 ScreenTranslation(bool includeShake)
     {

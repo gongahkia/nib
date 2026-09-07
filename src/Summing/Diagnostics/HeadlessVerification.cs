@@ -421,6 +421,10 @@ public static class HeadlessVerification
         if (Vector2.Distance(projected, Vector2.Transform(worldPoint, camera.View)) > 0.01f ||
             Vector2.Distance(worldPoint, camera.ScreenToWorld(projected)) > 0.01f)
             throw new InvalidOperationException("zoomed camera screen/world transforms disagree");
+        var stableProjected = camera.WorldToStableScreen(worldPoint);
+        if (Vector2.Distance(stableProjected, Vector2.Transform(worldPoint, camera.StableView)) > 0.01f ||
+            Vector2.Distance(worldPoint, camera.StableScreenToWorld(stableProjected)) > 0.01f)
+            throw new InvalidOperationException("movement-test camera screen/world transforms disagree");
 
         var effects = new TerrainBreakEffects();
         effects.Emit(new TerrainChange(new Point(4, 5), MaterialId.RedSandstone, "tool", 1, true));

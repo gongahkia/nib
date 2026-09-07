@@ -131,7 +131,9 @@ public sealed class Game1 : Game
 
     protected override void Update(GameTime gameTime)
     {
-        var playerScreen = _camera.WorldToScreen(_player.Bounds.Center);
+        var playerScreen = _movementTestView
+            ? _camera.WorldToStableScreen(_player.Bounds.Center)
+            : _camera.WorldToScreen(_player.Bounds.Center);
         _input.Update(playerScreen, new Vector2(GraphicsDevice.Viewport.Width / (float)GameConstants.VirtualWidth,
             GraphicsDevice.Viewport.Height / (float)GameConstants.VirtualHeight));
         _frame++;
