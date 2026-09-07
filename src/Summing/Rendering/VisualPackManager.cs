@@ -22,6 +22,7 @@ public enum VisualPackId
 public enum PlayerVisualPackId
 {
     SummingOriginal,
+    AsepritePilgrim,
     GandalfMale,
     GandalfFemale,
     MerakintsugiSample
@@ -184,6 +185,7 @@ public sealed class VisualPackManager : IDisposable
 
     public static string DisplayName(PlayerVisualPackId id) => id switch
     {
+        PlayerVisualPackId.AsepritePilgrim => "ASHEN PILGRIM",
         PlayerVisualPackId.GandalfMale => "GANDALF MALE",
         PlayerVisualPackId.GandalfFemale => "GANDALF FEMALE",
         PlayerVisualPackId.MerakintsugiSample => "MERAKINTSUGI SAMPLE",
