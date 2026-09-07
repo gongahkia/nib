@@ -141,6 +141,65 @@
         "raw redistribution permission is not established",
         "available through a material-tinted local comparison adapter"
       ]
+    },
+    {
+      "id": "draculas-manor",
+      "archive": "lilspook.zip",
+      "archiveSha256": "bc2f6ec1db1985fe196e2a4c07e5cb42a45a4a26b9feaca2fc34324c51d6c948",
+      "archiveBytes": 10412,
+      "creator": "Adam Saltsman",
+      "title": "Dracula's Manor",
+      "source": "https://adamatomic.itch.io/dracula",
+      "licenseEvidence": "creator page explicitly dedicates the assets to the public domain",
+      "licenseStatus": "public-domain",
+      "storage": "tracked",
+      "extractedPath": "third_party/art/cc0/draculas-manor/",
+      "designStatus": "optional-runtime-comparison-and-approved-source",
+      "notes": [
+        "8x8 terrain cells scale exactly 3x to Summing's 24x24 grid",
+        "the topology-aware adapter excludes props and empty atlas cells from ordinary terrain",
+        "the gothic neon palette is useful for silhouette comparison but does not fit the canonical badlands palette",
+        "available in the visual selector"
+      ]
+    },
+    {
+      "id": "merakintsugi-sample",
+      "archive": "sample(idle&walk).zip",
+      "archiveSha256": "177f9874985b0a03729aaef95612b63327da556858a3198b0e44439cb316a415",
+      "archiveBytes": 59240,
+      "creator": "Merakintsugi",
+      "title": "Platformer Character Pack sample",
+      "source": "https://merakintsugi.itch.io/platformer-character-pack",
+      "licenseEvidence": "creator page permits project use and modification while prohibiting raw redistribution, AI training, and NFTs",
+      "licenseStatus": "game-use-permitted-raw-redistribution-prohibited",
+      "storage": "local-only",
+      "extractedPath": "third_party/art/local-only/merakintsugi-sample/",
+      "designStatus": "optional-runtime-player-comparison-reject-as-final",
+      "notes": [
+        "the free sample contains only idle, idle-to-walk, and walk animation files",
+        "the roughly 53x64 source art is scaled to a compact one-tile presentation footprint",
+        "states not supplied by the sample deliberately fall back to walk frames",
+        "must not be used for AI training or as image-generation input"
+      ]
+    },
+    {
+      "id": "ozzbit-template-free",
+      "archive": "template_free.zip",
+      "archiveSha256": "875b4a615ff1b3f0d72f8464c575eaefdafb7e0a2b75339d0f5a448aea3ce697",
+      "archiveBytes": 33649,
+      "creator": "Ozzbit Games",
+      "title": "Action Platformer Character Template free tier",
+      "source": "https://ozzbit-games.itch.io/action-platformer-character-template",
+      "licenseEvidence": "bundled LICENSE.txt and creator page restrict the free tier to personal, non-commercial projects with required credit",
+      "licenseStatus": "personal-noncommercial-only",
+      "storage": "local-only",
+      "extractedPath": "third_party/art/local-only/rejected-ozzbit-template-free/",
+      "designStatus": "reject-license-incompatible",
+      "notes": [
+        "not integrated because Summing is not restricted to non-commercial distribution",
+        "the received free tier contains only a subset of the advertised animation vocabulary",
+        "a separately acquired PRO or DELUXE license would require a new audit before use"
+      ]
     }
   ]
 }

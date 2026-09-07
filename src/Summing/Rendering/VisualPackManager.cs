@@ -23,7 +23,8 @@ public enum PlayerVisualPackId
 {
     SummingOriginal,
     GandalfMale,
-    GandalfFemale
+    GandalfFemale,
+    MerakintsugiSample
 }
 
 public enum EnvironmentVisualPackId
@@ -33,7 +34,8 @@ public enum EnvironmentVisualPackId
     Adve,
     MonochromeCaves,
     PixelFantasyCaves,
-    StoneRuins
+    StoneRuins,
+    DraculasManor
 }
 
 public enum TerrainSheetId
@@ -81,12 +83,22 @@ public sealed class VisualPackManager : IDisposable
     private const int CharacterCellWidth = 80;
     private const int CharacterCellHeight = 64;
     private const int ImportedTileSize = 32;
+    private static readonly Point[] PixelFantasyTopCells =
+        [new(16, 560), new(144, 624), new(208, 624), new(272, 624), new(336, 624)];
+    private static readonly Point[] PixelFantasyBottomCells =
+        [new(144, 944), new(208, 944), new(304, 944), new(416, 944)];
+    private static readonly Point[] PixelFantasyInteriorCells =
+        [new(112, 624), new(320, 704), new(416, 768), new(624, 784)];
+    private static readonly int[] DraculasManorInteriorCells = [16, 17, 18, 19, 25];
     private readonly GraphicsDevice _graphicsDevice;
     private readonly string _selectionPath;
     private readonly bool _persistSelection;
     private readonly VisualPackFiles.GandalfFiles? _gandalfFiles;
+    private readonly VisualPackFiles.MerakintsugiFiles? _merakintsugiFiles;
     private Texture2D? _environmentTexture;
     private Texture2D[] _gandalfCharacter = [];
+    private Texture2D? _merakintsugiIdle;
+    private Texture2D? _merakintsugiWalk;
     private string[] _skinChoices = [];
     private string[] _legChoices = [None];
     private string[] _torsoChoices = [None];
@@ -102,6 +114,9 @@ public sealed class VisualPackManager : IDisposable
         _selectionPath = selectionPath;
         _persistSelection = persistSelection;
         _gandalfFiles = VisualPackFiles.TryResolveGandalf(out var files) ? files : null;
+        _merakintsugiFiles = VisualPackFiles.TryResolveMerakintsugi(out var merakintsugiFiles)
+            ? merakintsugiFiles
+            : null;
         PlayerPack = requested == VisualPackId.GandalfOverworld && GandalfCharacterAvailable
             ? PlayerVisualPackId.GandalfMale
             : PlayerVisualPackId.SummingOriginal;
@@ -120,7 +135,7 @@ public sealed class VisualPackManager : IDisposable
         }
         NormalizePackAvailability();
         BuildCharacterChoices(saved == null);
-        if (saved != null && PlayerPack != PlayerVisualPackId.SummingOriginal)
+        if (saved != null && UsesModularCharacter)
         {
             SkinSheet = SelectExisting(_skinChoices, saved.SkinSheet, SkinSheet);
             LegSheet = SelectExisting(_legChoices, saved.LegSheet, LegSheet);
@@ -142,9 +157,10 @@ public sealed class VisualPackManager : IDisposable
     public string FootSheet { get; private set; } = None;
     public string HairSheet { get; private set; } = None;
     public bool GandalfCharacterAvailable => _gandalfFiles is { } files && Directory.Exists(files.CharacterDirectory);
+    public bool MerakintsugiCharacterAvailable => _merakintsugiFiles is not null;
     public bool GandalfEnvironmentAvailable => EnvironmentAvailable(EnvironmentVisualPackId.GandalfOverworld);
     public string? LoadFailure => _loadFailure;
-    public int AvailablePlayerPackCount => GandalfCharacterAvailable ? 3 : 1;
+    public int AvailablePlayerPackCount => Enum.GetValues<PlayerVisualPackId>().Count(PlayerAvailable);
     public int AvailableEnvironmentPackCount => Enum.GetValues<EnvironmentVisualPackId>().Count(EnvironmentAvailable);
     public string PlayerName => DisplayName(PlayerPack);
     public string EnvironmentName => EnvironmentPack switch
@@ -155,6 +171,7 @@ public sealed class VisualPackManager : IDisposable
         EnvironmentVisualPackId.MonochromeCaves => "MONOCHROME CAVES",
         EnvironmentVisualPackId.PixelFantasyCaves => "PIXEL FANTASY CAVES",
         EnvironmentVisualPackId.StoneRuins => "STONE RUINS",
+        EnvironmentVisualPackId.DraculasManor => "DRACULA'S MANOR",
         _ => "SUMMING ORIGINAL"
     };
     public string CurrentName => $"P {PlayerName}  E {EnvironmentName}";
@@ -171,6 +188,7 @@ public sealed class VisualPackManager : IDisposable
     {
         PlayerVisualPackId.GandalfMale => "GANDALF MALE",
         PlayerVisualPackId.GandalfFemale => "GANDALF FEMALE",
+        PlayerVisualPackId.MerakintsugiSample => "MERAKINTSUGI SAMPLE",
         _ => "SUMMING ORIGINAL"
     };
 
@@ -181,6 +199,7 @@ public sealed class VisualPackManager : IDisposable
         EnvironmentVisualPackId.MonochromeCaves => "MONOCHROME CAVES",
         EnvironmentVisualPackId.PixelFantasyCaves => "PIXEL FANTASY CAVES",
         EnvironmentVisualPackId.StoneRuins => "STONE RUINS",
+        EnvironmentVisualPackId.DraculasManor => "DRACULA'S MANOR",
         _ => "SUMMING ORIGINAL"
     };
 
@@ -200,11 +219,11 @@ public sealed class VisualPackManager : IDisposable
     public string ValueName(VisualSelectionOption option) => option switch
     {
         VisualSelectionOption.PlayerPack => PlayerName,
-        VisualSelectionOption.SkinSheet => PlayerPack == PlayerVisualPackId.SummingOriginal ? "PACK CONTROLLED" : SkinSheet,
-        VisualSelectionOption.LegSheet => PlayerPack == PlayerVisualPackId.SummingOriginal ? "PACK CONTROLLED" : LegSheet,
-        VisualSelectionOption.TorsoSheet => PlayerPack == PlayerVisualPackId.SummingOriginal ? "PACK CONTROLLED" : TorsoSheet,
-        VisualSelectionOption.FootSheet => PlayerPack == PlayerVisualPackId.SummingOriginal ? "PACK CONTROLLED" : FootSheet,
-        VisualSelectionOption.HairSheet => PlayerPack == PlayerVisualPackId.SummingOriginal ? "PACK CONTROLLED" : HairSheet,
+        VisualSelectionOption.SkinSheet => !UsesModularCharacter ? "PACK CONTROLLED" : SkinSheet,
+        VisualSelectionOption.LegSheet => !UsesModularCharacter ? "PACK CONTROLLED" : LegSheet,
+        VisualSelectionOption.TorsoSheet => !UsesModularCharacter ? "PACK CONTROLLED" : TorsoSheet,
+        VisualSelectionOption.FootSheet => !UsesModularCharacter ? "PACK CONTROLLED" : FootSheet,
+        VisualSelectionOption.HairSheet => !UsesModularCharacter ? "PACK CONTROLLED" : HairSheet,
         VisualSelectionOption.EnvironmentPack => DisplayName(EnvironmentPack),
         VisualSelectionOption.TerrainSheet => EnvironmentPack != EnvironmentVisualPackId.GandalfOverworld
             ? "PACK CONTROLLED"
@@ -222,7 +241,7 @@ public sealed class VisualPackManager : IDisposable
     {
         VisualSelectionOption.SkinSheet or VisualSelectionOption.LegSheet or VisualSelectionOption.TorsoSheet or
             VisualSelectionOption.FootSheet or VisualSelectionOption.HairSheet =>
-            PlayerPack != PlayerVisualPackId.SummingOriginal && GandalfCharacterAvailable,
+            UsesModularCharacter && GandalfCharacterAvailable,
         VisualSelectionOption.TerrainSheet => EnvironmentPack == EnvironmentVisualPackId.GandalfOverworld &&
             GandalfEnvironmentAvailable,
         VisualSelectionOption.TerrainBand => EnvironmentPack is EnvironmentVisualPackId.GandalfOverworld or
@@ -291,9 +310,13 @@ public sealed class VisualPackManager : IDisposable
         {
             EnvironmentVisualPackId.GandalfOverworld => DrawGandalfTile(batch, world, destination, material, x, y),
             EnvironmentVisualPackId.Adve => DrawAdveTile(batch, world, destination, material, x, y),
-            EnvironmentVisualPackId.MonochromeCaves => DrawPatternTile(batch, destination, material, x, y, 8, 8),
-            EnvironmentVisualPackId.PixelFantasyCaves => DrawPixelFantasyTile(batch, destination, material, x, y),
-            EnvironmentVisualPackId.StoneRuins => DrawPatternTile(batch, destination, material, x, y, 8, 11),
+            EnvironmentVisualPackId.MonochromeCaves =>
+                DrawMonochromeTile(batch, world, destination, material, x, y),
+            EnvironmentVisualPackId.PixelFantasyCaves =>
+                DrawPixelFantasyTile(batch, world, destination, material, x, y),
+            EnvironmentVisualPackId.StoneRuins => DrawStoneRuinsTile(batch, world, destination, material, x, y),
+            EnvironmentVisualPackId.DraculasManor =>
+                DrawDraculasManorTile(batch, world, destination, material, x, y),
             _ => false
         };
     }
@@ -324,52 +347,113 @@ public sealed class VisualPackManager : IDisposable
         var rightExposed = !world.GetTile(x + 1, y).Solid;
         var topExposed = !world.GetTile(x, y - 1).Solid;
         var bottomExposed = !world.GetTile(x, y + 1).Solid;
-        var origin = TerrainBand switch
+        var primaryOrigin = TerrainBand switch
         {
-            TerrainBandId.Green => new Point(0, 48),
-            TerrainBandId.Snow => new Point(0, 96),
-            _ => Point.Zero
+            TerrainBandId.Green => new Point(8, 64),
+            TerrainBandId.Snow => new Point(8, 120),
+            _ => new Point(8, 16)
         };
-        var column = leftExposed ? 0 : rightExposed ? 4 : 2;
-        var row = topExposed ? 0 : bottomExposed ? 4 : 2;
+        var structuralOrigin = TerrainBand switch
+        {
+            TerrainBandId.Green => new Point(72, 64),
+            TerrainBandId.Snow => new Point(72, 120),
+            _ => new Point(72, 16)
+        };
+        var origin = material.Structural ? structuralOrigin : primaryOrigin;
+        var hash = TileHash(x, y);
+        var column = leftExposed ? 0 : rightExposed ? 4 : 1 + (int)(hash % 3);
+        var row = topExposed ? 0 : bottomExposed ? 4 : 1 + (int)((hash >> 4) % 3);
         var source = new Rectangle(origin.X + column * 8, origin.Y + row * 8, 8, 8);
-        var tint = Color.Lerp(Color.White, material.BaseColor, 0.12f);
+        var tint = Color.Lerp(Color.White, material.BaseColor, 0.06f);
         batch.Draw(_environmentTexture!, destination, source, tint);
         return true;
     }
 
-    private bool DrawPatternTile(SpriteBatch batch, Rectangle destination, MaterialDefinition material,
-        int x, int y, int columns, int rows)
+    private bool DrawMonochromeTile(SpriteBatch batch, TileWorld world, Rectangle destination,
+        MaterialDefinition material, int x, int y)
     {
-        var hash = unchecked((uint)(x * 73856093 ^ y * 19349663));
-        var column = (int)(hash % (uint)columns);
-        var row = (int)((hash >> 5) % (uint)rows);
-        var source = new Rectangle(column * 8, row * 8, 8, 8);
-        var tint = EnvironmentPack == EnvironmentVisualPackId.MonochromeCaves
-            ? Color.Lerp(Color.White, material.AccentColor, 0.48f)
-            : Color.Lerp(Color.White, material.BaseColor, 0.16f);
-        var opacity = EnvironmentPack == EnvironmentVisualPackId.MonochromeCaves ? 0.45f : 0.78f;
-        batch.Draw(_environmentTexture!, destination, source, tint * opacity);
+        var leftExposed = !world.GetTile(x - 1, y).Solid;
+        var rightExposed = !world.GetTile(x + 1, y).Solid;
+        var topExposed = !world.GetTile(x, y - 1).Solid;
+        var bottomExposed = !world.GetTile(x, y + 1).Solid;
+        var hash = TileHash(x, y);
+        var cell = topExposed ? 3 : bottomExposed ? 18 : leftExposed ? 12 : rightExposed ? 23 :
+            (hash & 1) == 0 ? 48 : 49;
+        DrawEightPixelCell(batch, destination, cell, Color.Lerp(Color.White, material.AccentColor, 0.52f) * 0.58f);
         return true;
     }
 
-    private bool DrawPixelFantasyTile(SpriteBatch batch, Rectangle destination, MaterialDefinition material,
-        int x, int y)
+    private bool DrawPixelFantasyTile(SpriteBatch batch, TileWorld world, Rectangle destination,
+        MaterialDefinition material, int x, int y)
     {
-        ReadOnlySpan<Point> sources =
-        [
-            new(16, 576), new(96, 608), new(176, 608), new(272, 592), new(368, 608),
-            new(496, 592), new(32, 704), new(208, 704), new(416, 704), new(560, 720)
-        ];
-        var hash = unchecked((uint)(x * 73856093 ^ y * 19349663));
+        var leftExposed = !world.GetTile(x - 1, y).Solid;
+        var rightExposed = !world.GetTile(x + 1, y).Solid;
+        var topExposed = !world.GetTile(x, y - 1).Solid;
+        var bottomExposed = !world.GetTile(x, y + 1).Solid;
+        var hash = TileHash(x, y);
+        var sources = topExposed ? PixelFantasyTopCells : bottomExposed ? PixelFantasyBottomCells :
+            PixelFantasyInteriorCells;
         var point = sources[(int)(hash % (uint)sources.Length)];
         var source = new Rectangle(point.X, point.Y, 16, 16);
-        batch.Draw(_environmentTexture!, destination, source, Color.Lerp(Color.White, material.BaseColor, 0.08f));
+        var effects = !topExposed && !bottomExposed && leftExposed != rightExposed && rightExposed
+            ? SpriteEffects.FlipHorizontally
+            : SpriteEffects.None;
+        batch.Draw(_environmentTexture!, destination, source, Color.Lerp(Color.White, material.BaseColor, 0.1f),
+            0f, Vector2.Zero, effects, 0f);
         return true;
     }
+
+    private bool DrawStoneRuinsTile(SpriteBatch batch, TileWorld world, Rectangle destination,
+        MaterialDefinition material, int x, int y)
+    {
+        var tile = world.GetTile(x, y);
+        if ((tile.Flags & TileFlags.RuinTrace) == 0 && tile.Material is not (MaterialId.RuinAlloy or
+            MaterialId.BrittleMasonry or MaterialId.MachineCeramic or MaterialId.WeatheredConcrete)) return false;
+
+        var leftExposed = !world.GetTile(x - 1, y).Solid;
+        var rightExposed = !world.GetTile(x + 1, y).Solid;
+        var topExposed = !world.GetTile(x, y - 1).Solid;
+        var bottomExposed = !world.GetTile(x, y + 1).Solid;
+        var hash = TileHash(x, y);
+        var cell = topExposed ? 8 + (int)(hash % 3) : bottomExposed ? 74 + (int)(hash % 2) :
+            leftExposed ? 19 : rightExposed ? 34 : tile.Material switch
+            {
+                MaterialId.BrittleMasonry => (hash & 1) == 0 ? 17 : 18,
+                MaterialId.MachineCeramic => (hash & 1) == 0 ? 44 : 46,
+                MaterialId.RuinAlloy => (hash & 1) == 0 ? 29 : 37,
+                _ => (hash & 1) == 0 ? 24 : 32
+            };
+        DrawEightPixelCell(batch, destination, cell, Color.Lerp(Color.White, material.BaseColor, 0.04f) * 0.92f);
+        return true;
+    }
+
+    private bool DrawDraculasManorTile(SpriteBatch batch, TileWorld world, Rectangle destination,
+        MaterialDefinition material, int x, int y)
+    {
+        var leftExposed = !world.GetTile(x - 1, y).Solid;
+        var rightExposed = !world.GetTile(x + 1, y).Solid;
+        var topExposed = !world.GetTile(x, y - 1).Solid;
+        var bottomExposed = !world.GetTile(x, y + 1).Solid;
+        var hash = TileHash(x, y);
+        var cell = topExposed ? 8 + (int)(hash & 1) : bottomExposed ? 56 : leftExposed ? 10 :
+            rightExposed ? 11 : DraculasManorInteriorCells[(int)(hash % DraculasManorInteriorCells.Length)];
+        DrawEightPixelCell(batch, destination, cell, Color.Lerp(Color.White, material.BaseColor, 0.05f) * 0.94f);
+        return true;
+    }
+
+    private void DrawEightPixelCell(SpriteBatch batch, Rectangle destination, int cell, Color tint)
+    {
+        var columns = _environmentTexture!.Width / 8;
+        var source = new Rectangle(cell % columns * 8, cell / columns * 8, 8, 8);
+        batch.Draw(_environmentTexture, destination, source, tint);
+    }
+
+    private static uint TileHash(int x, int y) => unchecked((uint)(x * 73856093 ^ y * 19349663));
 
     public bool DrawPlayer(SpriteBatch batch, MovementState state, Vector2 feet, int facing, long frame, Color tint)
     {
+        if (PlayerPack == PlayerVisualPackId.MerakintsugiSample)
+            return DrawMerakintsugiPlayer(batch, state, feet, facing, frame, tint);
         if (PlayerPack == PlayerVisualPackId.SummingOriginal || _gandalfCharacter.Length == 0) return false;
 
         var pose = ResolvePose(state, frame);
@@ -390,21 +474,46 @@ public sealed class VisualPackManager : IDisposable
         return true;
     }
 
+    private bool DrawMerakintsugiPlayer(SpriteBatch batch, MovementState state, Vector2 feet, int facing,
+        long frame, Color tint)
+    {
+        if (_merakintsugiIdle == null || _merakintsugiWalk == null) return false;
+        var idle = state is MovementState.Idle or MovementState.Landing;
+        var source = idle
+            ? new Rectangle((int)(frame / 8 % 10) * 46, 0, 46, 55)
+            : new Rectangle((int)(frame / 4 % 24) % 4 * 45, (int)(frame / 4 % 24) / 4 * 58, 45, 58);
+        var texture = idle ? _merakintsugiIdle : _merakintsugiWalk;
+        var destination = new Rectangle((int)MathF.Round(feet.X - 11f), (int)MathF.Round(feet.Y - 28f), 22, 28);
+        if (state is MovementState.Crouch or MovementState.Crawl or MovementState.Slide)
+            destination = new Rectangle(destination.X, destination.Bottom - 20, destination.Width, 20);
+        var effects = facing < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+        var silhouette = new Color(7, 9, 14, 220);
+        batch.Draw(texture, destination with { X = destination.X - 1 }, source, silhouette, 0f, Vector2.Zero,
+            effects, 0f);
+        batch.Draw(texture, destination with { X = destination.X + 1 }, source, silhouette, 0f, Vector2.Zero,
+            effects, 0f);
+        batch.Draw(texture, destination with { Y = destination.Y + 1 }, source, silhouette, 0f, Vector2.Zero,
+            effects, 0f);
+        batch.Draw(texture, destination, source, Color.Lerp(Color.White, tint, 0.12f), 0f, Vector2.Zero, effects, 0f);
+        return true;
+    }
+
     public bool DrawEnvironmentPreview(SpriteBatch batch, Rectangle area)
     {
         if (_environmentTexture == null) return false;
         var source = EnvironmentPack switch
         {
             EnvironmentVisualPackId.GandalfOverworld => new Rectangle(0, (int)TerrainBand * 6 * 32, 96, 64),
-            EnvironmentVisualPackId.Adve => new Rectangle(0, TerrainBand switch
+            EnvironmentVisualPackId.Adve => new Rectangle(8, TerrainBand switch
             {
-                TerrainBandId.Green => 48,
-                TerrainBandId.Snow => 96,
-                _ => 0
+                TerrainBandId.Green => 64,
+                TerrainBandId.Snow => 120,
+                _ => 16
             }, 40, 40),
             EnvironmentVisualPackId.MonochromeCaves => new Rectangle(0, 0, 64, 64),
             EnvironmentVisualPackId.PixelFantasyCaves => new Rectangle(0, 560, 640, 400),
             EnvironmentVisualPackId.StoneRuins => new Rectangle(0, 0, 64, 88),
+            EnvironmentVisualPackId.DraculasManor => new Rectangle(0, 0, 64, 104),
             _ => Rectangle.Empty
         };
         if (source == Rectangle.Empty) return false;
@@ -416,6 +525,8 @@ public sealed class VisualPackManager : IDisposable
     {
         _environmentTexture?.Dispose();
         foreach (var texture in _gandalfCharacter) texture.Dispose();
+        _merakintsugiIdle?.Dispose();
+        _merakintsugiWalk?.Dispose();
     }
 
     public static string OptionLabel(VisualSelectionOption option) => option switch
@@ -434,7 +545,7 @@ public sealed class VisualPackManager : IDisposable
 
     private void NormalizePackAvailability()
     {
-        if (!GandalfCharacterAvailable && PlayerPack != PlayerVisualPackId.SummingOriginal)
+        if (!PlayerAvailable(PlayerPack))
             PlayerPack = PlayerVisualPackId.SummingOriginal;
         if (!EnvironmentAvailable(EnvironmentPack))
             EnvironmentPack = EnvironmentVisualPackId.SummingOriginal;
@@ -444,7 +555,7 @@ public sealed class VisualPackManager : IDisposable
 
     private void BuildCharacterChoices(bool resetDefaults = false)
     {
-        if (PlayerPack == PlayerVisualPackId.SummingOriginal || _gandalfFiles is not { } files)
+        if (!UsesModularCharacter || _gandalfFiles is not { } files)
         {
             _skinChoices = [];
             _legChoices = _torsoChoices = _footChoices = _hairChoices = [None];
@@ -506,9 +617,34 @@ public sealed class VisualPackManager : IDisposable
 
     private void ReloadCharacter()
     {
-        if (PlayerPack == PlayerVisualPackId.SummingOriginal || _gandalfFiles is not { } files)
+        ReplaceCharacter([]);
+        ReplaceMerakintsugiCharacter(null, null);
+        if (PlayerPack == PlayerVisualPackId.SummingOriginal) return;
+        if (PlayerPack == PlayerVisualPackId.MerakintsugiSample && _merakintsugiFiles is { } merakintsugiFiles)
         {
-            ReplaceCharacter([]);
+            Texture2D? idle = null;
+            Texture2D? walk = null;
+            try
+            {
+                idle = Load(_graphicsDevice, merakintsugiFiles.Idle, 460, 55);
+                walk = Load(_graphicsDevice, merakintsugiFiles.Walk, 180, 348);
+                ReplaceMerakintsugiCharacter(idle, walk);
+                return;
+            }
+            catch (Exception exception) when (exception is IOException or InvalidOperationException or ArgumentException)
+            {
+                idle?.Dispose();
+                walk?.Dispose();
+                _loadFailure = exception.Message;
+                PlayerPack = PlayerVisualPackId.SummingOriginal;
+                BuildCharacterChoices();
+                return;
+            }
+        }
+        if (_gandalfFiles is not { } files)
+        {
+            PlayerPack = PlayerVisualPackId.SummingOriginal;
+            BuildCharacterChoices();
             return;
         }
 
@@ -544,6 +680,14 @@ public sealed class VisualPackManager : IDisposable
         _gandalfCharacter = replacement;
     }
 
+    private void ReplaceMerakintsugiCharacter(Texture2D? idle, Texture2D? walk)
+    {
+        _merakintsugiIdle?.Dispose();
+        _merakintsugiWalk?.Dispose();
+        _merakintsugiIdle = idle;
+        _merakintsugiWalk = walk;
+    }
+
     private void DrawImportedTile(SpriteBatch batch, Rectangle destination, int column, int row, Color tint)
     {
         var source = new Rectangle(column * ImportedTileSize, row * ImportedTileSize,
@@ -560,11 +704,19 @@ public sealed class VisualPackManager : IDisposable
 
     private PlayerVisualPackId NextPlayerPack(PlayerVisualPackId current, int direction)
     {
-        var choices = GandalfCharacterAvailable
-            ? Enum.GetValues<PlayerVisualPackId>()
-            : [PlayerVisualPackId.SummingOriginal];
+        var choices = Enum.GetValues<PlayerVisualPackId>().Where(PlayerAvailable).ToArray();
         return Cycle(choices, current, direction);
     }
+
+    private bool PlayerAvailable(PlayerVisualPackId id) => id switch
+    {
+        PlayerVisualPackId.GandalfMale or PlayerVisualPackId.GandalfFemale => GandalfCharacterAvailable,
+        PlayerVisualPackId.MerakintsugiSample => MerakintsugiCharacterAvailable,
+        _ => true
+    };
+
+    private bool UsesModularCharacter =>
+        PlayerPack is PlayerVisualPackId.GandalfMale or PlayerVisualPackId.GandalfFemale;
 
     private EnvironmentVisualPackId NextEnvironmentPack(EnvironmentVisualPackId current, int direction)
     {
@@ -718,6 +870,7 @@ public static class VisualPackFiles
 {
     public readonly record struct GandalfFiles(string PlatformerDirectory, string CharacterDirectory,
         string Terrain1, string Terrain2);
+    public readonly record struct MerakintsugiFiles(string CharacterDirectory, string Idle, string Walk);
     public readonly record struct EnvironmentAsset(string Path, int MinimumWidth, int MinimumHeight,
         bool RemoveFlatInterior = false);
 
@@ -729,6 +882,8 @@ public static class VisualPackFiles
     private const string MonochromeTiles = "third_party/art/cc0/monochrome-caves/bw_tiles.png";
     private const string PixelFantasyTiles = "third_party/art/local-only/pixel-fantasy-caves/mainlev_build.png";
     private const string StoneRuinsTiles = "third_party/art/local-only/stone-ruins/tiles.png";
+    private const string DraculasManorTiles = "third_party/art/cc0/draculas-manor/lilspook_tiles.png";
+    private const string MerakintsugiDirectory = "third_party/art/local-only/merakintsugi-sample";
 
     public static bool IsAvailable(VisualPackId id) => id == VisualPackId.SummingOriginal || TryResolveGandalf(out _);
 
@@ -756,6 +911,8 @@ public static class VisualPackFiles
                     new EnvironmentAsset(Path.Combine(root, PixelFantasyTiles), 640, 960),
                 EnvironmentVisualPackId.StoneRuins =>
                     new EnvironmentAsset(Path.Combine(root, StoneRuinsTiles), 64, 88),
+                EnvironmentVisualPackId.DraculasManor =>
+                    new EnvironmentAsset(Path.Combine(root, DraculasManorTiles), 64, 104),
                 _ => default
             };
             if (!string.IsNullOrEmpty(asset.Path) && File.Exists(asset.Path)) return true;
@@ -775,6 +932,25 @@ public static class VisualPackFiles
                 Path.Combine(platformer, "Floor Tiles1.png"),
                 Path.Combine(platformer, "Floor Tiles2.png"));
             if (Directory.Exists(character) && File.Exists(candidate.Terrain1) && File.Exists(candidate.Terrain2))
+            {
+                files = candidate;
+                return true;
+            }
+        }
+
+        files = default;
+        return false;
+    }
+
+    public static bool TryResolveMerakintsugi(out MerakintsugiFiles files)
+    {
+        foreach (var root in CandidateRoots())
+        {
+            var character = Path.Combine(root, MerakintsugiDirectory);
+            var candidate = new MerakintsugiFiles(character,
+                Path.Combine(character, "idle", "sprite sheets", "idle.png"),
+                Path.Combine(character, "walk", "sprite sheets", "walk.png"));
+            if (File.Exists(candidate.Idle) && File.Exists(candidate.Walk))
             {
                 files = candidate;
                 return true;
