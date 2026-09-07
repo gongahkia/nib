@@ -26,7 +26,7 @@ public static class HeadlessVerification
         VerifyBrittleAndArchive();
         VerifyInputBindingPersistence();
         VerifyImpactFeedback();
-        Console.WriteLine("systems=ok movement=one-tile-jump-dash material=hardness terrain=bomb-burrower hazard=brittle archive=persistent-json input=remap-json feedback=shake-debris");
+        Console.WriteLine("systems=ok movement=one-tile-jump-dash fall=one-heart camera=zoomed-out material=hardness terrain=bomb-burrower hazard=brittle archive=persistent-json input=remap-json feedback=shake-debris");
     }
 
     private static void VerifyMovementTransitions()
@@ -63,6 +63,7 @@ public static class HeadlessVerification
         VerifyDashStopsAtTerrain();
         VerifyWallAndLedgeTransitions();
         VerifyToolReachStopsAtAdjacentTile();
+        VerifyFallDamageTuning();
     }
 
     private static void VerifyCrouchAndSlideClearance()
@@ -322,10 +323,46 @@ public static class HeadlessVerification
         camera.Update(new Vector2(320f, 180f), Vector2.Zero, GameConstants.FixedDelta);
         if (camera.ShakeStrength <= 0f || camera.ShakeOffset.LengthSquared() <= 0f)
             throw new InvalidOperationException("impact did not produce camera shake");
+        if (camera.VisibleWorldWidth <= GameConstants.VirtualWidth * 1.1f ||
+            camera.VisibleWorldHeight <= GameConstants.VirtualHeight * 1.1f)
+            throw new InvalidOperationException("camera does not expose the intended wider world framing");
+        var worldPoint = new Vector2(402f, 217f);
+        var projected = camera.WorldToScreen(worldPoint);
+        if (Vector2.Distance(projected, Vector2.Transform(worldPoint, camera.View)) > 0.01f ||
+            Vector2.Distance(worldPoint, camera.ScreenToWorld(projected)) > 0.01f)
+            throw new InvalidOperationException("zoomed camera screen/world transforms disagree");
 
         var effects = new TerrainBreakEffects();
         effects.Emit(new TerrainChange(new Point(4, 5), MaterialId.RedSandstone, "tool", 1, true));
         if (effects.ActiveDebris < 12)
             throw new InvalidOperationException("block break did not produce a substantial debris burst");
+    }
+
+    private static void VerifyFallDamageTuning()
+    {
+        var world = new TileWorld(12, 36);
+        for (var x = 0; x < world.Width; x++) world.SetTile(x, 32, MaterialId.RedSandstone);
+        var input = new InputManager(new InputBindings());
+        var player = new PlayerController(new Vector2(5.5f * GameConstants.TileSize, 2f * GameConstants.TileSize));
+        for (var frame = 0; frame < 240 && !player.Grounded; frame++)
+        {
+            input.SetSyntheticState(Vector2.Zero, Vector2.UnitX);
+            player.Update(input, world, GameConstants.FixedDelta);
+        }
+        if (!player.Grounded || player.Health != player.MaximumHealth - 1 || !player.Stunned)
+            throw new InvalidOperationException("terminal fall should cost one heart and apply a readable stun");
+
+        world = new TileWorld(12, 16);
+        for (var x = 0; x < world.Width; x++) world.SetTile(x, 12, MaterialId.RedSandstone);
+        player = new PlayerController(new Vector2(5.5f * GameConstants.TileSize,
+            12f * GameConstants.TileSize - 42f));
+        input = new InputManager(new InputBindings());
+        for (var frame = 0; frame < 90 && !player.Grounded; frame++)
+        {
+            input.SetSyntheticState(Vector2.Zero, Vector2.UnitX);
+            player.Update(input, world, GameConstants.FixedDelta);
+        }
+        if (!player.Grounded || player.Health != player.MaximumHealth)
+            throw new InvalidOperationException("short recoverable fall caused damage");
     }
 }

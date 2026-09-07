@@ -25,6 +25,8 @@ public sealed class PlayerController
     private const float CoyoteDuration = 0.10f;
     private const float JumpBufferDuration = 0.12f;
     private const float DashDuration = 0.13f;
+    private const float FallDamageSpeed = 360f;
+    private const float SevereFallSpeed = 405f;
     public const float WallStaminaMaximum = 2.25f;
 
     private float _coyoteTimer;
@@ -364,10 +366,9 @@ public sealed class PlayerController
 
     private void HandleLanding(float fallSpeed)
     {
-        if (fallSpeed < 335f) return;
-        var damage = fallSpeed >= 395f ? 2 : 1;
-        ApplyDamage(damage, new Vector2(Velocity.X * 0.3f, -105f), "fall");
-        _stunTimer = fallSpeed >= 395f ? 0.9f : 0.55f;
+        if (fallSpeed < FallDamageSpeed) return;
+        ApplyDamage(1, new Vector2(Velocity.X * 0.3f, -90f), "fall");
+        _stunTimer = fallSpeed >= SevereFallSpeed ? 0.7f : 0.4f;
         StatusEvent?.Invoke($"fall:{(int)fallSpeed}");
     }
 

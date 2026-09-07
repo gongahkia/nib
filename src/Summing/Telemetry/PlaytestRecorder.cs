@@ -70,6 +70,7 @@ public sealed class PlaytestRecorder : IDisposable
             generated.Diagnostics,
             inputBindings = bindings.Actions,
             fixedUpdateHz = 60,
+            cameraWorldZoom = Camera2D.WorldZoom,
             periodicScreenshotFrames = 600,
             eventScreenshotPhases = new[] { "event", "post-12-frames" },
             manualBookmark = "F8 on keyboard or right shoulder on gamepad",

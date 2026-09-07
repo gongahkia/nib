@@ -4,7 +4,7 @@ Every generated run creates one `playtests/<local timestamp>-<accepted seed>/` d
 
 Contents:
 
-- `metadata.json`: schema version, seed, generator and parameters, difficulty, starting visual pack, history identity, bindings, fixed-step rate, screenshot cadence, manual bookmark binding, solvability report, and every rejected seed.
+- `metadata.json`: schema version, seed, generator and parameters, difficulty, starting visual pack, fixed world-camera zoom, history identity, bindings, fixed-step rate, screenshot cadence, manual bookmark binding, solvability report, and every rejected seed.
 - `world-start.json`: complete human-readable starting world and runtime state, sufficient to reconstruct chunks, tiles, provenance, entities, history, tuning context, and route anchors.
 - `frames.csv`: a 60 Hz trace of named input actions, aim/move axes, position/velocity, current collision-body dimensions, movement and visual state, camera/look-ahead/shake, collision contacts/normals, grounded/wall state, stamina, dash state, coyote/buffer use, health/stun, resources, wind, a 7×5 nearby material/damage window, nearest validated route-anchor index, and altitude band.
 - `events.jsonl`: frame-linked events for damage/death/fall, successful dash starts, terrain damage/destruction, tool strikes, bombs, burrower interactions, brittle triggers/collapse, relic collection, visual-pack changes, manual playtest bookmarks, and summit completion.
