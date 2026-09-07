@@ -228,6 +228,18 @@ public sealed class PlayerController
         StatusEvent?.Invoke(Health > 0 ? $"damage:{cause}:{damage}" : $"death:{cause}");
     }
 
+    public void ApplyBlastImpulse(Vector2 impulse)
+    {
+        if (!Alive || impulse.LengthSquared() <= 0f) return;
+        _dashTimer = 0f;
+        _stunTimer = 0f;
+        Velocity = new Vector2(
+            Math.Clamp(Velocity.X + impulse.X, -480f, 480f),
+            Math.Clamp(Velocity.Y + impulse.Y, -520f, MaximumFallSpeed));
+        Grounded = false;
+        SetState(Velocity.Y < -55f ? MovementState.AscendingJump : MovementState.Falling);
+    }
+
     public bool TryRopeMove(Vector2 nextPosition, ICollisionWorld world)
     {
         if (!Alive) return false;

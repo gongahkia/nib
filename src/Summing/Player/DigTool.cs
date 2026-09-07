@@ -9,8 +9,8 @@ namespace Summing.Player;
 
 public sealed class DigTool
 {
-    private const float SwingDuration = 0.28f;
-    private const float ImpactTime = 0.12f;
+    private const float SwingDuration = 0.16f;
+    private const float ImpactTime = 0.055f;
     private float _timer;
     private bool _impacted;
     private Point _targetTile;

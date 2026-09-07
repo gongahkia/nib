@@ -81,7 +81,7 @@ if (Environment.GetCommandLineArgs().Contains("--verify-serialization"))
 {
     var generated = WorldGeneratorRegistry.Generate(new WorldGenerationConfig());
     generated.Terrain.SetTile(1, 1, Summing.World.Materials.MaterialId.BlackBasalt);
-    generated.Terrain.DamageTile(1, 1, 2, "serialization-verification");
+    generated.Terrain.DamageTile(1, 1, 1, "serialization-verification");
     var tuning = DifficultyTuning.For(Difficulty.Easy);
     var player = new PlayerController(generated.Spawn, tuning.StartingHealth);
     var inventory = new PlayerInventory(tuning);
@@ -99,7 +99,7 @@ if (Environment.GetCommandLineArgs().Contains("--verify-serialization"))
         var loaded = WorldSerializer.Load(path);
         if (loaded.Terrain.Fingerprint() != generated.Terrain.Fingerprint() || loaded.History.Id != generated.History.Id)
             throw new InvalidDataException("world JSON round-trip changed authoritative data");
-        if (loaded.Terrain.GetTile(1, 1).Damage != 2)
+        if (loaded.Terrain.GetTile(1, 1).Damage != 1)
             throw new InvalidDataException("world JSON round-trip lost mutable tile damage");
         if (loaded.Configuration.Seed != generated.Configuration.Seed ||
             loaded.Configuration.Variant != generated.Configuration.Variant ||

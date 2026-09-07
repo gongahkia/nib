@@ -542,6 +542,8 @@ public sealed class Game1 : Game
             _burrowerSystem.ApplyExplosion(explosion);
             _telemetry?.RecordEvent("bomb-explosion", explosion);
         };
+        _bombSystem.PlayerBoosted += impact => _telemetry?.RecordEvent("bomb-rocket-jump",
+            new { _player.Position, impact.Distance, impact.Impulse, health = _player.Health });
         _bombSystem.Placed += bomb => _telemetry?.RecordEvent("bomb-use",
             new { bomb.Position, bomb.Velocity, bomb.Fuse }, false);
         _ropeSystem.Placed += rope => _telemetry?.RecordEvent("rope-use",
@@ -662,7 +664,7 @@ public sealed class Game1 : Game
         }
         if (_ropeSystem.NoticeVisible)
             _font.Draw(_spriteBatch, _ropeSystem.Notice, new Vector2(12, 328), GamePalette.SacredGold);
-        _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  R ROPE  Q BOMB  K VISUALS", new Vector2(12, 342), new Color(131, 132, 139));
+        _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  R ROPE  Q BOMB/BOOST  K VISUALS", new Vector2(12, 342), new Color(131, 132, 139));
     }
 
     private static string Format(string value)
