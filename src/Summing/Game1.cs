@@ -54,6 +54,7 @@ public sealed class Game1 : Game
     private readonly bool _autoStart;
     private readonly bool _captureTitleSmoke;
     private readonly bool _captureVisualSelectorSmoke;
+    private bool _visualSelectorSmokeCaptured;
     private readonly bool _loadSavedVisualSelection;
     private readonly bool _syntheticSmoke;
     private readonly BindingMenu _bindingMenu = new();
@@ -119,7 +120,8 @@ public sealed class Game1 : Game
         _pixel.SetData([Color.White]);
         _font = new PixelFont(_pixel);
         _visualPacks = new VisualPackManager(GraphicsDevice, _selectedVisualPack,
-            loadSavedSelection: _loadSavedVisualSelection && _autoExitFrame == 0);
+            loadSavedSelection: _loadSavedVisualSelection && _autoExitFrame == 0,
+            persistSelection: _autoExitFrame == 0);
         _tileRenderer = new TileWorldRenderer(_pixel, _visualPacks);
         _sprites = new SpriteLibrary(GraphicsDevice, _visualPacks);
         _atmosphere = new AtmosphereRenderer(_pixel);
@@ -133,7 +135,9 @@ public sealed class Game1 : Game
         _frame++;
         _telemetry?.BeginFrame(_frame);
         if (_syntheticSmoke) ApplySyntheticSmokeInput();
-        if (_autoExitFrame > 0 && _frame >= _autoExitFrame && _phase is GamePhase.Title or GamePhase.Binding) Exit();
+        if (_captureVisualSelectorSmoke) ApplySyntheticVisualSelectorInput();
+        if (_autoExitFrame > 0 && _frame >= _autoExitFrame && _phase is GamePhase.Title or GamePhase.Binding &&
+            (!_captureVisualSelectorSmoke || _visualSelectorSmokeCaptured)) Exit();
         _smoothedFps = MathHelper.Lerp(_smoothedFps,
             (float)(1.0 / Math.Max(0.0001, gameTime.ElapsedGameTime.TotalSeconds)), 0.03f);
         if (_phase == GamePhase.Binding)
@@ -291,11 +295,12 @@ public sealed class Game1 : Game
             using var stream = File.Create("artifacts/title-smoke.png");
             _scene.SaveAsPng(stream, _scene.Width, _scene.Height);
         }
-        if (_captureVisualSelectorSmoke && _frame == 12)
+        if (_captureVisualSelectorSmoke && _frame >= 22 && !_visualSelectorSmokeCaptured)
         {
             Directory.CreateDirectory("artifacts");
             using var stream = File.Create("artifacts/visual-selector-smoke.png");
             _scene.SaveAsPng(stream, _scene.Width, _scene.Height);
+            _visualSelectorSmokeCaptured = true;
         }
 
         GraphicsDevice.Clear(Color.Black);
@@ -449,13 +454,34 @@ public sealed class Game1 : Game
         if (_frame == 126) actions.Add(InputAction.Rope);
         if (_frame == 180)
             RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
+        if (_frame == 190)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
         if (_frame == 195)
             RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.PlayerPack, 1));
+        if (_frame == 200)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
         if (_frame == 205)
             RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.SkinSheet, 1));
+        if (_frame == 210)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
         if (_frame == 215)
             RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.TorsoSheet, 1));
+        if (_frame == 220)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
+        if (_frame == 230)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
         _input.SetSyntheticState(move, Vector2.UnitX, actions.ToArray());
+    }
+
+    private void ApplySyntheticVisualSelectorInput()
+    {
+        var actions = _frame switch
+        {
+            2 or 6 or 10 or 20 => new[] { InputAction.Right },
+            4 or 8 or 12 or 14 or 16 or 18 => new[] { InputAction.Down },
+            _ => []
+        };
+        _input.SetSyntheticState(Vector2.Zero, Vector2.UnitX, actions);
     }
 
     private void StartRun(WorldGenerationConfig configuration)
