@@ -62,7 +62,7 @@ public sealed class PlaytestRecorder : IDisposable
             generator = WorldGeneratorRegistry.Identifier(generated.Configuration.Variant),
             generated.Configuration,
             difficulty,
-            renderMode = "sanitized-collision",
+            renderMode = "sanitized-terrain-template-free-player",
             historyId = generated.History.Id,
             epoch = generated.History.EpochName,
             generated.Diagnostics,
