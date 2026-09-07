@@ -10,6 +10,7 @@ using Summing.History;
 using Summing.Persistence;
 using Summing.Player;
 using Summing.Rendering;
+using Summing.World.Materials;
 
 if (Environment.GetCommandLineArgs().Contains("--verify-generation"))
 {
@@ -22,9 +23,15 @@ if (Environment.GetCommandLineArgs().Contains("--verify-generation"))
         var secondHash = WorldGeneratorRegistry.Generate(configuration).Terrain.Fingerprint();
         var rawReport = TraversabilityValidator.Validate(firstWorld);
         var solidTiles = 0;
+        var materialKinds = new HashSet<MaterialId>();
         for (var y = 0; y < firstWorld.Terrain.Height; y++)
             for (var x = 0; x < firstWorld.Terrain.Width; x++)
-                if (firstWorld.Terrain.GetTile(x, y).Solid) solidTiles++;
+            {
+                var tile = firstWorld.Terrain.GetTile(x, y);
+                if (!tile.Solid) continue;
+                solidTiles++;
+                materialKinds.Add(tile.Material);
+            }
         var ruinCount = firstWorld.Features.Count(feature =>
             feature.Kind is WorldFeatureKind.Ruin or WorldFeatureKind.ExposedMachine);
         var descents = firstWorld.RouteAnchors.Zip(firstWorld.RouteAnchors.Skip(1),
@@ -33,11 +40,14 @@ if (Environment.GetCommandLineArgs().Contains("--verify-generation"))
             (current, next) => Math.Abs(next.Y - current.Y) <= 1 && Math.Abs(next.X - current.X) >= 3).Count(value => value);
         quality[variant] = (firstHash, solidTiles, ruinCount);
         Console.WriteLine($"raw variant={variant} solvable={rawReport.Solvable} failure={rawReport.Failure}");
-        Console.WriteLine($"shape variant={variant} solid={solidTiles} ruins={ruinCount} descents={descents} lateral={lateral}");
+        Console.WriteLine($"shape variant={variant} solid={solidTiles} materials={materialKinds.Count} ruins={ruinCount} " +
+            $"descents={descents} lateral={lateral}");
         var validated = ValidatedWorldGenerator.Generate(configuration);
         Console.WriteLine($"seed={configuration.Seed} variant={configuration.Variant} fingerprint={firstHash:x16} " +
             $"route={validated.Diagnostics.Traversability.CheckedTransitions} rejected={validated.Diagnostics.RejectedSeeds.Count}");
         if (firstHash != secondHash) throw new InvalidOperationException("generation is not deterministic");
+        if (materialKinds.Count < 12)
+            throw new InvalidOperationException($"{variant} generated only {materialKinds.Count} distinct solid materials");
 
         var rejectedCandidates = 0;
         for (var sample = 0; sample < 32; sample++)
@@ -128,6 +138,7 @@ var smokeRun = arguments.Contains("--smoke-run");
 var smokePeriodic = arguments.Contains("--smoke-periodic");
 var smokeTitle = arguments.Contains("--smoke-title");
 var smokeVisualSelector = arguments.Contains("--smoke-visual-selector");
+var smokeMovementView = arguments.Contains("--smoke-movement-view");
 var initialConfiguration = new WorldGenerationConfig();
 var initialDifficulty = Difficulty.Easy;
 var initialVisualPack = VisualPackId.GandalfOverworld;
@@ -149,7 +160,7 @@ foreach (var argument in arguments)
     }
 }
 using var game = new Summing.Game1(
-    smokeRun ? 240 : smokePeriodic ? 620 : smokeTitle || smokeVisualSelector ? 30 : 0,
-    smokeRun || smokePeriodic, smokeTitle, initialConfiguration, initialDifficulty, initialVisualPack,
-    smokeVisualSelector, !artPackSpecified);
+    smokeRun ? 240 : smokePeriodic ? 620 : smokeMovementView ? 120 : smokeTitle || smokeVisualSelector ? 30 : 0,
+    smokeRun || smokePeriodic || smokeMovementView, smokeTitle, initialConfiguration, initialDifficulty,
+    initialVisualPack, smokeVisualSelector, !artPackSpecified, smokeMovementView);
 game.Run();

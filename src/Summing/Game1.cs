@@ -57,6 +57,7 @@ public sealed class Game1 : Game
     private bool _visualSelectorSmokeCaptured;
     private readonly bool _loadSavedVisualSelection;
     private readonly bool _syntheticSmoke;
+    private bool _movementTestView;
     private readonly BindingMenu _bindingMenu = new();
     private readonly VisualSelectionScreen _visualSelector = new();
     private readonly WorldGenerationConfig _menuConfig;
@@ -74,13 +75,14 @@ public sealed class Game1 : Game
     public Game1(long autoExitFrame = 0, bool autoStart = true, bool captureTitleSmoke = false,
         WorldGenerationConfig? initialConfiguration = null, Difficulty initialDifficulty = Difficulty.Easy,
         VisualPackId initialVisualPack = VisualPackId.GandalfOverworld, bool captureVisualSelectorSmoke = false,
-        bool loadSavedVisualSelection = true)
+        bool loadSavedVisualSelection = true, bool initialMovementTestView = false)
     {
         _autoExitFrame = autoExitFrame;
         _autoStart = autoStart;
         _captureTitleSmoke = captureTitleSmoke;
         _captureVisualSelectorSmoke = captureVisualSelectorSmoke;
         _loadSavedVisualSelection = loadSavedVisualSelection;
+        _movementTestView = initialMovementTestView;
         _syntheticSmoke = autoExitFrame > 0 && autoStart;
         _menuConfig = initialConfiguration == null ? new WorldGenerationConfig() : CopyConfiguration(initialConfiguration);
         _difficulty = initialDifficulty;
@@ -185,6 +187,12 @@ public sealed class Game1 : Game
             return;
         }
 
+        if (_input.KeyPressed(Keys.M))
+        {
+            _movementTestView = !_movementTestView;
+            _telemetry?.RecordEvent("movement-test-view", new { enabled = _movementTestView }, false);
+        }
+
         _editor.Update(_input, _camera, GraphicsDevice.Viewport, _generated, _difficulty, RegenerateWorld,
             ToggleDifficultyAndRegenerate, SaveEditorWorld, LoadEditorWorld, ExportWorld, GameConstants.FixedDelta);
         if (_editor.Active)
@@ -261,26 +269,16 @@ public sealed class Game1 : Game
         }
         else
         {
-            _spriteBatch.Begin(transformMatrix: _camera.View, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-            DrawBackdrop();
-            _atmosphere.DrawWorldDither(_spriteBatch, _camera.Position, _frame, Camera2D.WorldZoom);
-            _tileRenderer.Draw(_spriteBatch, _world, _camera.Position, Camera2D.WorldZoom);
-            _terrainBreakEffects.Draw(_spriteBatch, _pixel);
-            foreach (var feature in _generated.Features)
-                if (feature.Kind != WorldFeatureKind.RelicCandidate) _sprites.DrawFeature(_spriteBatch, feature);
-            DrawSummitMarker();
-            _brittleSystem.Draw(_spriteBatch, _sprites);
-            _relicSystem.Draw(_spriteBatch, _sprites);
-            _ropeSystem.Draw(_spriteBatch, _pixel);
-            _bombSystem.Draw(_spriteBatch, _pixel);
-            _burrowerSystem.Draw(_spriteBatch, _sprites);
-            _player.Draw(_spriteBatch, _sprites, _frame, AppearanceTints[_appearanceIndex]);
-            _digTool.Draw(_spriteBatch, _pixel, _player);
+            _spriteBatch.Begin(transformMatrix: _movementTestView ? _camera.StableView : _camera.View,
+                samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
+            if (_movementTestView) DrawMovementTestWorld();
+            else DrawStandardWorld();
             _editor.DrawWorld(_spriteBatch, _pixel);
             _spriteBatch.End();
 
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-            DrawHud();
+            if (_movementTestView) DrawMovementTestHud();
+            else DrawHud();
             _editor.DrawOverlay(_spriteBatch, _pixel, _font, _generated, _difficulty, _visualPacks.CurrentName);
             DrawPhaseOverlay();
             _visualSelector.Draw(_spriteBatch, _pixel, _font, _sprites, _visualPacks, _frame,
@@ -351,6 +349,45 @@ public sealed class Game1 : Game
         _spriteBatch.Draw(_pixel, new Rectangle(center.X - 4, bounds.Bottom - 92, 8, 34), GamePalette.SacredGold);
         _spriteBatch.Draw(_pixel, new Rectangle(center.X - 12, bounds.Bottom - 88, 24, 3), GamePalette.SaltCyan);
         _spriteBatch.Draw(_pixel, new Rectangle(center.X - 20, bounds.Bottom - 66, 40, 4), GamePalette.Bone);
+    }
+
+    private void DrawStandardWorld()
+    {
+        DrawBackdrop();
+        _atmosphere.DrawWorldDither(_spriteBatch, _camera.Position, _frame, Camera2D.WorldZoom);
+        _tileRenderer.Draw(_spriteBatch, _world, _camera.Position, Camera2D.WorldZoom);
+        _terrainBreakEffects.Draw(_spriteBatch, _pixel);
+        foreach (var feature in _generated.Features)
+            if (feature.Kind != WorldFeatureKind.RelicCandidate) _sprites.DrawFeature(_spriteBatch, feature);
+        DrawSummitMarker();
+        _brittleSystem.Draw(_spriteBatch, _sprites);
+        _relicSystem.Draw(_spriteBatch, _sprites);
+        _ropeSystem.Draw(_spriteBatch, _pixel);
+        _bombSystem.Draw(_spriteBatch, _pixel);
+        _burrowerSystem.Draw(_spriteBatch, _sprites);
+        _player.Draw(_spriteBatch, _sprites, _frame, AppearanceTints[_appearanceIndex]);
+        _digTool.Draw(_spriteBatch, _pixel, _player);
+    }
+
+    private void DrawMovementTestWorld()
+    {
+        _tileRenderer.DrawSanitized(_spriteBatch, _world, _camera.Position, Camera2D.WorldZoom);
+        var summit = _generated.SummitBounds;
+        _spriteBatch.Draw(_pixel, new Rectangle(summit.Center.X - 2, summit.Top, 4, summit.Height),
+            new Color(170, 175, 183));
+        _ropeSystem.Draw(_spriteBatch, _pixel);
+        _bombSystem.Draw(_spriteBatch, _pixel);
+        foreach (var burrower in _burrowerSystem.Burrowers)
+            if (burrower.Alive)
+                _spriteBatch.Draw(_pixel,
+                    new Rectangle((int)MathF.Round(burrower.Position.X - 9f),
+                        (int)MathF.Round(burrower.Position.Y - 9f), 18, 18),
+                    new Color(174, 75, 75));
+        var bounds = _player.Bounds;
+        _spriteBatch.Draw(_pixel,
+            new Rectangle((int)MathF.Round(bounds.Left), (int)MathF.Round(bounds.Top),
+                (int)MathF.Round(bounds.Width), (int)MathF.Round(bounds.Height)), Color.White);
+        _digTool.Draw(_spriteBatch, _pixel, _player);
     }
 
     private void DrawPhaseOverlay()
@@ -566,7 +603,8 @@ public sealed class Game1 : Game
             var visualSelection = _visualPacks == null
                 ? VisualPackManager.StartupSelection(_selectedVisualPack)
                 : _visualPacks.Selection;
-            _telemetry = new PlaytestRecorder(generated, _difficulty, _input.Bindings, visualSelection);
+            _telemetry = new PlaytestRecorder(generated, _difficulty, _input.Bindings, visualSelection,
+                _movementTestView);
             SaveWorld(Path.Combine(_telemetry.DirectoryPath, "world-start.json"));
         }
     }
@@ -664,7 +702,22 @@ public sealed class Game1 : Game
         }
         if (_ropeSystem.NoticeVisible)
             _font.Draw(_spriteBatch, _ropeSystem.Notice, new Vector2(12, 328), GamePalette.SacredGold);
-        _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  R ROPE  Q BOMB/BOOST  K VISUALS", new Vector2(12, 342), new Color(131, 132, 139));
+        _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  R ROPE  Q BOMB/BOOST  K VISUALS  M TEST", new Vector2(12, 342), new Color(131, 132, 139));
+    }
+
+    private void DrawMovementTestHud()
+    {
+        var muted = new Color(166, 170, 177);
+        _spriteBatch.Draw(_pixel, new Rectangle(7, 7, 322, 48), new Color(8, 9, 11, 235));
+        _font.Draw(_spriteBatch, "MOVEMENT TEST VIEW", new Vector2(12, 12), Color.White, 2);
+        _font.Draw(_spriteBatch,
+            $"STATE {Format(_player.VisualState.ToString())}  POS {(int)_player.Position.X},{(int)_player.Position.Y}",
+            new Vector2(12, 29), muted);
+        _font.Draw(_spriteBatch,
+            $"VEL {(int)_player.Velocity.X},{(int)_player.Velocity.Y}  GROUND {_player.Grounded}  DASH {_player.DashCharges}",
+            new Vector2(12, 39), muted);
+        _font.Draw(_spriteBatch, "M FULL VIEW   UNIFORM COLLISION TILES   WHITE PLAYER BODY",
+            new Vector2(12, 342), Color.White);
     }
 
     private static string Format(string value)
