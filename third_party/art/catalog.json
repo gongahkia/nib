@@ -119,21 +119,21 @@
       ]
     },
     {
-      "id": "stone-ruins-candidate",
+      "id": "stone-ruins",
       "archive": "ruins.zip",
       "archiveSha256": "80d35d24a05a1fe7fc24354a0e1ffb92032db0124e73d427dc9ad138a2c2b392",
       "archiveBytes": 22594,
-      "creator": "unverified; likely NicoPardo",
-      "title": "unverified; visually resembles STONE RUINS",
-      "possibleSource": "https://nicopardo.itch.io/stone-ruins",
-      "licenseEvidence": "none in archive; possible creator page permits personal and commercial use",
-      "licenseStatus": "provenance-pending",
+      "creator": "likely NicoPardo",
+      "title": "STONE RUINS",
+      "source": "https://nicopardo.itch.io/stone-ruins",
+      "licenseEvidence": "owner confirmed a free itch.io download and permission to use it; matching creator page permits personal and commercial use",
+      "licenseStatus": "game-use-permitted-raw-redistribution-not-granted",
       "storage": "local-only",
-      "extractedPath": "third_party/art/local-only/stone-ruins-provenance-pending/",
-      "designStatus": "do-not-use-until-provenance-confirmed",
+      "extractedPath": "third_party/art/local-only/stone-ruins/",
+      "designStatus": "approved-reference-and-selective-source",
       "notes": [
-        "the received ZIP name and contents differ from the official Stone Ruins RAR listing",
-        "the restrained ruin palette and fragmented masonry are a strong tonal fit if provenance is confirmed",
+        "the received ZIP name and contents differ from the current Stone Ruins RAR listing, so the exact package revision remains uncertain",
+        "the restrained ruin palette and fragmented masonry are a strong tonal fit",
         "raw redistribution permission is not established"
       ]
     }
