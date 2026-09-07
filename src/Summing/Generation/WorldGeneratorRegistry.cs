@@ -4,7 +4,7 @@ namespace Summing.Generation;
 
 public static class WorldGeneratorRegistry
 {
-    public const string CurrentVersion = "badlands-v2";
+    public const string CurrentVersion = "badlands-v3";
     private static readonly IReadOnlyDictionary<GeneratorVariant, IBiomeGenerator> Generators =
         new Dictionary<GeneratorVariant, IBiomeGenerator>
         {

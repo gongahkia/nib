@@ -9,21 +9,21 @@ public interface IBiomeGenerator
 
 public sealed class HeightmapBadlandsGenerator : IBiomeGenerator
 {
-    public string Id => "badlands-heightmap-v2";
+    public string Id => "badlands-heightmap-v3";
     public GeneratorVariant Variant => GeneratorVariant.Heightmap;
     public GeneratedWorld Generate(WorldGenerationConfig configuration) => BadlandsBuilder.Build(configuration, Variant);
 }
 
 public sealed class CellularBadlandsGenerator : IBiomeGenerator
 {
-    public string Id => "badlands-cellular-v2";
+    public string Id => "badlands-cellular-v3";
     public GeneratorVariant Variant => GeneratorVariant.Cellular;
     public GeneratedWorld Generate(WorldGenerationConfig configuration) => BadlandsBuilder.Build(configuration, Variant);
 }
 
 public sealed class LayeredBadlandsGenerator : IBiomeGenerator
 {
-    public string Id => "badlands-layered-v2";
+    public string Id => "badlands-layered-v3";
     public GeneratorVariant Variant => GeneratorVariant.Layered;
     public GeneratedWorld Generate(WorldGenerationConfig configuration) => BadlandsBuilder.Build(configuration, Variant);
 }

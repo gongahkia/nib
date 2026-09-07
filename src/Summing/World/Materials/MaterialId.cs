@@ -9,5 +9,14 @@ public enum MaterialId : byte
     FossilComposite,
     RuinAlloy,
     BrittleMasonry,
-    SaltGlass
+    SaltGlass,
+    OchreClay,
+    PaleChalk,
+    BlueShale,
+    Ironstone,
+    AshClinker,
+    PetrifiedFiber,
+    MachineCeramic,
+    CopperSalt,
+    WeatheredConcrete
 }

@@ -275,8 +275,12 @@ public static class HeadlessVerification
 
     private static void VerifyMaterialHardness()
     {
+        var identifiers = Enum.GetValues<MaterialId>();
+        if (MaterialCatalog.All.Count() != identifiers.Length || identifiers.Any(identifier =>
+                MaterialCatalog.Get(identifier).Id != identifier))
+            throw new InvalidOperationException("material catalog does not define every serialized material identifier");
         var solids = MaterialCatalog.All.Where(material => material.Solid).ToArray();
-        if (solids.Any(material => material.Hardness is < 1 or > 2) ||
+        if (solids.Length < 16 || solids.Any(material => material.Hardness is < 1 or > 2) ||
             !solids.Any(material => material.Hardness == 1) || !solids.Any(material => material.Hardness == 2))
             throw new InvalidOperationException("ordinary material hardness is not constrained to distinct one/two-hit tiers");
 
@@ -402,6 +406,7 @@ public static class HeadlessVerification
     {
         var camera = new Camera2D();
         camera.Snap(new Vector2(320f, 180f));
+        var stableView = camera.StableView;
         camera.AddShake(10f);
         camera.Update(new Vector2(320f, 180f), Vector2.Zero, GameConstants.FixedDelta);
         if (camera.ShakeStrength <= 0f || camera.ShakeOffset.LengthSquared() <= 0f)
@@ -409,6 +414,8 @@ public static class HeadlessVerification
         if (camera.VisibleWorldWidth <= GameConstants.VirtualWidth * 1.1f ||
             camera.VisibleWorldHeight <= GameConstants.VirtualHeight * 1.1f)
             throw new InvalidOperationException("camera does not expose the intended wider world framing");
+        if (camera.StableView != stableView)
+            throw new InvalidOperationException("stable movement-test camera inherited impact shake");
         var worldPoint = new Vector2(402f, 217f);
         var projected = camera.WorldToScreen(worldPoint);
         if (Vector2.Distance(projected, Vector2.Transform(worldPoint, camera.View)) > 0.01f ||

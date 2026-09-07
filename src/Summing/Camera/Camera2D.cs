@@ -20,7 +20,16 @@ public sealed class Camera2D
     {
         get
         {
-            var translation = ScreenTranslation();
+            var translation = ScreenTranslation(true);
+            return Matrix.CreateScale(WorldZoom, WorldZoom, 1f) *
+                   Matrix.CreateTranslation(translation.X, translation.Y, 0f);
+        }
+    }
+    public Matrix StableView
+    {
+        get
+        {
+            var translation = ScreenTranslation(false);
             return Matrix.CreateScale(WorldZoom, WorldZoom, 1f) *
                    Matrix.CreateTranslation(translation.X, translation.Y, 0f);
         }
@@ -51,12 +60,12 @@ public sealed class Camera2D
 
     public void Pan(Vector2 delta) => Position += delta;
 
-    public Vector2 WorldToScreen(Vector2 world) => world * WorldZoom + ScreenTranslation();
-    public Vector2 ScreenToWorld(Vector2 screen) => (screen - ScreenTranslation()) / WorldZoom;
+    public Vector2 WorldToScreen(Vector2 world) => world * WorldZoom + ScreenTranslation(true);
+    public Vector2 ScreenToWorld(Vector2 screen) => (screen - ScreenTranslation(true)) / WorldZoom;
 
-    private Vector2 ScreenTranslation()
+    private Vector2 ScreenTranslation(bool includeShake)
     {
-        var camera = Position + ShakeOffset;
+        var camera = Position + (includeShake ? ShakeOffset : Vector2.Zero);
         return new Vector2(
             MathF.Floor(GameConstants.VirtualWidth * 0.5f - camera.X * WorldZoom),
             MathF.Floor(GameConstants.VirtualHeight * 0.5f - camera.Y * WorldZoom));

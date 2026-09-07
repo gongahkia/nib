@@ -426,31 +426,37 @@ internal static class BadlandsBuilder
         switch (style)
         {
             case 0:
-                for (var depth = 0; depth < 5; depth++) SetRuinTile(world, anchor.X, anchor.Y + depth, provenance);
+                for (var depth = 0; depth < 5; depth++)
+                    SetRuinTile(world, seed, anchor.X, anchor.Y + depth, provenance);
                 for (var rise = 1; rise <= 2; rise++)
                     if (DeterministicRandom.Hash01(seed, anchor.X, anchor.Y - rise, 109) > 0.32f)
-                        SetRuinTile(world, anchor.X, anchor.Y - rise, provenance);
+                        SetRuinTile(world, seed, anchor.X, anchor.Y - rise, provenance);
                 break;
             case 1:
                 for (var x = anchor.X - 4; x <= anchor.X + 1; x++)
-                    if (x != anchor.X - 1) SetRuinTile(world, x, anchor.Y, provenance);
-                SetRuinTile(world, anchor.X - 4, anchor.Y - 1, provenance);
+                    if (x != anchor.X - 1) SetRuinTile(world, seed, x, anchor.Y, provenance);
+                SetRuinTile(world, seed, anchor.X - 4, anchor.Y - 1, provenance);
                 break;
             case 2:
                 for (var x = anchor.X - 1; x <= anchor.X + 1; x++)
-                    for (var depth = 0; depth < 3; depth++) SetRuinTile(world, x, anchor.Y + depth, provenance);
+                    for (var depth = 0; depth < 3; depth++)
+                        SetRuinTile(world, seed, x, anchor.Y + depth, provenance);
                 break;
             default:
                 for (var x = anchor.X - 3; x <= anchor.X + 3; x++)
-                    if ((x + anchor.Y) % 3 != 0) SetRuinTile(world, x, anchor.Y + 2, provenance);
+                    if ((x + anchor.Y) % 3 != 0)
+                        SetRuinTile(world, seed, x, anchor.Y + 2, provenance);
                 break;
         }
     }
 
-    private static void SetRuinTile(TileWorld world, int x, int y, short provenance)
+    private static void SetRuinTile(TileWorld world, long seed, int x, int y, short provenance)
     {
         if (!world.Contains(x, y)) return;
-        world.SetTile(x, y, MaterialId.RuinAlloy, TileFlags.RuinTrace, provenance);
+        var variation = DeterministicRandom.Hash01(seed, x, y, 131);
+        var material = variation < 0.22f ? MaterialId.WeatheredConcrete :
+            variation < 0.34f ? MaterialId.MachineCeramic : MaterialId.RuinAlloy;
+        world.SetTile(x, y, material, TileFlags.RuinTrace, provenance);
     }
 
     private static void MarkSurfaceFlag(TileWorld world, Point point, TileFlags flag, short provenance)
@@ -477,9 +483,17 @@ internal static class BadlandsBuilder
     private static MaterialId RouteSurfaceMaterial(long seed, Point anchor, float altitude)
     {
         var variation = DeterministicRandom.Hash01(seed, anchor.X / 4, anchor.Y / 6, 113);
-        if (altitude < 0.3f) return variation < 0.55f ? MaterialId.Loess : MaterialId.RedSandstone;
-        if (altitude < 0.68f) return variation < 0.7f ? MaterialId.RedSandstone : MaterialId.FossilComposite;
-        return variation < 0.52f ? MaterialId.FossilComposite : MaterialId.BlackBasalt;
+        if (altitude < 0.3f)
+            return variation < 0.38f ? MaterialId.Loess :
+                variation < 0.72f ? MaterialId.OchreClay : MaterialId.RedSandstone;
+        if (altitude < 0.68f)
+            return variation < 0.3f ? MaterialId.RedSandstone :
+                variation < 0.52f ? MaterialId.BlueShale :
+                variation < 0.74f ? MaterialId.FossilComposite : MaterialId.PetrifiedFiber;
+        return variation < 0.24f ? MaterialId.FossilComposite :
+            variation < 0.48f ? MaterialId.BlackBasalt :
+            variation < 0.66f ? MaterialId.Ironstone :
+            variation < 0.82f ? MaterialId.PaleChalk : MaterialId.AshClinker;
     }
 
     private static void SetGeologicalTile(TileWorld world, long seed, GeneratorVariant variant, int x, int y, int depth)
@@ -488,26 +502,51 @@ internal static class BadlandsBuilder
         var altitude = 1f - y / (float)world.Height;
         var bandThickness = variant == GeneratorVariant.Heightmap ? 14 : variant == GeneratorVariant.Layered ? 10 : 8;
         var warp = (int)(DeterministicRandom.Hash(seed, x / (variant == GeneratorVariant.Cellular ? 3 : 7), 0, 3) % 3);
-        var band = Math.Abs(y / bandThickness + warp) % 6;
+        var band = Math.Abs(y / bandThickness + warp) % 12;
         MaterialId material;
         if (variant == GeneratorVariant.Cellular)
         {
             var cell = DeterministicRandom.Hash01(seed, x / 3, y / 3, 127);
-            material = cell < 0.14f && altitude > 0.38f ? MaterialId.SaltGlass :
-                cell < 0.35f ? MaterialId.FossilComposite :
-                cell > 0.82f ? MaterialId.BlackBasalt : MaterialId.RedSandstone;
+            if (altitude < 0.3f)
+                material = cell < 0.2f ? MaterialId.OchreClay :
+                    cell < 0.4f ? MaterialId.Loess :
+                    cell < 0.78f ? MaterialId.RedSandstone : MaterialId.Ironstone;
+            else if (altitude < 0.7f)
+                material = cell < 0.12f ? MaterialId.CopperSalt :
+                    cell < 0.28f ? MaterialId.FossilComposite :
+                    cell < 0.45f ? MaterialId.BlueShale :
+                    cell < 0.6f ? MaterialId.PetrifiedFiber :
+                    cell < 0.74f ? MaterialId.RedSandstone :
+                    cell < 0.87f ? MaterialId.WeatheredConcrete : MaterialId.MachineCeramic;
+            else
+                material = cell < 0.14f ? MaterialId.SaltGlass :
+                    cell < 0.28f ? MaterialId.PaleChalk :
+                    cell < 0.42f ? MaterialId.AshClinker :
+                    cell < 0.62f ? MaterialId.BlackBasalt :
+                    cell < 0.8f ? MaterialId.Ironstone : MaterialId.CopperSalt;
         }
         else
         {
             material = band switch
             {
-                0 or 1 => MaterialId.RedSandstone,
-                2 => altitude > 0.58f ? MaterialId.SaltGlass : MaterialId.FossilComposite,
-                3 or 4 => MaterialId.BlackBasalt,
-                _ => MaterialId.FossilComposite
+                0 => MaterialId.RedSandstone,
+                1 => MaterialId.OchreClay,
+                2 => MaterialId.BlueShale,
+                3 => MaterialId.FossilComposite,
+                4 => MaterialId.Ironstone,
+                5 => MaterialId.BlackBasalt,
+                6 => MaterialId.PetrifiedFiber,
+                7 => altitude > 0.58f ? MaterialId.PaleChalk : MaterialId.Loess,
+                8 => altitude > 0.58f ? MaterialId.SaltGlass : MaterialId.CopperSalt,
+                9 => altitude > 0.68f ? MaterialId.AshClinker : MaterialId.RedSandstone,
+                10 => MaterialId.WeatheredConcrete,
+                _ => variant == GeneratorVariant.Layered ? MaterialId.MachineCeramic : MaterialId.Ironstone
             };
         }
-        if (depth == 0 && altitude < 0.46f) material = MaterialId.Loess;
+        if (depth == 0 && altitude < 0.46f)
+            material = DeterministicRandom.Hash01(seed, x, y, 137) < 0.62f
+                ? MaterialId.Loess
+                : MaterialId.OchreClay;
         world.SetTile(x, y, material);
     }
 

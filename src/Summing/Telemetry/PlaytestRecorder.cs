@@ -43,7 +43,7 @@ public sealed class PlaytestRecorder : IDisposable
     private int _eventCount;
 
     public PlaytestRecorder(GeneratedWorld generated, Difficulty difficulty, InputBindings bindings,
-        VisualSelectionSnapshot visualSelection)
+        VisualSelectionSnapshot visualSelection, bool movementTestView)
     {
         var name = $"{DateTimeOffset.Now:yyyyMMdd-HHmmss-fff}-{generated.Configuration.Seed}";
         DirectoryPath = Path.Combine("playtests", name);
@@ -58,13 +58,14 @@ public sealed class PlaytestRecorder : IDisposable
         _screenshots.WriteLine("frame,time_s,file,event,phase");
         File.WriteAllText(Path.Combine(DirectoryPath, "metadata.json"), JsonSerializer.Serialize(new
         {
-            schemaVersion = 6,
+            schemaVersion = 7,
             startedAtUtc = DateTimeOffset.UtcNow,
             seed = generated.Configuration.Seed,
             generator = WorldGeneratorRegistry.Identifier(generated.Configuration.Variant),
             generated.Configuration,
             difficulty,
             visualSelection,
+            movementTestViewAtStart = movementTestView,
             historyId = generated.History.Id,
             epoch = generated.History.EpochName,
             generated.Diagnostics,

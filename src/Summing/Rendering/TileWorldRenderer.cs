@@ -57,6 +57,41 @@ public sealed class TileWorldRenderer
         }
     }
 
+    public void DrawSanitized(SpriteBatch batch, TileWorld world, Vector2 cameraPosition, float worldZoom)
+    {
+        var visibleWidth = GameConstants.VirtualWidth / worldZoom;
+        var visibleHeight = GameConstants.VirtualHeight / worldZoom;
+        var left = Math.Max(0, TileWorld.WorldToTile(cameraPosition.X - visibleWidth * 0.55f));
+        var right = Math.Min(world.Width - 1, TileWorld.WorldToTile(cameraPosition.X + visibleWidth * 0.55f));
+        var top = Math.Max(0, TileWorld.WorldToTile(cameraPosition.Y - visibleHeight * 0.58f));
+        var bottom = Math.Min(world.Height - 1, TileWorld.WorldToTile(cameraPosition.Y + visibleHeight * 0.58f));
+        var fill = new Color(72, 75, 82);
+        var seam = new Color(29, 31, 37);
+        var exposed = new Color(151, 156, 164);
+
+        for (var y = top; y <= bottom; y++)
+            for (var x = left; x <= right; x++)
+            {
+                var tile = world.GetTile(x, y);
+                if (!tile.Solid) continue;
+                var destination = new Rectangle(x * GameConstants.TileSize, y * GameConstants.TileSize,
+                    GameConstants.TileSize, GameConstants.TileSize);
+                batch.Draw(_pixel, destination, fill);
+                batch.Draw(_pixel, new Rectangle(destination.Right - 1, destination.Y, 1, destination.Height), seam);
+                batch.Draw(_pixel, new Rectangle(destination.X, destination.Bottom - 1, destination.Width, 1), seam);
+                if (!world.GetTile(x, y - 1).Solid)
+                    batch.Draw(_pixel, new Rectangle(destination.X, destination.Y, destination.Width, 2), exposed);
+                if (tile.Damage > 0)
+                {
+                    batch.Draw(_pixel, new Rectangle(destination.Center.X, destination.Y + 5, 1, 13), seam);
+                    batch.Draw(_pixel, new Rectangle(destination.Center.X - 4, destination.Y + 10, 5, 1), seam);
+                }
+            }
+
+        foreach (var chunk in world.Chunks.Values)
+            if (chunk.Dirty) chunk.MarkClean();
+    }
+
     private void DrawExposedEdges(SpriteBatch batch, TileWorld world, Rectangle destination,
         MaterialDefinition definition, int x, int y)
     {
@@ -125,6 +160,58 @@ public sealed class TileWorldRenderer
                 batch.Draw(_pixel, new Rectangle(destination.X + 10, destination.Y + 9, 2, 9), dark);
                 batch.Draw(_pixel, new Rectangle(destination.X + 12, destination.Y + 9, 6, 2),
                     definition.AccentColor * 0.42f);
+                break;
+            case MaterialId.OchreClay:
+                batch.Draw(_pixel, new Rectangle(destination.X + 3, destination.Y + 6, 4, 2),
+                    definition.AccentColor * 0.48f);
+                batch.Draw(_pixel, new Rectangle(destination.Right - 9, destination.Bottom - 8, 6, 2), dark);
+                break;
+            case MaterialId.PaleChalk:
+                batch.Draw(_pixel, new Rectangle(destination.X + 2, destination.Y + 8, 18, 1), dark);
+                batch.Draw(_pixel, new Rectangle(destination.X + 7, destination.Y + 16, 14, 1),
+                    definition.AccentColor * 0.56f);
+                break;
+            case MaterialId.BlueShale:
+                for (var layer = 0; layer < 3; layer++)
+                    batch.Draw(_pixel, new Rectangle(destination.X + 2 + layer * 2,
+                        destination.Y + 5 + layer * 6, 18 - layer * 3, 1),
+                        layer == 1 ? definition.AccentColor * 0.46f : dark);
+                break;
+            case MaterialId.Ironstone:
+                batch.Draw(_pixel, new Rectangle(destination.X + 4 + (int)(hash % 4), destination.Y + 7, 5, 4),
+                    definition.AccentColor * 0.58f);
+                batch.Draw(_pixel, new Rectangle(destination.Right - 8, destination.Bottom - 7, 4, 3), dark);
+                break;
+            case MaterialId.AshClinker:
+                batch.Draw(_pixel, new Rectangle(destination.X + 5, destination.Y + 6, 3, 3), dark);
+                batch.Draw(_pixel, new Rectangle(destination.X + 15, destination.Y + 13, 4, 4), dark);
+                batch.Draw(_pixel, new Rectangle(destination.X + 8, destination.Bottom - 5, 2, 2),
+                    definition.AccentColor * 0.42f);
+                break;
+            case MaterialId.PetrifiedFiber:
+                batch.Draw(_pixel, new Rectangle(destination.X + 5, destination.Y + 3, 2, 17), dark);
+                batch.Draw(_pixel, new Rectangle(destination.X + 11, destination.Y + 6, 2, 15),
+                    definition.AccentColor * 0.48f);
+                batch.Draw(_pixel, new Rectangle(destination.X + 17, destination.Y + 3, 1, 13), dark);
+                break;
+            case MaterialId.MachineCeramic:
+                batch.Draw(_pixel, new Rectangle(destination.X + 3, destination.Y + 3, 18, 1), dark);
+                batch.Draw(_pixel, new Rectangle(destination.X + 3, destination.Bottom - 4, 18, 1), dark);
+                batch.Draw(_pixel, new Rectangle(destination.X + 3, destination.Y + 3, 1, 17), dark);
+                batch.Draw(_pixel, new Rectangle(destination.Right - 4, destination.Y + 3, 1, 17), dark);
+                break;
+            case MaterialId.CopperSalt:
+                batch.Draw(_pixel, new Rectangle(destination.X + 6, destination.Y + 5, 3, 10),
+                    definition.AccentColor * 0.58f);
+                batch.Draw(_pixel, new Rectangle(destination.X + 3, destination.Y + 9, 9, 3),
+                    definition.AccentColor * 0.4f);
+                batch.Draw(_pixel, new Rectangle(destination.Right - 7, destination.Bottom - 8, 3, 5), dark);
+                break;
+            case MaterialId.WeatheredConcrete:
+                batch.Draw(_pixel, new Rectangle(destination.X + 3, destination.Y + 7, 4, 3), dark);
+                batch.Draw(_pixel, new Rectangle(destination.X + 13, destination.Y + 4, 5, 3),
+                    definition.AccentColor * 0.42f);
+                batch.Draw(_pixel, new Rectangle(destination.X + 9, destination.Bottom - 7, 3, 3), dark);
                 break;
         }
 
