@@ -18,12 +18,14 @@ public sealed class TileWorldRenderer
         _visualPacks = visualPacks;
     }
 
-    public void Draw(SpriteBatch batch, TileWorld world, Vector2 cameraPosition)
+    public void Draw(SpriteBatch batch, TileWorld world, Vector2 cameraPosition, float worldZoom)
     {
-        var left = Math.Max(0, TileWorld.WorldToTile(cameraPosition.X - GameConstants.VirtualWidth * 0.55f));
-        var right = Math.Min(world.Width - 1, TileWorld.WorldToTile(cameraPosition.X + GameConstants.VirtualWidth * 0.55f));
-        var top = Math.Max(0, TileWorld.WorldToTile(cameraPosition.Y - GameConstants.VirtualHeight * 0.58f));
-        var bottom = Math.Min(world.Height - 1, TileWorld.WorldToTile(cameraPosition.Y + GameConstants.VirtualHeight * 0.58f));
+        var visibleWidth = GameConstants.VirtualWidth / worldZoom;
+        var visibleHeight = GameConstants.VirtualHeight / worldZoom;
+        var left = Math.Max(0, TileWorld.WorldToTile(cameraPosition.X - visibleWidth * 0.55f));
+        var right = Math.Min(world.Width - 1, TileWorld.WorldToTile(cameraPosition.X + visibleWidth * 0.55f));
+        var top = Math.Max(0, TileWorld.WorldToTile(cameraPosition.Y - visibleHeight * 0.58f));
+        var bottom = Math.Min(world.Height - 1, TileWorld.WorldToTile(cameraPosition.Y + visibleHeight * 0.58f));
 
         for (var y = top; y <= bottom; y++)
             for (var x = left; x <= right; x++)

@@ -193,8 +193,10 @@ public sealed class Game1 : Game
         if (_player.Position.Y > _world.PixelHeight + 80f && _player.Alive)
             _player.ApplyDamage(99, Vector2.Zero, "void");
         var cameraTarget = new Vector2(
-            Math.Clamp(_player.Position.X, GameConstants.VirtualWidth * 0.5f, _world.PixelWidth - GameConstants.VirtualWidth * 0.5f),
-            Math.Clamp(_player.Position.Y - 25f, GameConstants.VirtualHeight * 0.5f, _world.PixelHeight - GameConstants.VirtualHeight * 0.5f));
+            Math.Clamp(_player.Position.X, _camera.VisibleWorldWidth * 0.5f,
+                _world.PixelWidth - _camera.VisibleWorldWidth * 0.5f),
+            Math.Clamp(_player.Position.Y - 25f, _camera.VisibleWorldHeight * 0.5f,
+                _world.PixelHeight - _camera.VisibleWorldHeight * 0.5f));
         _camera.Update(cameraTarget, _player.Velocity, GameConstants.FixedDelta);
         if (_input.KeyPressed(Keys.F8) || _input.ButtonPressed(Buttons.RightShoulder))
             _telemetry?.RecordEvent("playtest-bookmark", new
@@ -241,8 +243,8 @@ public sealed class Game1 : Game
         {
             _spriteBatch.Begin(transformMatrix: _camera.View, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
             DrawBackdrop();
-            _atmosphere.DrawWorldDither(_spriteBatch, _camera.Position, _frame);
-            _tileRenderer.Draw(_spriteBatch, _world, _camera.Position);
+            _atmosphere.DrawWorldDither(_spriteBatch, _camera.Position, _frame, Camera2D.WorldZoom);
+            _tileRenderer.Draw(_spriteBatch, _world, _camera.Position, Camera2D.WorldZoom);
             _terrainBreakEffects.Draw(_spriteBatch, _pixel);
             foreach (var feature in _generated.Features)
                 if (feature.Kind != WorldFeatureKind.RelicCandidate) _sprites.DrawFeature(_spriteBatch, feature);
@@ -361,9 +363,9 @@ public sealed class Game1 : Game
 
     private void DrawDistantRidge(int horizon, int step, Color color, int phase)
     {
-        var viewLeft = (int)_camera.Position.X - GameConstants.VirtualWidth / 2 - step;
+        var viewLeft = (int)_camera.Position.X - (int)(_camera.VisibleWorldWidth * 0.5f) - step;
         var first = (int)MathF.Floor(viewLeft / (float)step) * step;
-        for (var x = first; x < viewLeft + GameConstants.VirtualWidth + step * 2; x += step)
+        for (var x = first; x < viewLeft + _camera.VisibleWorldWidth + step * 2; x += step)
         {
             var height = 34 + Math.Abs((x / step * 37 + phase) % 92);
             var width = step - 5;
