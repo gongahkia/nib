@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "reviewedOn": "2026-09-07",
-  "runtimeIntegrated": false,
-  "runtimeIntegrationMode": "none-sanitized-movement-debug",
+  "runtimeIntegrated": true,
+  "runtimeIntegrationMode": "sanitized-terrain-with-owner-authorized-template-player",
   "packages": [
     {
       "id": "gandalfhardcore-character",
@@ -188,14 +188,16 @@
       "title": "Action Platformer Character Template free tier",
       "source": "https://ozzbit-games.itch.io/action-platformer-character-template",
       "licenseEvidence": "bundled LICENSE.txt and creator page restrict the free tier to personal, non-commercial projects with required credit",
-      "licenseStatus": "personal-noncommercial-only",
-      "storage": "ignored-archive-only",
+      "licenseStatus": "creator-authorized-for-this-project",
+      "storage": "tracked-runtime-and-ignored-source-archive",
       "archivePath": "third_party/art/source-archives/template_free.zip",
-      "designStatus": "reject-license-incompatible",
+      "assetPath": "assets/sprites/player/template-free/",
+      "designStatus": "sole-runtime-player-prototype",
       "notes": [
-        "not integrated because Summing is not restricted to non-commercial distribution",
+        "on 2026-09-07 the repository owner identified themself as the creator and explicitly authorized use in Summing despite the bundled free-version restriction",
+        "credit Ozzbit Games and preserve the bundled license/readme plus authorization record",
         "the received free tier contains only a subset of the advertised animation vocabulary",
-        "a separately acquired PRO or DELUXE license would require a new audit before use"
+        "missing Summing-specific states use nearest supplied poses while collision remains authoritative"
       ]
     }
   ]

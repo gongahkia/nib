@@ -14,7 +14,7 @@ make build
 
 The scripts detect the per-user SDK at `~/.local/share/dotnet` as well as a working SDK on `PATH`. The game creates ignored local `archive/`, `saves/`, `exports/`, and `playtests/` directories. Silence is intentional; no audio subsystem or audio assets exist. Linux debug builds are self-contained because the framework-dependent Fedora apphost can fail when the system .NET host is incomplete. Use `make publish-fedora` for a self-contained release.
 
-The current build deliberately has one presentation mode: a sanitized movement-debug renderer. It draws uniform collision tiles, primitive objects, and the exact white 18×22 px player body against a flat field. No runtime sprite sheets, imported tilesets, backgrounds, atmosphere, material styling, animation art, visual-pack selector, or rendering toggle remain. Downloaded art ZIPs are retained only as ignored dormant archives and are never loaded by the game. Future original art direction and the Aseprite MCP workflow are recorded in `docs/art/SPRITE-GENERATION.md`.
+The current build deliberately has one presentation mode: a sanitized movement-debug renderer. It draws uniform collision tiles and primitive objects against a flat field, with Ozzbit Games' owner-authorized Template Free character as the sole player sprite. No environment tilesets, backgrounds, atmosphere, material styling, visual-pack selector, or rendering toggle remain. Other downloaded art ZIPs remain ignored dormant archives and are never loaded by the game. Future original art direction and the Aseprite MCP workflow are recorded in `docs/art/SPRITE-GENERATION.md`.
 
 The title screen selects Easy/Hard, deterministic seed, and Heightmap/Cellular/Layered generation. Keys `1`–`3` or gamepad right shoulder select labelled comparison presets. `Esc`/Start pauses during play. Death has no checkpoint; Easy repeats the world and Hard advances to another generated history. Reach the summit relay to complete the slice.
 
@@ -30,7 +30,8 @@ make verify
 
 - `src/Summing`: game bootstrap and runtime systems
 - `docs`: tone, world, architecture, controls, playtest evidence, and future art direction
-- `third_party/art/source-archives`: ignored dormant ZIPs retained for provenance; never runtime-loaded
+- `assets/sprites/player/template-free`: the sole tracked player animation family
+- `third_party/art/source-archives`: ignored dormant ZIPs retained for provenance
 - `tools`: local build utilities
 
 See `docs/CONTROLS.md`, `docs/EDITOR.md`, and `docs/PLAYTEST-ARTIFACTS.md`. Press `F1` in game for the debug/editor overlay.
