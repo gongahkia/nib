@@ -13,6 +13,8 @@ public sealed class SpriteLibrary : IDisposable
     private readonly VisualPackManager _visualPacks;
     private readonly Texture2D _locomotion;
     private readonly Texture2D _traversal;
+    private readonly Texture2D _asepriteLocomotion;
+    private readonly Texture2D _asepriteTraversal;
     private readonly Texture2D _ruins;
     private readonly Texture2D _relics;
     private readonly Texture2D _burrower;
@@ -47,6 +49,8 @@ public sealed class SpriteLibrary : IDisposable
         _visualPacks = visualPacks;
         _locomotion = Load(graphicsDevice, "Sprites/player_locomotion.png");
         _traversal = Load(graphicsDevice, "Sprites/player_traversal.png");
+        _asepriteLocomotion = Load(graphicsDevice, "Sprites/player_aseprite_locomotion.png");
+        _asepriteTraversal = Load(graphicsDevice, "Sprites/player_aseprite_traversal.png");
         _ruins = Load(graphicsDevice, "Sprites/ruins.png");
         _relics = Load(graphicsDevice, "Sprites/relics.png");
         _burrower = Load(graphicsDevice, "Sprites/burrower.png");
@@ -102,7 +106,10 @@ public sealed class SpriteLibrary : IDisposable
         if (_visualPacks.DrawPlayer(batch, state, feet, facing, frame, tint)) return;
 
         var mapping = _stateFrames[state];
-        var texture = mapping.Traversal ? _traversal : _locomotion;
+        var asepritePilgrim = _visualPacks.PlayerPack == PlayerVisualPackId.AsepritePilgrim;
+        var texture = mapping.Traversal
+            ? asepritePilgrim ? _asepriteTraversal : _traversal
+            : asepritePilgrim ? _asepriteLocomotion : _locomotion;
         var sourceFrame = mapping.Frame;
         if (state == MovementState.Idle) sourceFrame += (int)(frame / 38 % 2);
         if (state == MovementState.Run) sourceFrame += (int)(frame / 5 % 4);
@@ -124,6 +131,8 @@ public sealed class SpriteLibrary : IDisposable
     {
         _locomotion.Dispose();
         _traversal.Dispose();
+        _asepriteLocomotion.Dispose();
+        _asepriteTraversal.Dispose();
         _ruins.Dispose();
         _relics.Dispose();
         _burrower.Dispose();
