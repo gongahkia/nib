@@ -254,6 +254,9 @@ public static class HeadlessVerification
         for (var frame = 0; frame < 120; frame++) brittle.Update(player, generated.Terrain, GameConstants.FixedDelta);
         if (!structure.Collapsed) throw new InvalidOperationException("brittle structure did not collapse under player");
 
+        VerifyBrittleTerrainReaction("bomb");
+        VerifyBrittleTerrainReaction("burrower");
+
         var temporaryDirectory = Path.Combine(Path.GetTempPath(), $"summing-verify-{Guid.NewGuid():N}");
         Directory.CreateDirectory(temporaryDirectory);
         try
@@ -271,6 +274,24 @@ public static class HeadlessVerification
         {
             Directory.Delete(temporaryDirectory, true);
         }
+    }
+
+    private static void VerifyBrittleTerrainReaction(string cause)
+    {
+        var generated = ValidatedWorldGenerator.Generate(new WorldGenerationConfig());
+        var brittle = new BrittleSystem(generated, DifficultyTuning.For(Difficulty.Easy));
+        if (brittle.Structures.Count == 0) throw new InvalidOperationException("generation placed no brittle structure");
+        var structure = brittle.Structures[0];
+        var support = structure.Tiles[0];
+        generated.Terrain.DamageTile(support.X, support.Y, 1, cause);
+        if (!structure.Triggered)
+            throw new InvalidOperationException($"{cause} terrain interaction did not trigger brittle structure");
+
+        var player = new PlayerController(generated.Spawn);
+        for (var frame = 0; frame < 60 && !structure.Collapsed; frame++)
+            brittle.Update(player, generated.Terrain, GameConstants.FixedDelta);
+        if (!structure.Collapsed)
+            throw new InvalidOperationException($"brittle structure did not collapse after {cause} interaction");
     }
 
     private static void VerifyInputBindingPersistence()
