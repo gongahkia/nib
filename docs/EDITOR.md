@@ -5,6 +5,7 @@ Press `F1` to enter or leave the editor. Simulation pauses while editing; WASD p
 - `Tab`: cycle inspect, paint, erase, place burrower, place brittle site, place relic, place ruin, move entity, and delete entity tools.
 - `[` / `]`: select material. Left click applies the current tool; right click always erases a tile.
 - `T`: type an exact signed 64-bit seed, then Enter. `V` cycles generator variant. `F2` regenerates. `F3` chooses a wall-clock random seed.
+- `1` / `2` / `3`: load Broad Escarpments, Fractured Needles, or Buried Processional comparison presets. `P` or gamepad right shoulder cycles them. `H` toggles Easy/Hard and restarts the same geometry with the corresponding pressure tuning.
 - `-` / `+`: adjust erosion. `,` / `.` adjusts ruin density. `;` / `'` adjusts wind strength. Press `F2` to apply parameter changes to a newly generated world.
 - `Ctrl+S`: save the complete current state to `saves/editor-world.json`.
 - `Ctrl+L`: load that file through the same JSON world model.

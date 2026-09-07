@@ -54,7 +54,7 @@ public sealed class Game1 : Game
     private readonly bool _captureTitleSmoke;
     private readonly bool _syntheticSmoke;
     private readonly BindingMenu _bindingMenu = new();
-    private readonly WorldGenerationConfig _menuConfig = new();
+    private readonly WorldGenerationConfig _menuConfig;
     private GamePhase _phase = GamePhase.Title;
     private float _phaseTimer;
     private bool _typingTitleSeed;
@@ -63,13 +63,17 @@ public sealed class Game1 : Game
     private float _smoothedFps = 60f;
     private static readonly Color[] AppearanceTints = [Color.White, new Color(205, 232, 222), new Color(238, 191, 168)];
     private static readonly string[] AppearanceNames = ["BONE WRAPS", "SALT WRAPS", "OXIDE WRAPS"];
+    private static readonly Keys[] TitlePresetKeys = [Keys.D1, Keys.D2, Keys.D3];
 
-    public Game1(long autoExitFrame = 0, bool autoStart = true, bool captureTitleSmoke = false)
+    public Game1(long autoExitFrame = 0, bool autoStart = true, bool captureTitleSmoke = false,
+        WorldGenerationConfig? initialConfiguration = null, Difficulty initialDifficulty = Difficulty.Easy)
     {
         _autoExitFrame = autoExitFrame;
         _autoStart = autoStart;
         _captureTitleSmoke = captureTitleSmoke;
         _syntheticSmoke = autoExitFrame > 0 && autoStart;
+        _menuConfig = initialConfiguration == null ? new WorldGenerationConfig() : CopyConfiguration(initialConfiguration);
+        _difficulty = initialDifficulty;
         _graphics = new GraphicsDeviceManager(this)
         {
             PreferredBackBufferWidth = GameConstants.WindowWidth,
@@ -151,8 +155,8 @@ public sealed class Game1 : Game
             return;
         }
 
-        _editor.Update(_input, _camera, GraphicsDevice.Viewport, _generated, RegenerateWorld,
-            SaveEditorWorld, LoadEditorWorld, ExportWorld, GameConstants.FixedDelta);
+        _editor.Update(_input, _camera, GraphicsDevice.Viewport, _generated, _difficulty, RegenerateWorld,
+            ToggleDifficultyAndRegenerate, SaveEditorWorld, LoadEditorWorld, ExportWorld, GameConstants.FixedDelta);
         if (_editor.Active)
         {
             base.Update(gameTime);
@@ -174,13 +178,20 @@ public sealed class Game1 : Game
         _burrowerSystem.Update(_player, _world, GameConstants.FixedDelta);
         _brittleSystem.Update(_player, _world, GameConstants.FixedDelta);
         _terrainBreakEffects.Update(GameConstants.FixedDelta);
-        if (_input.Pressed(InputAction.Dash)) _telemetry?.RecordEvent("dash", new { _player.Position, _player.Velocity, _player.DashCharges });
         if (_player.Position.Y > _world.PixelHeight + 80f && _player.Alive)
             _player.ApplyDamage(99, Vector2.Zero, "void");
         var cameraTarget = new Vector2(
             Math.Clamp(_player.Position.X, GameConstants.VirtualWidth * 0.5f, _world.PixelWidth - GameConstants.VirtualWidth * 0.5f),
             Math.Clamp(_player.Position.Y - 25f, GameConstants.VirtualHeight * 0.5f, _world.PixelHeight - GameConstants.VirtualHeight * 0.5f));
         _camera.Update(cameraTarget, _player.Velocity, GameConstants.FixedDelta);
+        if (_input.KeyPressed(Keys.F8) || _input.ButtonPressed(Buttons.RightShoulder))
+            _telemetry?.RecordEvent("playtest-bookmark", new
+            {
+                _player.Position,
+                tile = _world.WorldToTile(_player.Bounds.Center),
+                routeAnchor = NearestRouteAnchorIndex(_player.Position),
+                state = _player.VisualState
+            });
         _telemetry?.RecordFrame(_frame, _input, _player, _camera, _world, _inventory, _generated);
         if (!_player.Alive)
         {
@@ -236,7 +247,7 @@ public sealed class Game1 : Game
 
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
             DrawHud();
-            _editor.DrawOverlay(_spriteBatch, _pixel, _font, _generated);
+            _editor.DrawOverlay(_spriteBatch, _pixel, _font, _generated, _difficulty);
             DrawPhaseOverlay();
             _spriteBatch.End();
         }
@@ -272,9 +283,10 @@ public sealed class Game1 : Game
         _font.Draw(_spriteBatch, $"GENERATOR   {_menuConfig.Variant}", new Vector2(210, 171), Color.White, 2);
         _font.Draw(_spriteBatch, $"SEED        {_menuConfig.Seed}", new Vector2(210, 194), GamePalette.Bone, 2);
         _font.Draw(_spriteBatch, $"CLIMBER     {AppearanceNames[_appearanceIndex]}", new Vector2(210, 217), AppearanceTints[_appearanceIndex], 2);
+        _font.Draw(_spriteBatch, $"PRESET {DevelopmentSeedPresets.Label(_menuConfig)}", new Vector2(210, 238), GamePalette.SaltCyan);
         _font.Draw(_spriteBatch, "UP DOWN DIFFICULTY   LEFT RIGHT GENERATOR", new Vector2(187, 252), GamePalette.UiMuted);
         _font.Draw(_spriteBatch, "T SET SEED   R OR LS RANDOM   C OR Y CLIMBER", new Vector2(172, 263), GamePalette.UiMuted);
-        _font.Draw(_spriteBatch, "B OR GAMEPAD B BINDINGS", new Vector2(235, 274), GamePalette.UiMuted);
+        _font.Draw(_spriteBatch, "1 2 3 OR RB PRESET   B OR GAMEPAD B BINDINGS", new Vector2(177, 274), GamePalette.UiMuted);
         _font.Draw(_spriteBatch, "ENTER OR A TO ASCEND", new Vector2(224, 298), GamePalette.SacredGold, 2);
         _font.Draw(_spriteBatch, "F1 OPENS THE WORLD EDITOR DURING A RUN", new Vector2(202, 329), new Color(105, 116, 125));
         if (_typingTitleSeed)
@@ -370,6 +382,10 @@ public sealed class Game1 : Game
         if (_input.Pressed(InputAction.Right))
             _menuConfig.Variant = (GeneratorVariant)(((int)_menuConfig.Variant + 1) % 3);
         if (_input.KeyPressed(Keys.T)) { _typingTitleSeed = true; _titleSeedText = _menuConfig.Seed.ToString(); }
+        for (var index = 0; index < TitlePresetKeys.Length; index++)
+            if (_input.KeyPressed(TitlePresetKeys[index])) DevelopmentSeedPresets.Apply(_menuConfig, index);
+        if (_input.KeyPressed(Keys.P) || _input.ButtonPressed(Buttons.RightShoulder))
+            DevelopmentSeedPresets.Apply(_menuConfig, DevelopmentSeedPresets.Next(_menuConfig));
         if (_input.KeyPressed(Keys.R) || _input.Pressed(InputAction.Rope))
             _menuConfig.Seed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         if (_input.KeyPressed(Keys.C) || _input.Pressed(InputAction.Dig))
@@ -458,6 +474,8 @@ public sealed class Game1 : Game
             new { rope.X, rope.Top, rope.Bottom });
         _player.StatusEvent += status => _telemetry?.RecordEvent(status.StartsWith("death", StringComparison.Ordinal)
             ? "death" : status.StartsWith("fall", StringComparison.Ordinal) ? "large-fall" : "damage", new { status, _player.Health });
+        _player.Dashed += () => _telemetry?.RecordEvent("dash",
+            new { _player.Position, _player.Velocity, _player.DashCharges });
         _digTool.Impact += change => _telemetry?.RecordEvent("tool-impact", change, change.Destroyed);
         _burrowerSystem.Event += value => _telemetry?.RecordEvent(value == "attack" ? "burrower-attack" : "burrower-interaction",
             new { value }, value == "attack");
@@ -474,6 +492,12 @@ public sealed class Game1 : Game
 
     private void RegenerateWorld(WorldGenerationConfig configuration) =>
         LoadGeneratedWorld(ValidatedWorldGenerator.Generate(configuration));
+
+    private void ToggleDifficultyAndRegenerate(WorldGenerationConfig configuration)
+    {
+        _difficulty = _difficulty == Difficulty.Easy ? Difficulty.Hard : Difficulty.Easy;
+        RegenerateWorld(configuration);
+    }
 
     private void SaveEditorWorld() => SaveWorld("saves/editor-world.json");
 
@@ -546,7 +570,7 @@ public sealed class Game1 : Game
             _spriteBatch.Draw(_pixel, new Rectangle(125, 300, 390, 24), new Color(7, 10, 15, 230));
             _font.Draw(_spriteBatch, _relicSystem.LastDiscovery, new Vector2(141, 309), GamePalette.SacredGold);
         }
-        _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  R ROPE  Q BOMB", new Vector2(12, 342), new Color(131, 132, 139));
+        _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  R ROPE  Q BOMB  F8 MARK", new Vector2(12, 342), new Color(131, 132, 139));
     }
 
     private static string Format(string value)
@@ -558,5 +582,21 @@ public sealed class Game1 : Game
             result += character;
         }
         return result;
+    }
+
+    private int NearestRouteAnchorIndex(Vector2 position)
+    {
+        var tile = _world.WorldToTile(position);
+        var nearest = 0;
+        var best = int.MaxValue;
+        for (var index = 0; index < _generated.RouteAnchors.Count; index++)
+        {
+            var anchor = _generated.RouteAnchors[index];
+            var distance = Math.Abs(anchor.X - tile.X) + Math.Abs(anchor.Y - tile.Y);
+            if (distance >= best) continue;
+            best = distance;
+            nearest = index;
+        }
+        return nearest;
     }
 }

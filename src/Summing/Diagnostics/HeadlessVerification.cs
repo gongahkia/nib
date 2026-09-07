@@ -57,6 +57,154 @@ public static class HeadlessVerification
         if (player.DashCharges != 0 || player.VisualState != MovementState.Dash)
             throw new InvalidOperationException("scripted air dash did not consume its charge");
         if (player.Position.X <= start.X) throw new InvalidOperationException("scripted movement did not advance");
+
+        VerifyCrouchAndSlideClearance();
+        VerifyCoyoteAndJumpBuffer();
+        VerifyDashStopsAtTerrain();
+        VerifyWallAndLedgeTransitions();
+        VerifyToolReachStopsAtAdjacentTile();
+    }
+
+    private static void VerifyCrouchAndSlideClearance()
+    {
+        var world = new TileWorld(18, 12);
+        for (var x = 0; x < world.Width; x++) world.SetTile(x, 9, MaterialId.RedSandstone);
+        var player = new PlayerController(new Vector2(5.5f * GameConstants.TileSize, 9f * GameConstants.TileSize));
+        var input = new InputManager(new InputBindings());
+        for (var frame = 0; frame < 8; frame++)
+        {
+            input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right);
+            player.Update(input, world, GameConstants.FixedDelta);
+        }
+        input.SetSyntheticState(new Vector2(1f, 1f), Vector2.UnitX, InputAction.Right, InputAction.Down, InputAction.Slide);
+        player.Update(input, world, GameConstants.FixedDelta);
+        if (player.Bounds.Height != PlayerController.CrouchingBodyHeight || player.VisualState != MovementState.Slide)
+            throw new InvalidOperationException("slide did not use the one-tile player's short collision body");
+
+        var lowWorld = new TileWorld(12, 12);
+        for (var x = 2; x < 10; x++) lowWorld.SetTile(x, 5, MaterialId.BlackBasalt);
+        player.Teleport(new Vector2(5.5f * GameConstants.TileSize, 5f * GameConstants.TileSize + PlayerController.CrouchingBodyHeight));
+        input.SetSyntheticState(Vector2.UnitY, Vector2.UnitX, InputAction.Down);
+        player.Update(input, lowWorld, GameConstants.FixedDelta);
+        input.SetSyntheticState(Vector2.Zero, Vector2.UnitX);
+        player.Update(input, lowWorld, GameConstants.FixedDelta);
+        if (player.Bounds.Height != PlayerController.CrouchingBodyHeight)
+            throw new InvalidOperationException("player stood up through a low ceiling");
+        player.Reset(new Vector2(4.5f * GameConstants.TileSize, 9f * GameConstants.TileSize));
+        if (player.Bounds.Height != PlayerController.StandingBodyHeight || player.State != MovementState.Falling)
+            throw new InvalidOperationException("run reset retained a stale crouch or movement state");
+    }
+
+    private static void VerifyCoyoteAndJumpBuffer()
+    {
+        var world = new TileWorld(18, 14);
+        for (var x = 0; x < 5; x++) world.SetTile(x, 9, MaterialId.RedSandstone);
+        var input = new InputManager(new InputBindings());
+        var coyotePlayer = new PlayerController(new Vector2(4.25f * GameConstants.TileSize, 9f * GameConstants.TileSize));
+        var leftGround = false;
+        for (var frame = 0; frame < 40; frame++)
+        {
+            input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right);
+            coyotePlayer.Update(input, world, GameConstants.FixedDelta);
+            if (!coyotePlayer.Grounded) { leftGround = true; break; }
+        }
+        if (!leftGround) throw new InvalidOperationException("coyote test player did not leave the platform");
+        input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right, InputAction.Jump);
+        coyotePlayer.Update(input, world, GameConstants.FixedDelta);
+        if (!coyotePlayer.UsedCoyoteThisFrame || coyotePlayer.Velocity.Y >= 0f)
+            throw new InvalidOperationException("coyote jump was not consumed after leaving terrain");
+
+        var bufferedPlayer = new PlayerController(new Vector2(3.5f * GameConstants.TileSize,
+            9f * GameConstants.TileSize - 5f));
+        bufferedPlayer.Velocity = new Vector2(0f, 120f);
+        input = new InputManager(new InputBindings());
+        input.SetSyntheticState(Vector2.Zero, Vector2.UnitX, InputAction.Jump);
+        bufferedPlayer.Update(input, world, GameConstants.FixedDelta);
+        var usedBuffer = false;
+        for (var frame = 0; frame < 12; frame++)
+        {
+            input.SetSyntheticState(Vector2.Zero, Vector2.UnitX);
+            bufferedPlayer.Update(input, world, GameConstants.FixedDelta);
+            usedBuffer |= bufferedPlayer.UsedJumpBufferThisFrame;
+            if (bufferedPlayer.Velocity.Y < 0f) break;
+        }
+        if (!usedBuffer || bufferedPlayer.Velocity.Y >= 0f)
+            throw new InvalidOperationException("jump buffer did not fire on the first grounded frame");
+    }
+
+    private static void VerifyDashStopsAtTerrain()
+    {
+        var world = new TileWorld(16, 12);
+        for (var x = 0; x < world.Width; x++) world.SetTile(x, 9, MaterialId.RedSandstone);
+        for (var y = 0; y < 9; y++) world.SetTile(8, y, MaterialId.BlackBasalt);
+        var player = new PlayerController(new Vector2(7.25f * GameConstants.TileSize, 9f * GameConstants.TileSize));
+        var input = new InputManager(new InputBindings());
+        input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right, InputAction.Dash);
+        player.Update(input, world, GameConstants.FixedDelta);
+        for (var frame = 0; frame < 8; frame++)
+        {
+            input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right);
+            player.Update(input, world, GameConstants.FixedDelta);
+        }
+        if (player.State == MovementState.Dash || player.Bounds.Right > 8f * GameConstants.TileSize + 0.01f)
+            throw new InvalidOperationException("dash survived or tunneled through a terrain collision");
+    }
+
+    private static void VerifyWallAndLedgeTransitions()
+    {
+        var world = new TileWorld(16, 14);
+        for (var x = 0; x < world.Width; x++) world.SetTile(x, 12, MaterialId.RedSandstone);
+        for (var x = 7; x <= 10; x++) world.SetTile(x, 8, MaterialId.RedSandstone);
+        for (var y = 9; y < 12; y++) world.SetTile(7, y, MaterialId.RedSandstone);
+        var input = new InputManager(new InputBindings());
+
+        var wallPlayer = new PlayerController(new Vector2(7f * GameConstants.TileSize - PlayerController.BodyWidth * 0.5f,
+            10.5f * GameConstants.TileSize));
+        input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right, InputAction.Grab);
+        wallPlayer.Update(input, world, GameConstants.FixedDelta);
+        if (wallPlayer.State != MovementState.WallCling)
+            throw new InvalidOperationException("one-tile player did not enter wall cling at a flush wall");
+        input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right, InputAction.Grab, InputAction.Jump);
+        wallPlayer.Update(input, world, GameConstants.FixedDelta);
+        if (wallPlayer.Velocity.X >= 0f || wallPlayer.VisualState != MovementState.WallJump)
+            throw new InvalidOperationException("wall jump did not leave the contacted wall with a readable state");
+
+        var ledgePlayer = new PlayerController(new Vector2(7f * GameConstants.TileSize - PlayerController.BodyWidth * 0.5f,
+            8f * GameConstants.TileSize + 11f));
+        ledgePlayer.Velocity = new Vector2(0f, 75f);
+        input = new InputManager(new InputBindings());
+        input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right);
+        ledgePlayer.Update(input, world, GameConstants.FixedDelta);
+        if (ledgePlayer.State != MovementState.LedgeHang)
+            throw new InvalidOperationException("one-tile player did not catch a clear ledge");
+        for (var frame = 0; frame < 36 && ledgePlayer.State is MovementState.LedgeHang or MovementState.Mantle; frame++)
+        {
+            input.SetSyntheticState(new Vector2(1f, -1f), Vector2.UnitX, InputAction.Right, InputAction.Up);
+            ledgePlayer.Update(input, world, GameConstants.FixedDelta);
+        }
+        if (!ledgePlayer.Grounded || ledgePlayer.Bounds.Center.X < 7f * GameConstants.TileSize)
+            throw new InvalidOperationException($"mantle did not finish on top of the ledge: " +
+                $"state={ledgePlayer.State} grounded={ledgePlayer.Grounded} position={ledgePlayer.Position} bounds={ledgePlayer.Bounds}");
+    }
+
+    private static void VerifyToolReachStopsAtAdjacentTile()
+    {
+        var world = new TileWorld(12, 10);
+        for (var x = 0; x < world.Width; x++) world.SetTile(x, 7, MaterialId.RedSandstone);
+        world.SetTile(5, 6, MaterialId.BlackBasalt);
+        world.SetTile(6, 6, MaterialId.BlackBasalt);
+        var player = new PlayerController(new Vector2(4.5f * GameConstants.TileSize, 7f * GameConstants.TileSize));
+        var input = new InputManager(new InputBindings());
+        var tool = new DigTool();
+        input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right, InputAction.Dig);
+        tool.Update(input, player, world, GameConstants.FixedDelta);
+        for (var frame = 0; frame < 12; frame++)
+        {
+            input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right);
+            tool.Update(input, player, world, GameConstants.FixedDelta);
+        }
+        if (world.GetTile(5, 6).Damage != 1 || world.GetTile(6, 6).Damage != 0)
+            throw new InvalidOperationException("tool swing did not stop at the adjacent terrain tile");
     }
 
     private static void VerifyMaterialHardness()

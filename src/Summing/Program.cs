@@ -12,6 +12,7 @@ using Summing.Player;
 
 if (Environment.GetCommandLineArgs().Contains("--verify-generation"))
 {
+    var quality = new Dictionary<GeneratorVariant, (ulong Fingerprint, int SolidTiles, int Ruins)>();
     foreach (var variant in Enum.GetValues<GeneratorVariant>())
     {
         var configuration = new WorldGenerationConfig { Seed = 9042026, Variant = variant };
@@ -19,7 +20,19 @@ if (Environment.GetCommandLineArgs().Contains("--verify-generation"))
         var firstHash = firstWorld.Terrain.Fingerprint();
         var secondHash = WorldGeneratorRegistry.Generate(configuration).Terrain.Fingerprint();
         var rawReport = TraversabilityValidator.Validate(firstWorld);
+        var solidTiles = 0;
+        for (var y = 0; y < firstWorld.Terrain.Height; y++)
+            for (var x = 0; x < firstWorld.Terrain.Width; x++)
+                if (firstWorld.Terrain.GetTile(x, y).Solid) solidTiles++;
+        var ruinCount = firstWorld.Features.Count(feature =>
+            feature.Kind is WorldFeatureKind.Ruin or WorldFeatureKind.ExposedMachine);
+        var descents = firstWorld.RouteAnchors.Zip(firstWorld.RouteAnchors.Skip(1),
+            (current, next) => next.Y > current.Y).Count(value => value);
+        var lateral = firstWorld.RouteAnchors.Zip(firstWorld.RouteAnchors.Skip(1),
+            (current, next) => Math.Abs(next.Y - current.Y) <= 1 && Math.Abs(next.X - current.X) >= 3).Count(value => value);
+        quality[variant] = (firstHash, solidTiles, ruinCount);
         Console.WriteLine($"raw variant={variant} solvable={rawReport.Solvable} failure={rawReport.Failure}");
+        Console.WriteLine($"shape variant={variant} solid={solidTiles} ruins={ruinCount} descents={descents} lateral={lateral}");
         var validated = ValidatedWorldGenerator.Generate(configuration);
         Console.WriteLine($"seed={configuration.Seed} variant={configuration.Variant} fingerprint={firstHash:x16} " +
             $"route={validated.Diagnostics.Traversability.CheckedTransitions} rejected={validated.Diagnostics.RejectedSeeds.Count}");
@@ -40,6 +53,25 @@ if (Environment.GetCommandLineArgs().Contains("--verify-generation"))
             rejectedCandidates += firstValidated.Diagnostics.RejectedSeeds.Count;
         }
         Console.WriteLine($"sweep variant={variant} seeds=32 deterministic=True solvable=True rejected={rejectedCandidates}");
+    }
+    if (quality.Values.Select(item => item.Fingerprint).Distinct().Count() != quality.Count)
+        throw new InvalidOperationException("generator variants produced identical authoritative worlds");
+    if (quality[GeneratorVariant.Heightmap].SolidTiles <= quality[GeneratorVariant.Cellular].SolidTiles * 1.2f)
+        throw new InvalidOperationException("heightmap variant lacks its broad-landform density distinction");
+    if (quality[GeneratorVariant.Layered].Ruins <= Math.Max(quality[GeneratorVariant.Heightmap].Ruins,
+            quality[GeneratorVariant.Cellular].Ruins))
+        throw new InvalidOperationException("layered variant lacks its ruin-provenance distinction");
+    foreach (var preset in DevelopmentSeedPresets.All)
+    {
+        var presetWorld = WorldGeneratorRegistry.Generate(new WorldGenerationConfig
+        {
+            Seed = preset.Seed,
+            Variant = preset.Variant
+        });
+        var report = TraversabilityValidator.Validate(presetWorld);
+        Console.WriteLine($"preset={preset.Name} seed={preset.Seed} variant={preset.Variant} solvable={report.Solvable}");
+        if (!report.Solvable)
+            throw new InvalidOperationException($"development preset {preset.Name} is not directly solvable: {report.Failure}");
     }
     return;
 }
@@ -83,9 +115,22 @@ if (Environment.GetCommandLineArgs().Contains("--verify-systems"))
     return;
 }
 
-var smokeRun = Environment.GetCommandLineArgs().Contains("--smoke-run");
-var smokePeriodic = Environment.GetCommandLineArgs().Contains("--smoke-periodic");
-var smokeTitle = Environment.GetCommandLineArgs().Contains("--smoke-title");
+var arguments = Environment.GetCommandLineArgs();
+var smokeRun = arguments.Contains("--smoke-run");
+var smokePeriodic = arguments.Contains("--smoke-periodic");
+var smokeTitle = arguments.Contains("--smoke-title");
+var initialConfiguration = new WorldGenerationConfig();
+var initialDifficulty = Difficulty.Easy;
+foreach (var argument in arguments)
+{
+    if (argument.StartsWith("--variant=", StringComparison.OrdinalIgnoreCase) &&
+        Enum.TryParse<GeneratorVariant>(argument[10..], true, out var variant))
+        initialConfiguration.Variant = variant;
+    if (argument.StartsWith("--seed=", StringComparison.OrdinalIgnoreCase) &&
+        long.TryParse(argument[7..], out var seed)) initialConfiguration.Seed = seed;
+    if (argument.StartsWith("--difficulty=", StringComparison.OrdinalIgnoreCase) &&
+        Enum.TryParse<Difficulty>(argument[13..], true, out var difficulty)) initialDifficulty = difficulty;
+}
 using var game = new Summing.Game1(smokeRun ? 240 : smokePeriodic ? 620 : smokeTitle ? 30 : 0,
-    smokeRun || smokePeriodic, smokeTitle);
+    smokeRun || smokePeriodic, smokeTitle, initialConfiguration, initialDifficulty);
 game.Run();

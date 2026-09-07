@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Summing.Camera;
 using Summing.Core;
+using Summing.Gameplay;
 using Summing.Generation;
 using Summing.Input;
 using Summing.Rendering;
@@ -14,6 +15,7 @@ namespace Summing.Editor;
 
 public sealed class EditorSystem
 {
+    private static readonly Keys[] PresetKeys = [Keys.D1, Keys.D2, Keys.D3];
     private readonly MaterialId[] _materials = Enum.GetValues<MaterialId>();
     private int _materialIndex = 2;
     private int? _movingFeature;
@@ -28,7 +30,8 @@ public sealed class EditorSystem
     public MaterialId SelectedMaterial => _materials[_materialIndex];
 
     public void Update(InputManager input, Camera2D camera, Viewport viewport, GeneratedWorld generated,
-        Action<WorldGenerationConfig> regenerate, Action save, Action load, Action export, float dt)
+        Difficulty difficulty, Action<WorldGenerationConfig> regenerate, Action<WorldGenerationConfig> toggleDifficulty,
+        Action save, Action load, Action export, float dt)
     {
         _noticeTimer = MathF.Max(0f, _noticeTimer - dt);
         if (input.Pressed(InputAction.Debug))
@@ -75,6 +78,30 @@ public sealed class EditorSystem
             SetNotice($"RANDOM SEED {config.Seed}");
             return;
         }
+        for (var index = 0; index < PresetKeys.Length; index++)
+        {
+            if (!input.KeyPressed(PresetKeys[index])) continue;
+            var config = Copy(generated.Configuration);
+            DevelopmentSeedPresets.Apply(config, index);
+            regenerate(config);
+            SetNotice($"PRESET {DevelopmentSeedPresets.All[index].Name}");
+            return;
+        }
+        if (input.KeyPressed(Keys.P) || input.ButtonPressed(Buttons.RightShoulder))
+        {
+            var config = Copy(generated.Configuration);
+            var index = DevelopmentSeedPresets.Next(config);
+            DevelopmentSeedPresets.Apply(config, index);
+            regenerate(config);
+            SetNotice($"PRESET {DevelopmentSeedPresets.All[index].Name}");
+            return;
+        }
+        if (input.KeyPressed(Keys.H))
+        {
+            toggleDifficulty(Copy(generated.Configuration));
+            SetNotice($"DIFFICULTY {(difficulty == Difficulty.Easy ? Difficulty.Hard : Difficulty.Easy)}");
+            return;
+        }
 
         AdjustParameters(input, generated.Configuration.Parameters);
         var control = input.KeyDown(Keys.LeftControl) || input.KeyDown(Keys.RightControl);
@@ -98,21 +125,25 @@ public sealed class EditorSystem
         batch.Draw(pixel, new Rectangle(destination.Right - 2, destination.Y, 2, destination.Height), GamePalette.SaltCyan);
     }
 
-    public void DrawOverlay(SpriteBatch batch, Texture2D pixel, PixelFont font, GeneratedWorld generated)
+    public void DrawOverlay(SpriteBatch batch, Texture2D pixel, PixelFont font, GeneratedWorld generated,
+        Difficulty difficulty)
     {
         if (!Active) return;
-        batch.Draw(pixel, new Rectangle(4, 67, 305, 103), new Color(5, 7, 12, 235));
+        batch.Draw(pixel, new Rectangle(4, 67, 315, 121), new Color(5, 7, 12, 235));
         font.Draw(batch, "WORLD EDITOR", new Vector2(10, 73), GamePalette.SacredGold, 2);
         font.Draw(batch, $"TOOL {Format(Tool.ToString())}", new Vector2(10, 90), Color.White);
         font.Draw(batch, $"MATERIAL {Format(SelectedMaterial.ToString())}", new Vector2(10, 99), GamePalette.Oxide);
         font.Draw(batch, $"CURSOR {CursorTile.X},{CursorTile.Y}  SEED {generated.Configuration.Seed}", new Vector2(10, 108), GamePalette.UiMuted);
         font.Draw(batch, $"VARIANT {generated.Configuration.Variant}  EROSION {generated.Configuration.Parameters.Erosion:0.00}",
             new Vector2(10, 117), GamePalette.UiMuted);
-        font.Draw(batch, $"RUINS {generated.Configuration.Parameters.RuinDensity:0.00}  WIND {generated.Configuration.Parameters.WindStrength:0}",
+        font.Draw(batch, $"DIFFICULTY {difficulty}  PRESET {DevelopmentSeedPresets.Label(generated.Configuration)}",
             new Vector2(10, 126), GamePalette.UiMuted);
-        font.Draw(batch, "TAB TOOL  [ ] MATERIAL  LMB APPLY  RMB ERASE", new Vector2(10, 139), new Color(175, 181, 178));
-        font.Draw(batch, "T SET SEED  V VARIANT  F2 REGEN  F3 RANDOM", new Vector2(10, 148), new Color(175, 181, 178));
-        font.Draw(batch, "- + EROSION  , . RUINS  CTRL S/L/E SAVE/LOAD/EXPORT", new Vector2(10, 157), new Color(175, 181, 178));
+        font.Draw(batch, $"RUINS {generated.Configuration.Parameters.RuinDensity:0.00}  WIND {generated.Configuration.Parameters.WindStrength:0}",
+            new Vector2(10, 135), GamePalette.UiMuted);
+        font.Draw(batch, "TAB TOOL  [ ] MATERIAL  LMB APPLY  RMB ERASE", new Vector2(10, 148), new Color(175, 181, 178));
+        font.Draw(batch, "T SET SEED  V VARIANT  F2 REGEN  F3 RANDOM", new Vector2(10, 157), new Color(175, 181, 178));
+        font.Draw(batch, "1 2 3 OR P/RB PRESET  H DIFFICULTY", new Vector2(10, 166), new Color(175, 181, 178));
+        font.Draw(batch, "- + EROSION  , . RUINS  CTRL S/L/E SAVE/LOAD/EXPORT", new Vector2(10, 175), new Color(175, 181, 178));
         if (_typingSeed)
         {
             batch.Draw(pixel, new Rectangle(318, 72, 308, 34), new Color(8, 10, 16, 245));

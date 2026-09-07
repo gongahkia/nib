@@ -118,6 +118,8 @@ public static class WorldSerializer
             {
                 ["velocityX"] = F(player.Velocity.X),
                 ["velocityY"] = F(player.Velocity.Y),
+                ["bodyWidth"] = F(player.Bounds.Width),
+                ["bodyHeight"] = F(player.Bounds.Height),
                 ["health"] = player.Health.ToString(),
                 ["grounded"] = player.Grounded.ToString(),
                 ["wallStamina"] = F(player.WallStamina),

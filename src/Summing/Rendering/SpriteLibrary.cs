@@ -65,6 +65,13 @@ public sealed class SpriteLibrary : IDisposable
             var frame = Math.Abs(feature.Variant) % 6;
             batch.Draw(_relics, new Rectangle((int)feature.Position.X - 12, (int)feature.Position.Y - 24, 24, 24),
                 new Rectangle(frame * 24, 0, 24, 24), Color.White);
+            return;
+        }
+        if (feature.Kind == WorldFeatureKind.Ecology)
+        {
+            var frame = 2 + Math.Abs(feature.Variant) % 3;
+            batch.Draw(_relics, new Rectangle((int)feature.Position.X - 6, (int)feature.Position.Y - 12, 12, 12),
+                new Rectangle(frame * 24, 0, 24, 24), new Color(132, 171, 149, 185));
         }
     }
 
@@ -99,6 +106,13 @@ public sealed class SpriteLibrary : IDisposable
         var source = new Rectangle(sourceFrame * 24, 0, 24, 24);
         var destination = new Rectangle((int)MathF.Round(feet.X - 12f), (int)MathF.Round(feet.Y - 24f), 24, 24);
         var effects = facing < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+        var silhouette = new Color(7, 9, 14, 210);
+        batch.Draw(texture, new Rectangle(destination.X - 1, destination.Y, destination.Width, destination.Height), source,
+            silhouette, 0f, Vector2.Zero, effects, 0f);
+        batch.Draw(texture, new Rectangle(destination.X + 1, destination.Y, destination.Width, destination.Height), source,
+            silhouette, 0f, Vector2.Zero, effects, 0f);
+        batch.Draw(texture, new Rectangle(destination.X, destination.Y + 1, destination.Width, destination.Height), source,
+            silhouette, 0f, Vector2.Zero, effects, 0f);
         batch.Draw(texture, destination, source, tint, 0f, Vector2.Zero, effects, 0f);
     }
 
