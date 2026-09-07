@@ -13,37 +13,94 @@ public sealed class RopeSystem
 {
     private const float AttachRange = 25f;
     private const float ClimbSpeed = 92f;
+    private const float SourceRegrabDelay = 0.18f;
+    private const float TransferCatchWindow = 0.85f;
     private const int MaximumLengthTiles = 9;
     private const float MinimumAimAlignment = 0.9f;
     public const int MaximumThrowRangeTiles = 6;
     public const float MaximumThrowRange = MaximumThrowRangeTiles * GameConstants.TileSize;
     private readonly List<RopeEntity> _ropes = [];
+    private RopeEntity? _attachedRope;
+    private Point? _releasedAnchor;
+    private float _sourceRegrabTimer;
+    private float _transferCatchTimer;
     private float _noticeTimer;
     public IReadOnlyList<RopeEntity> Ropes => _ropes;
     public string Notice { get; private set; } = "";
     public bool NoticeVisible => _noticeTimer > 0f;
+    public RopeEntity? AttachedRope => _attachedRope;
     public event Action<RopeEntity>? Placed;
     public event Action<RopeEntity>? Detached;
+    public event Action<RopeEntity>? Grabbed;
+    public event Action<RopeEntity, Vector2>? Jumped;
     public event Action<string>? PlacementRejected;
 
     public void Update(InputManager input, PlayerController player, PlayerInventory inventory, TileWorld world, float dt)
     {
         _noticeTimer = MathF.Max(0f, _noticeTimer - dt);
+        _sourceRegrabTimer = MathF.Max(0f, _sourceRegrabTimer - dt);
+        _transferCatchTimer = MathF.Max(0f, _transferCatchTimer - dt);
+        if (_sourceRegrabTimer <= 0f) _releasedAnchor = null;
         RemoveDetachedRopes(world);
         if (input.Pressed(InputAction.Rope)) TryPlace(input, player, inventory, world);
-        if (MathF.Abs(input.Move.Y) < 0.15f) return;
+
+        if (!player.Alive || player.Stunned)
+        {
+            _attachedRope = null;
+            return;
+        }
+
+        if (_attachedRope != null)
+        {
+            if (!_ropes.Contains(_attachedRope) || player.Grounded || player.State == MovementState.Dash ||
+                player.Velocity.LengthSquared() > 280f * 280f)
+            {
+                Release(_attachedRope);
+                return;
+            }
+            if (input.Pressed(InputAction.Jump))
+            {
+                var source = _attachedRope;
+                var direction = MathF.Abs(input.Move.X) > 0.15f ? Math.Sign(input.Move.X) : player.Facing;
+                if (player.TryRopeJump(direction))
+                {
+                    var launchVelocity = player.Velocity;
+                    Release(source);
+                    _transferCatchTimer = TransferCatchWindow;
+                    Jumped?.Invoke(source, launchVelocity);
+                }
+                return;
+            }
+
+            var nextY = player.Position.Y;
+            if (MathF.Abs(input.Move.Y) >= 0.15f)
+                nextY += input.Move.Y * ClimbSpeed * dt;
+            if (input.Move.Y < -0.15f && player.Position.Y <= _attachedRope.ClimbTop + ClimbSpeed * dt + 0.5f)
+            {
+                if (!player.TryRopeMove(new Vector2(_attachedRope.ExitX, _attachedRope.ClimbTop), world))
+                    Release(_attachedRope);
+                return;
+            }
+            var grip = new Vector2(_attachedRope.X,
+                Math.Clamp(nextY, _attachedRope.ClimbTop, _attachedRope.Bottom));
+            if (!player.TryRopeMove(grip, world)) Release(_attachedRope);
+            return;
+        }
+
+        if (MathF.Abs(input.Move.Y) < 0.15f && _transferCatchTimer <= 0f) return;
         foreach (var rope in _ropes)
         {
+            if (_releasedAnchor == rope.AnchorTile) continue;
             if (MathF.Abs(player.Position.X - rope.X) > AttachRange ||
                 player.Position.Y < rope.ClimbTop - 2f || player.Bounds.Top > rope.Bottom + 2f) continue;
             if (input.Move.Y < 0f && player.Position.Y <= rope.ClimbTop + ClimbSpeed * dt + 0.5f)
             {
-                player.TryRopeMove(new Vector2(rope.ExitX, rope.ClimbTop), world);
+                if (player.TryRopeMove(new Vector2(rope.ExitX, rope.ClimbTop), world)) Attach(rope);
                 return;
             }
             var next = new Vector2(rope.X,
                 Math.Clamp(player.Position.Y + input.Move.Y * ClimbSpeed * dt, rope.ClimbTop, rope.Bottom));
-            player.TryRopeMove(next, world);
+            if (player.TryRopeMove(next, world)) Attach(rope);
             return;
         }
     }
@@ -183,11 +240,27 @@ public sealed class RopeSystem
         {
             var rope = _ropes[index];
             if (world.GetTile(rope.AnchorTile.X, rope.AnchorTile.Y).Solid) continue;
+            if (_attachedRope == rope) _attachedRope = null;
             _ropes.RemoveAt(index);
             Detached?.Invoke(rope);
             Notice = "ROPE ANCHOR BROKE";
             _noticeTimer = 1.5f;
         }
+    }
+
+    private void Attach(RopeEntity rope)
+    {
+        if (_attachedRope == rope) return;
+        _attachedRope = rope;
+        _transferCatchTimer = 0f;
+        Grabbed?.Invoke(rope);
+    }
+
+    private void Release(RopeEntity rope)
+    {
+        _attachedRope = null;
+        _releasedAnchor = rope.AnchorTile;
+        _sourceRegrabTimer = SourceRegrabDelay;
     }
 
     private void Reject(string notice, string reason)

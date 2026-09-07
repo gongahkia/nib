@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Summing.Generation;
 using Summing.History;
 using Summing.Player;
-using Summing.Rendering;
 
 namespace Summing.Entities;
 
@@ -53,9 +51,4 @@ public sealed class RelicSystem
         }
     }
 
-    public void Draw(SpriteBatch batch, SpriteLibrary sprites)
-    {
-        foreach (var relic in _relics)
-            if (!relic.Collected) sprites.DrawRelic(batch, relic.Position, relic.Variant);
-    }
 }

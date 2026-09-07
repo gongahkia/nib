@@ -126,7 +126,7 @@ public sealed class EditorSystem
     }
 
     public void DrawOverlay(SpriteBatch batch, Texture2D pixel, PixelFont font, GeneratedWorld generated,
-        Difficulty difficulty, string visualPack)
+        Difficulty difficulty)
     {
         if (!Active) return;
         batch.Draw(pixel, new Rectangle(4, 67, 315, 130), new Color(5, 7, 12, 235));
@@ -138,12 +138,12 @@ public sealed class EditorSystem
             new Vector2(10, 117), GamePalette.UiMuted);
         font.Draw(batch, $"DIFFICULTY {difficulty}  PRESET {DevelopmentSeedPresets.Label(generated.Configuration)}",
             new Vector2(10, 126), GamePalette.UiMuted);
-        font.Draw(batch, $"ART {visualPack}", new Vector2(10, 135), GamePalette.SaltCyan);
+        font.Draw(batch, "RENDER SANITIZED COLLISION", new Vector2(10, 135), GamePalette.SaltCyan);
         font.Draw(batch, $"RUINS {generated.Configuration.Parameters.RuinDensity:0.00}  WIND {generated.Configuration.Parameters.WindStrength:0}",
             new Vector2(10, 144), GamePalette.UiMuted);
         font.Draw(batch, "TAB TOOL  [ ] MATERIAL  LMB APPLY  RMB ERASE", new Vector2(10, 157), new Color(175, 181, 178));
         font.Draw(batch, "T SET SEED  V VARIANT  F2 REGEN  F3 RANDOM", new Vector2(10, 166), new Color(175, 181, 178));
-        font.Draw(batch, "1 2 3/P PRESET  H DIFF  K VISUALS  M TEST VIEW", new Vector2(10, 175), new Color(175, 181, 178));
+        font.Draw(batch, "1 2 3/P PRESET  H DIFFICULTY", new Vector2(10, 175), new Color(175, 181, 178));
         font.Draw(batch, "- + EROSION  , . RUINS  CTRL S/L/E SAVE/LOAD/EXPORT", new Vector2(10, 184), new Color(175, 181, 178));
         if (_typingSeed)
         {

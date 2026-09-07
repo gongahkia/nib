@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework.Graphics;
 using Summing.Gameplay;
 using Summing.Generation;
 using Summing.Player;
-using Summing.Rendering;
 using Summing.World;
 
 namespace Summing.Entities;
@@ -34,12 +32,6 @@ public sealed class BurrowerSystem
     {
         foreach (var burrower in _burrowers) burrower.ApplyExplosion(explosion);
         Event?.Invoke($"explosion:{(int)explosion.Position.X},{(int)explosion.Position.Y}");
-    }
-
-    public void Draw(SpriteBatch batch, SpriteLibrary sprites)
-    {
-        foreach (var burrower in _burrowers)
-            if (burrower.Alive) sprites.DrawBurrower(batch, burrower.Position, burrower.AnimationFrame, burrower.HurtFlash);
     }
 
     private void Add(WorldFeature feature)
