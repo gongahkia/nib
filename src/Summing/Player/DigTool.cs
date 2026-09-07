@@ -42,8 +42,7 @@ public sealed class DigTool
 
         if (!input.Pressed(InputAction.Dig)) return;
         _direction = SelectDirection(input, player);
-        var reachOrigin = player.Bounds.Center + new Vector2(0f, 3f);
-        _targetTile = world.WorldToTile(reachOrigin + _direction * (GameConstants.TileSize * 1.05f));
+        _targetTile = AdjacentTargetTile(player.Bounds, _direction);
         _timer = SwingDuration;
         _impacted = false;
         player.ShowActionState(MovementState.Digging, SwingDuration);
@@ -71,6 +70,17 @@ public sealed class DigTool
             return new Vector2(0f, Math.Sign(direction.Y));
         }
         return new Vector2(player.Facing, 0f);
+    }
+
+    private static Point AdjacentTargetTile(Aabb body, Vector2 direction)
+    {
+        if (direction.Y < 0f)
+            return new Point(TileWorld.WorldToTile(body.Center.X), TileWorld.WorldToTile(body.Top) - 1);
+        if (direction.Y > 0f)
+            return new Point(TileWorld.WorldToTile(body.Center.X), TileWorld.WorldToTile(body.Bottom - 0.01f) + 1);
+        if (direction.X < 0f)
+            return new Point(TileWorld.WorldToTile(body.Left) - 1, TileWorld.WorldToTile(body.Center.Y));
+        return new Point(TileWorld.WorldToTile(body.Right - 0.01f) + 1, TileWorld.WorldToTile(body.Center.Y));
     }
 
     private static void DrawLine(SpriteBatch batch, Texture2D pixel, Vector2 start, Vector2 end, Color color, float width)

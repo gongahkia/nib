@@ -230,10 +230,41 @@ public sealed class PlayerController
 
     public bool TryRopeMove(Vector2 nextPosition, ICollisionWorld world)
     {
-        if (!Alive || world.OverlapsSolid(BodyAt(nextPosition, _shortBody))) return false;
+        if (!Alive) return false;
+        var shortBody = world.OverlapsSolid(BodyAt(nextPosition, false));
+        if ((shortBody && world.OverlapsSolid(BodyAt(nextPosition, true))) ||
+            !RopePathClear(nextPosition, shortBody, world)) return false;
         Position = nextPosition;
         Velocity = Vector2.Zero;
+        _shortBody = shortBody;
         ShowActionState(MovementState.RopeInteraction, 0.08f);
+        return true;
+    }
+
+    private bool RopePathClear(Vector2 destination, bool shortBody, ICollisionWorld world)
+    {
+        var candidate = Position;
+        if (destination.Y < candidate.Y)
+        {
+            if (!RopeAxisClear(ref candidate, destination.Y - candidate.Y, false, shortBody, world)) return false;
+            return RopeAxisClear(ref candidate, destination.X - candidate.X, true, shortBody, world);
+        }
+
+        if (!RopeAxisClear(ref candidate, destination.X - candidate.X, true, shortBody, world)) return false;
+        return RopeAxisClear(ref candidate, destination.Y - candidate.Y, false, shortBody, world);
+    }
+
+    private static bool RopeAxisClear(ref Vector2 candidate, float amount, bool horizontal, bool shortBody,
+        ICollisionWorld world)
+    {
+        var remaining = amount;
+        while (MathF.Abs(remaining) > 0.001f)
+        {
+            var step = Math.Clamp(remaining, -1f, 1f);
+            candidate += horizontal ? new Vector2(step, 0f) : new Vector2(0f, step);
+            if (world.OverlapsSolid(BodyAt(candidate, shortBody))) return false;
+            remaining -= step;
+        }
         return true;
     }
 

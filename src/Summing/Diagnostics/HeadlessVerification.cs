@@ -23,10 +23,11 @@ public static class HeadlessVerification
         VerifyMovementTransitions();
         VerifyMaterialHardness();
         VerifyBombAndBurrowerMutation();
+        VerifyRopePlacementAndClimbing();
         VerifyBrittleAndArchive();
         VerifyInputBindingPersistence();
         VerifyImpactFeedback();
-        Console.WriteLine("systems=ok movement=one-tile-jump-dash fall=one-heart camera=zoomed-out material=hardness terrain=bomb-burrower hazard=brittle archive=persistent-json input=remap-json feedback=shake-debris");
+        Console.WriteLine("systems=ok movement=one-tile-jump-dash fall=one-heart rope=ledge-climb dig=four-directions camera=zoomed-out material=hardness terrain=bomb-burrower hazard=brittle archive=persistent-json input=remap-json feedback=shake-debris");
     }
 
     private static void VerifyMovementTransitions()
@@ -192,20 +193,82 @@ public static class HeadlessVerification
     {
         var world = new TileWorld(12, 10);
         for (var x = 0; x < world.Width; x++) world.SetTile(x, 7, MaterialId.RedSandstone);
+        world.SetTile(3, 6, MaterialId.BlackBasalt);
+        world.SetTile(4, 5, MaterialId.BlackBasalt);
         world.SetTile(5, 6, MaterialId.BlackBasalt);
         world.SetTile(6, 6, MaterialId.BlackBasalt);
-        var player = new PlayerController(new Vector2(4.5f * GameConstants.TileSize, 7f * GameConstants.TileSize));
+        var player = new PlayerController(new Vector2(4.5f * GameConstants.TileSize,
+            7f * GameConstants.TileSize - 0.4f));
+        Strike(world, player, Vector2.UnitX, InputAction.Right);
+        Strike(world, player, -Vector2.UnitX, InputAction.Left);
+        Strike(world, player, -Vector2.UnitY, InputAction.Up);
+        Strike(world, player, Vector2.UnitY, InputAction.Down);
+        if (world.GetTile(5, 6).Damage != 1 || world.GetTile(3, 6).Damage != 1 ||
+            world.GetTile(4, 5).Damage != 1 || world.GetTile(4, 7).Damage != 1 ||
+            world.GetTile(6, 6).Damage != 0)
+            throw new InvalidOperationException("tool swing did not hit only the adjacent terrain tile in all four directions");
+    }
+
+    private static void Strike(TileWorld world, PlayerController player, Vector2 direction, InputAction directionAction)
+    {
         var input = new InputManager(new InputBindings());
         var tool = new DigTool();
-        input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right, InputAction.Dig);
+        input.SetSyntheticState(direction, direction, directionAction, InputAction.Dig);
         tool.Update(input, player, world, GameConstants.FixedDelta);
         for (var frame = 0; frame < 12; frame++)
         {
-            input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right);
+            input.SetSyntheticState(direction, direction, directionAction);
             tool.Update(input, player, world, GameConstants.FixedDelta);
         }
-        if (world.GetTile(5, 6).Damage != 1 || world.GetTile(6, 6).Damage != 0)
-            throw new InvalidOperationException("tool swing did not stop at the adjacent terrain tile");
+    }
+
+    private static void VerifyRopePlacementAndClimbing()
+    {
+        var world = new TileWorld(14, 20);
+        for (var x = 2; x <= 5; x++) world.SetTile(x, 7, MaterialId.RedSandstone);
+        for (var x = 6; x < world.Width; x++) world.SetTile(x, 16, MaterialId.RedSandstone);
+        var player = new PlayerController(new Vector2(4.5f * GameConstants.TileSize, 7f * GameConstants.TileSize));
+        var input = new InputManager(new InputBindings());
+        for (var frame = 0; frame < 3; frame++)
+        {
+            input.SetSyntheticState(Vector2.Zero, Vector2.UnitX);
+            player.Update(input, world, GameConstants.FixedDelta);
+        }
+
+        var inventory = new PlayerInventory(DifficultyTuning.For(Difficulty.Easy));
+        var startingRopes = inventory.Ropes;
+        var ropes = new RopeSystem();
+        input.SetSyntheticState(Vector2.Zero, Vector2.UnitX, InputAction.Rope);
+        ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        if (ropes.Ropes.Count != 0 || inventory.Ropes != startingRopes)
+            throw new InvalidOperationException("rope placement away from a ledge consumed inventory");
+
+        player.Teleport(new Vector2(5.5f * GameConstants.TileSize, 7f * GameConstants.TileSize));
+        input.SetSyntheticState(Vector2.Zero, Vector2.UnitX);
+        ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        input.SetSyntheticState(Vector2.Zero, Vector2.UnitX, InputAction.Rope);
+        ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        if (ropes.Ropes.Count != 1 || inventory.Ropes != startingRopes - 1)
+            throw new InvalidOperationException("valid ledge rope was not placed exactly once");
+
+        var rope = ropes.Ropes[0];
+        input.SetSyntheticState(Vector2.UnitY, Vector2.UnitY, InputAction.Down);
+        player.Update(input, world, GameConstants.FixedDelta);
+        ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        if (player.Position.Y <= rope.Top || MathF.Abs(player.Position.X - rope.X) > 0.01f)
+            throw new InvalidOperationException("down input did not attach to and descend the rope without wall grab");
+
+        player.Teleport(new Vector2(rope.X, rope.Top + GameConstants.TileSize * 4f));
+        for (var frame = 0; frame < 180; frame++)
+        {
+            input.SetSyntheticState(-Vector2.UnitY, -Vector2.UnitY, InputAction.Up);
+            player.Update(input, world, GameConstants.FixedDelta);
+            ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        }
+        var expectedLedgeX = rope.X - rope.LedgeDirection * (GameConstants.TileSize * 0.5f + 10f);
+        if (MathF.Abs(player.Position.X - expectedLedgeX) > 0.01f || MathF.Abs(player.Position.Y - rope.Top) > 0.01f)
+            throw new InvalidOperationException($"up input did not climb the rope and return the player to its ledge: " +
+                $"position={player.Position} expected={expectedLedgeX},{rope.Top} bounds={player.Bounds}");
     }
 
     private static void VerifyMaterialHardness()
