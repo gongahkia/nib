@@ -29,7 +29,11 @@ public enum PlayerVisualPackId
 public enum EnvironmentVisualPackId
 {
     SummingOriginal,
-    GandalfOverworld
+    GandalfOverworld,
+    Adve,
+    MonochromeCaves,
+    PixelFantasyCaves,
+    StoneRuins
 }
 
 public enum TerrainSheetId
@@ -81,7 +85,7 @@ public sealed class VisualPackManager : IDisposable
     private readonly string _selectionPath;
     private readonly bool _persistSelection;
     private readonly VisualPackFiles.GandalfFiles? _gandalfFiles;
-    private Texture2D? _gandalfTerrain;
+    private Texture2D? _environmentTexture;
     private Texture2D[] _gandalfCharacter = [];
     private string[] _skinChoices = [];
     private string[] _legChoices = [None];
@@ -91,11 +95,12 @@ public sealed class VisualPackManager : IDisposable
     private string? _loadFailure;
 
     public VisualPackManager(GraphicsDevice graphicsDevice, VisualPackId requested,
-        string selectionPath = "saves/visual-selection.json", bool loadSavedSelection = true)
+        string selectionPath = "saves/visual-selection.json", bool loadSavedSelection = true,
+        bool persistSelection = true)
     {
         _graphicsDevice = graphicsDevice;
         _selectionPath = selectionPath;
-        _persistSelection = loadSavedSelection;
+        _persistSelection = persistSelection;
         _gandalfFiles = VisualPackFiles.TryResolveGandalf(out var files) ? files : null;
         PlayerPack = requested == VisualPackId.GandalfOverworld && GandalfCharacterAvailable
             ? PlayerVisualPackId.GandalfMale
@@ -137,13 +142,21 @@ public sealed class VisualPackManager : IDisposable
     public string FootSheet { get; private set; } = None;
     public string HairSheet { get; private set; } = None;
     public bool GandalfCharacterAvailable => _gandalfFiles is { } files && Directory.Exists(files.CharacterDirectory);
-    public bool GandalfEnvironmentAvailable => _gandalfFiles is { } files &&
-        File.Exists(files.Terrain1) && File.Exists(files.Terrain2);
+    public bool GandalfEnvironmentAvailable => EnvironmentAvailable(EnvironmentVisualPackId.GandalfOverworld);
     public string? LoadFailure => _loadFailure;
+    public int AvailablePlayerPackCount => GandalfCharacterAvailable ? 3 : 1;
+    public int AvailableEnvironmentPackCount => Enum.GetValues<EnvironmentVisualPackId>().Count(EnvironmentAvailable);
     public string PlayerName => DisplayName(PlayerPack);
-    public string EnvironmentName => EnvironmentPack == EnvironmentVisualPackId.GandalfOverworld
-        ? $"GANDALF {DisplayName(TerrainSheet)} {TerrainBand.ToString().ToUpperInvariant()}"
-        : "SUMMING ORIGINAL";
+    public string EnvironmentName => EnvironmentPack switch
+    {
+        EnvironmentVisualPackId.GandalfOverworld =>
+            $"GANDALF {DisplayName(TerrainSheet)} {TerrainBand.ToString().ToUpperInvariant()}",
+        EnvironmentVisualPackId.Adve => $"ADVE {AdveBandName()}",
+        EnvironmentVisualPackId.MonochromeCaves => "MONOCHROME CAVES",
+        EnvironmentVisualPackId.PixelFantasyCaves => "PIXEL FANTASY CAVES",
+        EnvironmentVisualPackId.StoneRuins => "STONE RUINS",
+        _ => "SUMMING ORIGINAL"
+    };
     public string CurrentName => $"P {PlayerName}  E {EnvironmentName}";
     public VisualSelectionSnapshot Selection => new(PlayerPack, SkinSheet, LegSheet, TorsoSheet, FootSheet,
         HairSheet, EnvironmentPack, TerrainSheet, TerrainBand);
@@ -158,6 +171,16 @@ public sealed class VisualPackManager : IDisposable
     {
         PlayerVisualPackId.GandalfMale => "GANDALF MALE",
         PlayerVisualPackId.GandalfFemale => "GANDALF FEMALE",
+        _ => "SUMMING ORIGINAL"
+    };
+
+    public static string DisplayName(EnvironmentVisualPackId id) => id switch
+    {
+        EnvironmentVisualPackId.GandalfOverworld => "GANDALF OVERWORLD",
+        EnvironmentVisualPackId.Adve => "ADVE",
+        EnvironmentVisualPackId.MonochromeCaves => "MONOCHROME CAVES",
+        EnvironmentVisualPackId.PixelFantasyCaves => "PIXEL FANTASY CAVES",
+        EnvironmentVisualPackId.StoneRuins => "STONE RUINS",
         _ => "SUMMING ORIGINAL"
     };
 
@@ -182,15 +205,16 @@ public sealed class VisualPackManager : IDisposable
         VisualSelectionOption.TorsoSheet => PlayerPack == PlayerVisualPackId.SummingOriginal ? "PACK CONTROLLED" : TorsoSheet,
         VisualSelectionOption.FootSheet => PlayerPack == PlayerVisualPackId.SummingOriginal ? "PACK CONTROLLED" : FootSheet,
         VisualSelectionOption.HairSheet => PlayerPack == PlayerVisualPackId.SummingOriginal ? "PACK CONTROLLED" : HairSheet,
-        VisualSelectionOption.EnvironmentPack => EnvironmentPack == EnvironmentVisualPackId.GandalfOverworld
-            ? "GANDALF OVERWORLD"
-            : "SUMMING ORIGINAL",
-        VisualSelectionOption.TerrainSheet => EnvironmentPack == EnvironmentVisualPackId.SummingOriginal
+        VisualSelectionOption.EnvironmentPack => DisplayName(EnvironmentPack),
+        VisualSelectionOption.TerrainSheet => EnvironmentPack != EnvironmentVisualPackId.GandalfOverworld
             ? "PACK CONTROLLED"
             : DisplayName(TerrainSheet),
-        VisualSelectionOption.TerrainBand => EnvironmentPack == EnvironmentVisualPackId.SummingOriginal
-            ? "PACK CONTROLLED"
-            : TerrainBand.ToString().ToUpperInvariant(),
+        VisualSelectionOption.TerrainBand => EnvironmentPack switch
+        {
+            EnvironmentVisualPackId.GandalfOverworld => TerrainBand.ToString().ToUpperInvariant(),
+            EnvironmentVisualPackId.Adve => AdveBandName(),
+            _ => "PACK CONTROLLED"
+        },
         _ => ""
     };
 
@@ -199,8 +223,10 @@ public sealed class VisualPackManager : IDisposable
         VisualSelectionOption.SkinSheet or VisualSelectionOption.LegSheet or VisualSelectionOption.TorsoSheet or
             VisualSelectionOption.FootSheet or VisualSelectionOption.HairSheet =>
             PlayerPack != PlayerVisualPackId.SummingOriginal && GandalfCharacterAvailable,
-        VisualSelectionOption.TerrainSheet or VisualSelectionOption.TerrainBand =>
-            EnvironmentPack == EnvironmentVisualPackId.GandalfOverworld && GandalfEnvironmentAvailable,
+        VisualSelectionOption.TerrainSheet => EnvironmentPack == EnvironmentVisualPackId.GandalfOverworld &&
+            GandalfEnvironmentAvailable,
+        VisualSelectionOption.TerrainBand => EnvironmentPack is EnvironmentVisualPackId.GandalfOverworld or
+            EnvironmentVisualPackId.Adve,
         _ => true
     };
 
@@ -259,7 +285,22 @@ public sealed class VisualPackManager : IDisposable
     public bool DrawTerrainOverlay(SpriteBatch batch, TileWorld world, Rectangle destination,
         MaterialDefinition material, int x, int y)
     {
-        if (EnvironmentPack != EnvironmentVisualPackId.GandalfOverworld || _gandalfTerrain == null) return false;
+        if (_environmentTexture == null) return false;
+
+        return EnvironmentPack switch
+        {
+            EnvironmentVisualPackId.GandalfOverworld => DrawGandalfTile(batch, world, destination, material, x, y),
+            EnvironmentVisualPackId.Adve => DrawAdveTile(batch, world, destination, material, x, y),
+            EnvironmentVisualPackId.MonochromeCaves => DrawPatternTile(batch, destination, material, x, y, 8, 8),
+            EnvironmentVisualPackId.PixelFantasyCaves => DrawPixelFantasyTile(batch, destination, material, x, y),
+            EnvironmentVisualPackId.StoneRuins => DrawPatternTile(batch, destination, material, x, y, 8, 11),
+            _ => false
+        };
+    }
+
+    private bool DrawGandalfTile(SpriteBatch batch, TileWorld world, Rectangle destination,
+        MaterialDefinition material, int x, int y)
+    {
 
         var leftExposed = !world.GetTile(x - 1, y).Solid;
         var rightExposed = !world.GetTile(x + 1, y).Solid;
@@ -273,6 +314,57 @@ public sealed class VisualPackManager : IDisposable
         if (leftExposed && rightExposed) DrawImportedTile(batch, destination, 2, sourceY, tint);
         if (topExposed && bottomExposed)
             DrawImportedTile(batch, destination, sourceX, (int)TerrainBand * 6 + 2, tint);
+        return true;
+    }
+
+    private bool DrawAdveTile(SpriteBatch batch, TileWorld world, Rectangle destination,
+        MaterialDefinition material, int x, int y)
+    {
+        var leftExposed = !world.GetTile(x - 1, y).Solid;
+        var rightExposed = !world.GetTile(x + 1, y).Solid;
+        var topExposed = !world.GetTile(x, y - 1).Solid;
+        var bottomExposed = !world.GetTile(x, y + 1).Solid;
+        var origin = TerrainBand switch
+        {
+            TerrainBandId.Green => new Point(0, 48),
+            TerrainBandId.Snow => new Point(0, 96),
+            _ => Point.Zero
+        };
+        var column = leftExposed ? 0 : rightExposed ? 4 : 2;
+        var row = topExposed ? 0 : bottomExposed ? 4 : 2;
+        var source = new Rectangle(origin.X + column * 8, origin.Y + row * 8, 8, 8);
+        var tint = Color.Lerp(Color.White, material.BaseColor, 0.12f);
+        batch.Draw(_environmentTexture!, destination, source, tint);
+        return true;
+    }
+
+    private bool DrawPatternTile(SpriteBatch batch, Rectangle destination, MaterialDefinition material,
+        int x, int y, int columns, int rows)
+    {
+        var hash = unchecked((uint)(x * 73856093 ^ y * 19349663));
+        var column = (int)(hash % (uint)columns);
+        var row = (int)((hash >> 5) % (uint)rows);
+        var source = new Rectangle(column * 8, row * 8, 8, 8);
+        var tint = EnvironmentPack == EnvironmentVisualPackId.MonochromeCaves
+            ? Color.Lerp(Color.White, material.AccentColor, 0.48f)
+            : Color.Lerp(Color.White, material.BaseColor, 0.16f);
+        var opacity = EnvironmentPack == EnvironmentVisualPackId.MonochromeCaves ? 0.45f : 0.78f;
+        batch.Draw(_environmentTexture!, destination, source, tint * opacity);
+        return true;
+    }
+
+    private bool DrawPixelFantasyTile(SpriteBatch batch, Rectangle destination, MaterialDefinition material,
+        int x, int y)
+    {
+        ReadOnlySpan<Point> sources =
+        [
+            new(16, 576), new(96, 608), new(176, 608), new(272, 592), new(368, 608),
+            new(496, 592), new(32, 704), new(208, 704), new(416, 704), new(560, 720)
+        ];
+        var hash = unchecked((uint)(x * 73856093 ^ y * 19349663));
+        var point = sources[(int)(hash % (uint)sources.Length)];
+        var source = new Rectangle(point.X, point.Y, 16, 16);
+        batch.Draw(_environmentTexture!, destination, source, Color.Lerp(Color.White, material.BaseColor, 0.08f));
         return true;
     }
 
@@ -300,21 +392,29 @@ public sealed class VisualPackManager : IDisposable
 
     public bool DrawEnvironmentPreview(SpriteBatch batch, Rectangle area)
     {
-        if (EnvironmentPack != EnvironmentVisualPackId.GandalfOverworld || _gandalfTerrain == null) return false;
-        var cell = Math.Min(area.Width / 3, area.Height / 2);
-        var bandRow = (int)TerrainBand * 6;
-        for (var y = 0; y < 2; y++)
-            for (var x = 0; x < 3; x++)
+        if (_environmentTexture == null) return false;
+        var source = EnvironmentPack switch
+        {
+            EnvironmentVisualPackId.GandalfOverworld => new Rectangle(0, (int)TerrainBand * 6 * 32, 96, 64),
+            EnvironmentVisualPackId.Adve => new Rectangle(0, TerrainBand switch
             {
-                var destination = new Rectangle(area.X + x * cell, area.Y + y * cell, cell, cell);
-                DrawImportedTile(batch, destination, x, bandRow + y, Color.White);
-            }
+                TerrainBandId.Green => 48,
+                TerrainBandId.Snow => 96,
+                _ => 0
+            }, 40, 40),
+            EnvironmentVisualPackId.MonochromeCaves => new Rectangle(0, 0, 64, 64),
+            EnvironmentVisualPackId.PixelFantasyCaves => new Rectangle(0, 560, 640, 400),
+            EnvironmentVisualPackId.StoneRuins => new Rectangle(0, 0, 64, 88),
+            _ => Rectangle.Empty
+        };
+        if (source == Rectangle.Empty) return false;
+        batch.Draw(_environmentTexture, area, source, Color.White);
         return true;
     }
 
     public void Dispose()
     {
-        _gandalfTerrain?.Dispose();
+        _environmentTexture?.Dispose();
         foreach (var texture in _gandalfCharacter) texture.Dispose();
     }
 
@@ -336,7 +436,7 @@ public sealed class VisualPackManager : IDisposable
     {
         if (!GandalfCharacterAvailable && PlayerPack != PlayerVisualPackId.SummingOriginal)
             PlayerPack = PlayerVisualPackId.SummingOriginal;
-        if (!GandalfEnvironmentAvailable && EnvironmentPack != EnvironmentVisualPackId.SummingOriginal)
+        if (!EnvironmentAvailable(EnvironmentPack))
             EnvironmentPack = EnvironmentVisualPackId.SummingOriginal;
         if (!Enum.IsDefined(TerrainSheet)) TerrainSheet = TerrainSheetId.FloorTiles2;
         if (!Enum.IsDefined(TerrainBand)) TerrainBand = TerrainBandId.Autumn;
@@ -384,13 +484,18 @@ public sealed class VisualPackManager : IDisposable
 
     private void ReloadEnvironment()
     {
-        _gandalfTerrain?.Dispose();
-        _gandalfTerrain = null;
-        if (EnvironmentPack != EnvironmentVisualPackId.GandalfOverworld || _gandalfFiles is not { } files) return;
+        _environmentTexture?.Dispose();
+        _environmentTexture = null;
+        if (EnvironmentPack == EnvironmentVisualPackId.SummingOriginal) return;
         try
         {
-            var path = TerrainSheet == TerrainSheetId.FloorTiles1 ? files.Terrain1 : files.Terrain2;
-            _gandalfTerrain = Load(_graphicsDevice, path, 288, 576, removeFlatInterior: true);
+            if (!VisualPackFiles.TryResolveEnvironment(EnvironmentPack, TerrainSheet, out var asset))
+            {
+                EnvironmentPack = EnvironmentVisualPackId.SummingOriginal;
+                return;
+            }
+            _environmentTexture = Load(_graphicsDevice, asset.Path, asset.MinimumWidth, asset.MinimumHeight,
+                asset.RemoveFlatInterior);
         }
         catch (Exception exception) when (exception is IOException or InvalidOperationException or ArgumentException)
         {
@@ -443,7 +548,7 @@ public sealed class VisualPackManager : IDisposable
     {
         var source = new Rectangle(column * ImportedTileSize, row * ImportedTileSize,
             ImportedTileSize, ImportedTileSize);
-        batch.Draw(_gandalfTerrain!, destination, source, tint);
+        batch.Draw(_environmentTexture!, destination, source, tint);
     }
 
     private void DrawCharacterLayers(SpriteBatch batch, Rectangle destination, Rectangle source, Color tint,
@@ -463,11 +568,22 @@ public sealed class VisualPackManager : IDisposable
 
     private EnvironmentVisualPackId NextEnvironmentPack(EnvironmentVisualPackId current, int direction)
     {
-        var choices = GandalfEnvironmentAvailable
-            ? Enum.GetValues<EnvironmentVisualPackId>()
-            : [EnvironmentVisualPackId.SummingOriginal];
+        var choices = Enum.GetValues<EnvironmentVisualPackId>()
+            .Where(EnvironmentAvailable)
+            .ToArray();
         return Cycle(choices, current, direction);
     }
+
+    private static bool EnvironmentAvailable(EnvironmentVisualPackId id) =>
+        id == EnvironmentVisualPackId.SummingOriginal ||
+        VisualPackFiles.TryResolveEnvironment(id, TerrainSheetId.FloorTiles2, out _);
+
+    private string AdveBandName() => TerrainBand switch
+    {
+        TerrainBandId.Green => "VERDIGRIS",
+        TerrainBandId.Snow => "SALT",
+        _ => "OXIDE"
+    };
 
     private VisualSelectionSnapshot? LoadSelection()
     {
@@ -602,13 +718,52 @@ public static class VisualPackFiles
 {
     public readonly record struct GandalfFiles(string PlatformerDirectory, string CharacterDirectory,
         string Terrain1, string Terrain2);
+    public readonly record struct EnvironmentAsset(string Path, int MinimumWidth, int MinimumHeight,
+        bool RemoveFlatInterior = false);
 
     private const string PlatformerDirectory =
         "third_party/art/local-only/gandalfhardcore-platformer/GandalfHardcore FREE Platformer Assets";
     private const string CharacterDirectory =
         "third_party/art/local-only/gandalfhardcore-character/GandalfHardcore Character Asset Pack";
+    private const string AdveTiles = "third_party/art/cc0/adve/tiles.png";
+    private const string MonochromeTiles = "third_party/art/cc0/monochrome-caves/bw_tiles.png";
+    private const string PixelFantasyTiles = "third_party/art/local-only/pixel-fantasy-caves/mainlev_build.png";
+    private const string StoneRuinsTiles = "third_party/art/local-only/stone-ruins/tiles.png";
 
     public static bool IsAvailable(VisualPackId id) => id == VisualPackId.SummingOriginal || TryResolveGandalf(out _);
+
+    public static bool TryResolveEnvironment(EnvironmentVisualPackId id, TerrainSheetId sheet,
+        out EnvironmentAsset asset)
+    {
+        if (id == EnvironmentVisualPackId.SummingOriginal)
+        {
+            asset = default;
+            return true;
+        }
+
+        foreach (var root in CandidateRoots())
+        {
+            asset = id switch
+            {
+                EnvironmentVisualPackId.GandalfOverworld => new EnvironmentAsset(
+                    Path.Combine(root, PlatformerDirectory,
+                        sheet == TerrainSheetId.FloorTiles1 ? "Floor Tiles1.png" : "Floor Tiles2.png"),
+                    288, 576, true),
+                EnvironmentVisualPackId.Adve => new EnvironmentAsset(Path.Combine(root, AdveTiles), 88, 136),
+                EnvironmentVisualPackId.MonochromeCaves =>
+                    new EnvironmentAsset(Path.Combine(root, MonochromeTiles), 64, 64),
+                EnvironmentVisualPackId.PixelFantasyCaves =>
+                    new EnvironmentAsset(Path.Combine(root, PixelFantasyTiles), 640, 960),
+                EnvironmentVisualPackId.StoneRuins =>
+                    new EnvironmentAsset(Path.Combine(root, StoneRuinsTiles), 64, 88),
+                _ => default
+            };
+            if (!string.IsNullOrEmpty(asset.Path) && File.Exists(asset.Path)) return true;
+        }
+
+        asset = default;
+        return false;
+    }
 
     public static bool TryResolveGandalf(out GandalfFiles files)
     {

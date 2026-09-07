@@ -48,6 +48,8 @@ public sealed class VisualSelectionScreen
         font.Draw(batch, "VISUAL SELECTOR", new Vector2(34, 30), GamePalette.SacredGold, 3);
         font.Draw(batch, "LIVE PREVIEW  PRESENTATION ONLY", new Vector2(358, 36), GamePalette.UiMuted);
         font.Draw(batch, "ONLY COMPATIBLE INSTALLED ART IS LISTED", new Vector2(358, 48), GamePalette.UiMuted);
+        font.Draw(batch, $"{packs.AvailablePlayerPackCount} PLAYER CONFIGS  {packs.AvailableEnvironmentPackCount} WORLD PACKS",
+            new Vector2(34, 52), GamePalette.UiMuted);
 
         for (var index = 0; index < Rows.Length; index++)
         {

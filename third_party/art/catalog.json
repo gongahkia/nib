@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "reviewedOn": "2026-09-07",
   "runtimeIntegrated": true,
-  "runtimeIntegrationMode": "optional-local-playtest-pack",
+  "runtimeIntegrationMode": "optional-local-playtest-library",
   "packages": [
     {
       "id": "gandalfhardcore-character",
@@ -74,11 +74,12 @@
       "licenseStatus": "game-use-permitted-raw-redistribution-not-granted",
       "storage": "local-only",
       "extractedPath": "third_party/art/local-only/pixel-fantasy-caves/",
-      "designStatus": "reject-as-primary-terrain-selective-reference",
+      "designStatus": "optional-runtime-comparison-reject-as-primary",
       "notes": [
         "16x16 authored grid requires non-integer scaling to the 24x24 terrain grid",
         "the pack is strongly cave-oriented and too detailed to define the open-air badlands",
-        "isolated rock silhouettes, props, or parallax techniques may be adapted manually"
+        "isolated rock silhouettes, props, or parallax techniques may be adapted manually",
+        "available in the local visual selector through a 16px-to-24px comparison adapter"
       ]
     },
     {
@@ -93,11 +94,12 @@
       "licenseStatus": "cc0-1.0",
       "storage": "tracked",
       "extractedPath": "third_party/art/cc0/adve/",
-      "designStatus": "approved-reference-and-selective-source",
+      "designStatus": "optional-runtime-comparison-and-approved-source",
       "notes": [
         "8x8 tiles scale exactly 3x to Summing's 24x24 grid",
         "the cave-room composition should not replace the open-air badlands generator",
-        "useful for compact ladders, chains, edge readability, and limited-palette interaction cues"
+        "useful for compact ladders, chains, edge readability, and limited-palette interaction cues",
+        "available in the visual selector with oxide, verdigris, and salt atlas regions"
       ]
     },
     {
@@ -112,11 +114,12 @@
       "licenseStatus": "public-domain",
       "storage": "tracked",
       "extractedPath": "third_party/art/cc0/monochrome-caves/",
-      "designStatus": "approved-reference-and-selective-source",
+      "designStatus": "optional-runtime-comparison-and-approved-source",
       "notes": [
         "strong source for silhouette economy, readable edge vocabulary, and sparse detail",
         "direct one-bit foreground use would hide Summing's material distinctions",
-        "best used as structural reference or recolored background and ruin fragments"
+        "best used as structural reference or recolored background and ruin fragments",
+        "available through a material-tinted translucent comparison adapter"
       ]
     },
     {
@@ -131,11 +134,12 @@
       "licenseStatus": "game-use-permitted-raw-redistribution-not-granted",
       "storage": "local-only",
       "extractedPath": "third_party/art/local-only/stone-ruins/",
-      "designStatus": "approved-reference-and-selective-source",
+      "designStatus": "optional-local-runtime-comparison-and-approved-source",
       "notes": [
         "the received ZIP name and contents differ from the current Stone Ruins RAR listing, so the exact package revision remains uncertain",
         "the restrained ruin palette and fragmented masonry are a strong tonal fit",
-        "raw redistribution permission is not established"
+        "raw redistribution permission is not established",
+        "available through a material-tinted local comparison adapter"
       ]
     }
   ]
