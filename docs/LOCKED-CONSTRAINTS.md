@@ -4,7 +4,7 @@
 - One 3–5 minute seamless open-air badlands ascent with a clear summit.
 - Chunked authoritative square tiles; free-position entities.
 - Full movement kit from frame one; no movement upgrades.
-- Reusable physical digging tool; limited placed ropes and bombs.
+- Reusable directional terrain-breaking punch; limited placed ropes and bombs.
 - Material-driven hardness, friction, climb, and destruction behavior.
 - Three selectable deterministic generator variants using one output format.
 - Reject unsolvable generated worlds; never patch them with a secret route.

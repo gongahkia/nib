@@ -1,8 +1,10 @@
 # Future sprite direction and Aseprite workflow
 
-The current build contains one runtime sprite family: Ozzbit Games' Template Free player, explicitly authorized by its creator for this repository. Terrain remains sanitized uniform collision geometry with primitive object marks. The player sheets use 128×128 px cells, a fixed cropped presentation window, and a stable foot pivot over the authoritative 18×22 px collision body. States absent from the free pack deliberately use the nearest supplied pose.
+The current build contains one runtime sprite family: Ozzbit Games' Template Free player, explicitly authorized by its creator for this repository. Terrain remains sanitized uniform collision geometry with primitive object marks. `assets/sprites/player/active-player.json` selects a pack profile that owns sheet paths, frame mappings, crop, scale, authored direction, collision contract, and foot anchor. The renderer mirrors that anchor with the image, keeping left/right presentation aligned without changing the authoritative 18×22 px collision body. States absent from the free pack deliberately use the nearest supplied pose.
 
 All other downloaded packs are inactive and their original ZIP files remain ignored provenance archives under `third_party/art/source-archives/`. Do not extract them into runtime content or use restricted packs as generative inputs.
+
+To replace the player without changing rendering or movement code, add a folder under `assets/sprites/player/` containing its sheets and a `player-sprite.json` profile, then change only the relative `profile` value in `active-player.json`. The profile must map every `MovementState`, declare whether source art faces left or right, and repeat the collision contract so incompatible art fails at startup instead of silently drifting away from the body. Crop and foot-anchor values are pack data; the renderer mirrors both image and anchor together.
 
 ## Locked future direction
 
@@ -12,7 +14,7 @@ The Template Free player is a practical movement-test skin, not a reversal of th
 - Keep each character frame mostly one opaque colour. A second colour is reserved for an essential readability mark, not routine shading.
 - Make motion readable at 1× through pose and negative space. Do not rely on glow, outline noise, gradients, or palette cycling to explain a state.
 - Preserve the one-tile 18×22 px collision footprint. Art may extend a few pixels outside it, but feet/pivot and contact points must remain stable.
-- Author explicit frames for idle, run, takeoff, ascent, apex, fall, landing, crouch/crawl, slide, ledge hang, mantle, wall cling, wall jump, dash, rope grip/climb, rope jump, digging in four directions, bomb use, hurt, stun, and death.
+- Author explicit frames for idle, run, takeoff, ascent, apex, fall, landing, crouch/crawl, slide, ledge hang, mantle, wall cling, wall jump, dash, rope grip/climb, rope jump, four-direction terrain punches, bomb use, hurt, stun, and death.
 - Keep terrain broad and flat enough that collision edges remain dominant. Ruins and geology may gain sparse silhouette-breaking detail only after movement readability is proven.
 
 ## Aseprite MCP later
@@ -30,7 +32,7 @@ When art work resumes:
 
 ## Future generation brief
 
-> Create an original pixel-art animation sheet for Summing's anonymous one-tile climber. Use Nidhogg only as high-level vocabulary for extremely flat single-colour silhouettes, strong contrast, and animation-led readability; do not reproduce any existing character, pose sequence, palette, stage, or asset. The figure must read inside an 18×22 px collision footprint on a 24×24 px frame grid. Use one dominant opaque body colour and at most one sparse functional accent. Communicate identity and mechanics through precise poses, timing, anticipation, follow-through, and changing negative space. Include explicitly tagged sequences for idle, run, takeoff, ascent, apex, fall, landing, crouch, crawl, slide, ledge hang, mantle, wall cling, wall jump, directional dash, rope grip/climb, rope jump, four-direction digging, bomb use, hurt, stun, and death. Keep the foot pivot stable and make every state distinguishable at native 1× scale. Transparent runtime background; if producing a source contact sheet for extraction, use a plain pure-white background. No text, logos, watermark, gradients, soft filtering, copied symbols, or extra mechanics.
+> Create an original pixel-art animation sheet for Summing's anonymous one-tile climber. Use Nidhogg only as high-level vocabulary for extremely flat single-colour silhouettes, strong contrast, and animation-led readability; do not reproduce any existing character, pose sequence, palette, stage, or asset. The figure must read inside an 18×22 px collision footprint on a 24×24 px frame grid. Use one dominant opaque body colour and at most one sparse functional accent. Communicate identity and mechanics through precise poses, timing, anticipation, follow-through, and changing negative space. Include explicitly tagged sequences for idle, run, takeoff, ascent, apex, fall, landing, crouch, crawl, slide, ledge hang, mantle, wall cling, wall jump, directional dash, rope grip/climb, rope jump, four-direction terrain punches, bomb use, hurt, stun, and death. Keep the foot pivot stable and make every state distinguishable at native 1× scale. Transparent runtime background; if producing a source contact sheet for extraction, use a plain pure-white background. No text, logos, watermark, gradients, soft filtering, copied symbols, or extra mechanics.
 
 ## References
 

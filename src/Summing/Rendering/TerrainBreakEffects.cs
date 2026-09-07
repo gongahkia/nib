@@ -51,7 +51,7 @@ public sealed class TerrainBreakEffects
             "brittle-collapse" => 10,
             "burrower" => 7,
             _ => 16
-        } : change.Cause == "tool" ? 4 : 1;
+        } : change.Cause == "punch" ? 4 : 1;
         var force = change.Destroyed ? change.Cause == "bomb" ? 178f : 126f : 54f;
         for (var index = 0; index < count; index++)
         {

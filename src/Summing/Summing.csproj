@@ -33,8 +33,8 @@
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.5.1" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="../../assets/sprites/player/template-free/*">
-      <Link>Sprites/Player/TemplateFree/%(Filename)%(Extension)</Link>
+    <Content Include="../../assets/sprites/player/**/*">
+      <Link>Sprites/Player/%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
