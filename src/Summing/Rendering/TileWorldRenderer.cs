@@ -10,7 +10,13 @@ namespace Summing.Rendering;
 public sealed class TileWorldRenderer
 {
     private readonly Texture2D _pixel;
-    public TileWorldRenderer(Texture2D pixel) => _pixel = pixel;
+    private readonly VisualPackManager _visualPacks;
+
+    public TileWorldRenderer(Texture2D pixel, VisualPackManager visualPacks)
+    {
+        _pixel = pixel;
+        _visualPacks = visualPacks;
+    }
 
     public void Draw(SpriteBatch batch, TileWorld world, Vector2 cameraPosition)
     {
@@ -29,6 +35,7 @@ public sealed class TileWorldRenderer
                     GameConstants.TileSize, GameConstants.TileSize);
                 batch.Draw(_pixel, destination, definition.BaseColor);
                 DrawMaterialTexture(batch, destination, tile, definition, x, y);
+                _visualPacks.DrawTerrainOverlay(batch, world, destination, definition, x, y);
                 DrawExposedEdges(batch, world, destination, definition, x, y);
                 if (tile.Damage > 0)
                 {

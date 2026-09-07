@@ -10,6 +10,7 @@ namespace Summing.Rendering;
 
 public sealed class SpriteLibrary : IDisposable
 {
+    private readonly VisualPackManager _visualPacks;
     private readonly Texture2D _locomotion;
     private readonly Texture2D _traversal;
     private readonly Texture2D _ruins;
@@ -41,8 +42,9 @@ public sealed class SpriteLibrary : IDisposable
         [MovementState.Death] = (true, 13)
     };
 
-    public SpriteLibrary(GraphicsDevice graphicsDevice)
+    public SpriteLibrary(GraphicsDevice graphicsDevice, VisualPackManager visualPacks)
     {
+        _visualPacks = visualPacks;
         _locomotion = Load(graphicsDevice, "Sprites/player_locomotion.png");
         _traversal = Load(graphicsDevice, "Sprites/player_traversal.png");
         _ruins = Load(graphicsDevice, "Sprites/ruins.png");
@@ -97,6 +99,8 @@ public sealed class SpriteLibrary : IDisposable
 
     public void DrawPlayer(SpriteBatch batch, MovementState state, Vector2 feet, int facing, long frame, Color tint)
     {
+        if (_visualPacks.DrawPlayer(batch, state, feet, facing, frame, tint)) return;
+
         var mapping = _stateFrames[state];
         var texture = mapping.Traversal ? _traversal : _locomotion;
         var sourceFrame = mapping.Frame;

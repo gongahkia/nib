@@ -13,6 +13,7 @@ using Summing.Gameplay;
 using Summing.Generation;
 using Summing.Input;
 using Summing.Player;
+using Summing.Rendering;
 using Summing.World;
 
 namespace Summing.Telemetry;
@@ -41,7 +42,8 @@ public sealed class PlaytestRecorder : IDisposable
     private bool _disposed;
     private int _eventCount;
 
-    public PlaytestRecorder(GeneratedWorld generated, Difficulty difficulty, InputBindings bindings)
+    public PlaytestRecorder(GeneratedWorld generated, Difficulty difficulty, InputBindings bindings,
+        VisualPackId visualPack)
     {
         var name = $"{DateTimeOffset.Now:yyyyMMdd-HHmmss-fff}-{generated.Configuration.Seed}";
         DirectoryPath = Path.Combine("playtests", name);
@@ -56,12 +58,13 @@ public sealed class PlaytestRecorder : IDisposable
         _screenshots.WriteLine("frame,time_s,file,event,phase");
         File.WriteAllText(Path.Combine(DirectoryPath, "metadata.json"), JsonSerializer.Serialize(new
         {
-            schemaVersion = 3,
+            schemaVersion = 4,
             startedAtUtc = DateTimeOffset.UtcNow,
             seed = generated.Configuration.Seed,
             generator = WorldGeneratorRegistry.Identifier(generated.Configuration.Variant),
             generated.Configuration,
             difficulty,
+            visualPack,
             historyId = generated.History.Id,
             epoch = generated.History.EpochName,
             generated.Diagnostics,

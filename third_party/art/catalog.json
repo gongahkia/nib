@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
   "reviewedOn": "2026-09-07",
-  "runtimeIntegrated": false,
+  "runtimeIntegrated": true,
+  "runtimeIntegrationMode": "optional-local-playtest-pack",
   "packages": [
     {
       "id": "gandalfhardcore-character",
@@ -15,11 +16,11 @@
       "licenseStatus": "game-use-permitted-raw-redistribution-prohibited",
       "storage": "local-only",
       "extractedPath": "third_party/art/local-only/gandalfhardcore-character/",
-      "designStatus": "reject-as-summing-player",
+      "designStatus": "optional-runtime-playtest-only",
       "notes": [
-        "80x64 animation cells and a much taller figure do not fit the 24x24 runtime footprint cleanly",
-        "the supplied state set does not cover Summing's traversal states",
-        "may be inspected for manual animation timing only",
+        "80x64 animation cells are rendered at half scale so the visible figure stays approximately one tile tall",
+        "the supplied state set does not cover Summing's traversal states, so the optional pack uses nearest-pose mappings",
+        "not approved as final canonical player art",
         "must not be used for AI training or as image-generation input"
       ]
     },
@@ -35,9 +36,9 @@
       "licenseStatus": "game-use-permitted-raw-redistribution-prohibited",
       "storage": "local-only",
       "extractedPath": "third_party/art/local-only/gandalfhardcore-platformer/",
-      "designStatus": "selective-reference-or-prop-source",
+      "designStatus": "optional-runtime-playtest-only",
       "notes": [
-        "32x32 tiles do not map cleanly to Summing's 24x24 grid",
+        "the optional playtest renderer reduces the 32x32 edges to the 24x24 presentation grid with point sampling",
         "forest, seasonal, house, and fantasy-town assets conflict with the badlands identity",
         "rock piles, tomb markers, reeds, statue, furnace, and small machinery silhouettes may be adapted selectively",
         "must not be used for AI training or as image-generation input"

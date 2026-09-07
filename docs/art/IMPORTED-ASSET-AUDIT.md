@@ -1,6 +1,6 @@
 # Imported asset audit
 
-Reviewed 2026-09-07. This is an asset and provenance assessment, not a runtime integration. None of these downloads currently replaces Summing's original placeholder art.
+Reviewed 2026-09-07. This assessment records both provenance and the bounded optional runtime integration. Summing's original placeholder art remains the portable default/fallback; the local GandalfHardcore character/platformer pair can now be selected as a presentation-only playtest pack.
 
 ## Storage policy
 
@@ -12,8 +12,8 @@ The ignored files are part of the local working copy but are not protected by Gi
 
 | Pack | Rights evidence | Summing fit | Decision |
 | --- | --- | --- | --- |
-| GandalfHardcore Character | Bundled license permits commercial/non-commercial game use and modification; prohibits raw redistribution, AI training, NFTs, game-development tools, and print | Modular 80x64 animation cells, visually tall character, and only conventional locomotion/combat states | Retain locally. Explicitly reject as Summing's player; it does not fit the 24x24 visual footprint or traversal state vocabulary. Manual animation reference only. |
-| GandalfHardcore Platformer | Same bundled restricted license | Polished 32x32 pastoral fantasy set; forest, houses, seasonal backgrounds, water, and town decor dominate | Retain locally. Reject as the biome's primary terrain/background. Rock piles, grave markers, reeds, the angel statue, furnace, and small machinery silhouettes are selective manual adaptation candidates. |
+| GandalfHardcore Character | Bundled license permits commercial/non-commercial game use and modification; prohibits raw redistribution, AI training, NFTs, game-development tools, and print | Modular 80x64 animation cells, visually tall character, and only conventional locomotion/combat states | Integrated only in the optional local `GandalfOverworld` playtest pack. Half-scale rendering keeps the visible figure near one tile tall; missing traversal states use documented nearest-pose mappings. It remains unsuitable as final canonical player art. |
+| GandalfHardcore Platformer | Same bundled restricted license | Polished 32x32 pastoral fantasy set; forest, houses, seasonal backgrounds, water, and town decor dominate | Its autumn terrain edges are integrated only in the optional local `GandalfOverworld` comparison pack, reduced to 24px and layered over authoritative material colours. It remains unsuitable as the final badlands identity. |
 | GandalfHardcore HP Bar | Same bundled restricted license | Large ornate continuous bars and helmet motif | Retain locally but reject for the slice. It conflicts with discrete hearts and the restrained interface. |
 | Pixel Fantasy Caves | [Creator page](https://szadiart.itch.io/pixel-fantasy-caves) permits personal/commercial use and says credit is optional; no raw redistribution grant is stated | Detailed 16x16 cave terrain, props, and parallax backgrounds | Retain locally. Reject as primary terrain because it would make the biome a cave and scales non-integrally to 24px. Rock silhouettes and parallax construction are useful references. |
 | Adve | [Creator page](https://egordorichev.itch.io/adve) explicitly declares CC0-1.0 | Compact 8x8 tiles, ENDESGA-64 palette, strong interaction readability | Approved and tracked. It scales exactly 3x to 24px. Use individual ladders, chains, edge motifs, and interaction cues selectively; do not import its cave-room composition wholesale. |
@@ -24,7 +24,7 @@ The ignored files are part of the local working copy but are not protected by Gi
 
 1. Use Adve and Monochrome Caves as the legally clean reference library. Their greatest value is compact shape language, not a drop-in biome replacement.
 2. Use the Stone Ruins fragments as the leading imported source for exposed masonry, broken arches, and partly buried architecture after adapting them to Summing's palette and 24px composition.
-3. Consider isolated Pixel Fantasy rock silhouettes and isolated GandalfHardcore ruin/machinery props only after a deliberate palette, scale, and silhouette pass.
-4. Do not use the GandalfHardcore character or HP bar for the current player/UI.
+3. Use the GandalfHardcore paired pack only for A/B playtesting. Do not treat its conventional fantasy character, grass edge, or incomplete traversal vocabulary as a final art decision.
+4. Consider isolated Pixel Fantasy rock silhouettes and isolated GandalfHardcore ruin/machinery props only after a deliberate palette, scale, and silhouette pass. Do not use the GandalfHardcore HP bar.
 
-No pack should be copied wholesale. Summing's 24px terrain, limited palette, one-tile player, open-air badlands composition, material signaling, and original world identity remain authoritative.
+No pack should be copied wholesale. Summing's 24px terrain, limited palette, 18×22 collision body, open-air badlands composition, material signaling, and original world identity remain authoritative. The visual-pack chooser changes no gameplay or world data.
