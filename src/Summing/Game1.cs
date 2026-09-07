@@ -27,6 +27,7 @@ public sealed class Game1 : Game
     private RenderTarget2D _scene = null!;
     private Texture2D _pixel = null!;
     private PixelFont _font = null!;
+    private TemplatePlayerRenderer _playerRenderer = null!;
     private InputManager _input = null!;
     private TileWorld _world = null!;
     private GeneratedWorld _generated = null!;
@@ -101,6 +102,7 @@ public sealed class Game1 : Game
         _pixel.SetData([Color.White]);
         _font = new PixelFont(_pixel);
         _tileRenderer = new TileWorldRenderer(_pixel);
+        _playerRenderer = new TemplatePlayerRenderer(GraphicsDevice);
     }
 
     protected override void Update(GameTime gameTime)
@@ -288,10 +290,7 @@ public sealed class Game1 : Game
                     new Rectangle((int)MathF.Round(burrower.Position.X - 9f),
                         (int)MathF.Round(burrower.Position.Y - 9f), 18, 18),
                     new Color(174, 75, 75));
-        var bounds = _player.Bounds;
-        _spriteBatch.Draw(_pixel,
-            new Rectangle((int)MathF.Round(bounds.Left), (int)MathF.Round(bounds.Top),
-                (int)MathF.Round(bounds.Width), (int)MathF.Round(bounds.Height)), Color.White);
+        _playerRenderer.Draw(_spriteBatch, _player, _frame);
         _digTool.Draw(_spriteBatch, _pixel, _player);
     }
 
@@ -516,6 +515,7 @@ public sealed class Game1 : Game
 
     protected override void UnloadContent()
     {
+        _playerRenderer.Dispose();
         _scene.Dispose();
         _pixel.Dispose();
         _spriteBatch.Dispose();
@@ -539,7 +539,7 @@ public sealed class Game1 : Game
         _font.Draw(_spriteBatch,
             $"VEL {(int)_player.Velocity.X},{(int)_player.Velocity.Y}  GROUND {_player.Grounded}  DASH {_player.DashCharges}",
             new Vector2(12, 39), muted);
-        _font.Draw(_spriteBatch, "UNIFORM COLLISION TILES   WHITE PLAYER BODY   ROPE JUMP SPACE PLUS LEFT OR RIGHT",
+        _font.Draw(_spriteBatch, "UNIFORM COLLISION TILES   TEMPLATE FREE PLAYER   ROPE JUMP SPACE PLUS LEFT OR RIGHT",
             new Vector2(12, 342), Color.White);
     }
 
