@@ -87,8 +87,6 @@ public sealed class VisualPackManager : IDisposable
         [new(16, 560), new(144, 624), new(208, 624), new(272, 624), new(336, 624)];
     private static readonly Point[] PixelFantasyBottomCells =
         [new(144, 944), new(208, 944), new(304, 944), new(416, 944)];
-    private static readonly Point[] PixelFantasyInteriorCells =
-        [new(112, 624), new(320, 704), new(416, 768), new(624, 784)];
     private static readonly int[] DraculasManorInteriorCells = [16, 17, 18, 19, 25];
     private readonly GraphicsDevice _graphicsDevice;
     private readonly string _selectionPath;
@@ -386,20 +384,16 @@ public sealed class VisualPackManager : IDisposable
     private bool DrawPixelFantasyTile(SpriteBatch batch, TileWorld world, Rectangle destination,
         MaterialDefinition material, int x, int y)
     {
-        var leftExposed = !world.GetTile(x - 1, y).Solid;
-        var rightExposed = !world.GetTile(x + 1, y).Solid;
         var topExposed = !world.GetTile(x, y - 1).Solid;
         var bottomExposed = !world.GetTile(x, y + 1).Solid;
+        if (!topExposed && !bottomExposed) return false;
+
         var hash = TileHash(x, y);
-        var sources = topExposed ? PixelFantasyTopCells : bottomExposed ? PixelFantasyBottomCells :
-            PixelFantasyInteriorCells;
+        var sources = topExposed ? PixelFantasyTopCells : PixelFantasyBottomCells;
         var point = sources[(int)(hash % (uint)sources.Length)];
         var source = new Rectangle(point.X, point.Y, 16, 16);
-        var effects = !topExposed && !bottomExposed && leftExposed != rightExposed && rightExposed
-            ? SpriteEffects.FlipHorizontally
-            : SpriteEffects.None;
         batch.Draw(_environmentTexture!, destination, source, Color.Lerp(Color.White, material.BaseColor, 0.1f),
-            0f, Vector2.Zero, effects, 0f);
+            0f, Vector2.Zero, SpriteEffects.None, 0f);
         return true;
     }
 
@@ -486,7 +480,8 @@ public sealed class VisualPackManager : IDisposable
         var destination = new Rectangle((int)MathF.Round(feet.X - 11f), (int)MathF.Round(feet.Y - 28f), 22, 28);
         if (state is MovementState.Crouch or MovementState.Crawl or MovementState.Slide)
             destination = new Rectangle(destination.X, destination.Bottom - 20, destination.Width, 20);
-        var effects = facing < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+        // the source sheet faces left; mirror it when the controller faces right
+        var effects = facing > 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
         var silhouette = new Color(7, 9, 14, 220);
         batch.Draw(texture, destination with { X = destination.X - 1 }, source, silhouette, 0f, Vector2.Zero,
             effects, 0f);
