@@ -132,7 +132,7 @@ public sealed class Game1 : Game
         _smoothedFps = MathHelper.Lerp(_smoothedFps,
             (float)(1.0 / Math.Max(0.0001, gameTime.ElapsedGameTime.TotalSeconds)), 0.03f);
         _visualPackNoticeTimer = MathF.Max(0f, _visualPackNoticeTimer - GameConstants.FixedDelta);
-        if (_phase is GamePhase.Playing or GamePhase.Paused && _input.KeyPressed(Keys.F4)) CycleVisualPack();
+        if (_phase is GamePhase.Playing or GamePhase.Paused && _input.KeyPressed(Keys.K)) CycleVisualPack();
 
         if (_phase == GamePhase.Binding)
         {
@@ -299,7 +299,7 @@ public sealed class Game1 : Game
         _font.Draw(_spriteBatch, $"PRESET {DevelopmentSeedPresets.Label(_menuConfig)}", new Vector2(210, 260), GamePalette.SaltCyan);
         _font.Draw(_spriteBatch, "UP DOWN DIFFICULTY   LEFT RIGHT GENERATOR", new Vector2(187, 273), GamePalette.UiMuted);
         _font.Draw(_spriteBatch, "T SEED  R OR LS RANDOM  C OR Y CLIMBER", new Vector2(190, 284), GamePalette.UiMuted);
-        _font.Draw(_spriteBatch, "1 2 3 OR RB PRESET   F4 OR LB ART PACK", new Vector2(190, 295), GamePalette.UiMuted);
+        _font.Draw(_spriteBatch, "1 2 3 OR RB PRESET   K OR LB ART PACK", new Vector2(190, 295), GamePalette.UiMuted);
         _font.Draw(_spriteBatch, "ENTER OR A TO ASCEND", new Vector2(224, 313), GamePalette.SacredGold, 2);
         _font.Draw(_spriteBatch, "B BINDINGS  F1 WORLD EDITOR DURING A RUN", new Vector2(195, 341), new Color(105, 116, 125));
         if (_visualPackNoticeTimer > 0f)
@@ -405,7 +405,7 @@ public sealed class Game1 : Game
             _menuConfig.Seed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         if (_input.KeyPressed(Keys.C) || _input.Pressed(InputAction.Dig))
             _appearanceIndex = (_appearanceIndex + 1) % AppearanceTints.Length;
-        if (_input.KeyPressed(Keys.F4) || _input.ButtonPressed(Buttons.LeftShoulder)) CycleVisualPack();
+        if (_input.KeyPressed(Keys.K) || _input.ButtonPressed(Buttons.LeftShoulder)) CycleVisualPack();
         if (_input.KeyPressed(Keys.B) || _input.Pressed(InputAction.Slide)) { _phase = GamePhase.Binding; return; }
         if (_input.KeyPressed(Keys.Escape)) { Exit(); return; }
         if (_input.KeyPressed(Keys.Enter) || _input.Pressed(InputAction.Jump)) StartRun(CopyConfiguration(_menuConfig));
@@ -603,7 +603,7 @@ public sealed class Game1 : Game
         }
         if (_visualPackNoticeTimer > 0f)
             _font.Draw(_spriteBatch, _visualPackNotice, new Vector2(12, 328), GamePalette.SaltCyan);
-        _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  R ROPE  Q BOMB  F4 ART", new Vector2(12, 342), new Color(131, 132, 139));
+        _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  R ROPE  Q BOMB  K ART", new Vector2(12, 342), new Color(131, 132, 139));
     }
 
     private static string Format(string value)

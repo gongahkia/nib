@@ -121,7 +121,8 @@ public sealed class VisualPackManager : IDisposable
         else if (state == MovementState.Slide)
             destination = new Rectangle(destination.X - 2, destination.Bottom - 22, 44, 22);
 
-        var effects = facing < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+        // The imported source faces left by default, opposite Summing's original player sheet.
+        var effects = facing > 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
         var silhouette = new Color(7, 9, 14, 220);
         DrawCharacterLayers(batch, destination with { X = destination.X - 1 }, source, silhouette, effects);
         DrawCharacterLayers(batch, destination with { X = destination.X + 1 }, source, silhouette, effects);
