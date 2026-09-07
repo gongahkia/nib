@@ -47,6 +47,7 @@ public sealed class VisualSelectionScreen
         DrawBorder(batch, pixel, new Rectangle(18, 17, 604, 326), GamePalette.Stone);
         font.Draw(batch, "VISUAL SELECTOR", new Vector2(34, 30), GamePalette.SacredGold, 3);
         font.Draw(batch, "LIVE PREVIEW  PRESENTATION ONLY", new Vector2(358, 36), GamePalette.UiMuted);
+        font.Draw(batch, "ONLY COMPATIBLE INSTALLED ART IS LISTED", new Vector2(358, 48), GamePalette.UiMuted);
 
         for (var index = 0; index < Rows.Length; index++)
         {
