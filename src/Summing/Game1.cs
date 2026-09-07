@@ -556,10 +556,10 @@ public sealed class Game1 : Game
     {
         if (!change.Changed || _telemetry is not { IsFinished: false }) return;
         _telemetry.RecordEvent("visual-selection-changed", new
-            {
-                option = change.Option,
-                selection = _visualPacks.Selection
-            });
+        {
+            option = change.Option,
+            selection = _visualPacks.Selection
+        });
     }
 
     private void SaveEditorWorld() => SaveWorld("saves/editor-world.json");
