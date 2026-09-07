@@ -164,6 +164,20 @@ def main() -> None:
         "relics": make_sheet("relics", (24, 24), [f"relic_{i}" for i in range(6)], relic),
         "ruins": make_sheet("ruins", (48, 64), [f"ruin_{i}" for i in range(4)], ruin),
         "ui": make_sheet("ui", (24, 24), ["heart", "dash", "bomb", "rope", "archive"], ui),
+        "player_aseprite_locomotion": {
+            "file": "runtime/player_aseprite_locomotion.png",
+            "source": "aseprite/ashen_pilgrim.aseprite",
+            "cell": [24, 24],
+            "frames": PLAYER_LOCOMOTION,
+            "generation": "Aseprite MCP using tools/aseprite/generate_ashen_pilgrim.lua",
+        },
+        "player_aseprite_traversal": {
+            "file": "runtime/player_aseprite_traversal.png",
+            "source": "aseprite/ashen_pilgrim.aseprite",
+            "cell": [24, 24],
+            "frames": PLAYER_TRAVERSAL,
+            "generation": "Aseprite MCP using tools/aseprite/generate_ashen_pilgrim.lua",
+        },
     }
     manifest = {
         "version": 2,

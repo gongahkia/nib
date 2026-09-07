@@ -450,7 +450,8 @@ public sealed class VisualPackManager : IDisposable
     {
         if (PlayerPack == PlayerVisualPackId.MerakintsugiSample)
             return DrawMerakintsugiPlayer(batch, state, feet, facing, frame, tint);
-        if (PlayerPack == PlayerVisualPackId.SummingOriginal || _gandalfCharacter.Length == 0) return false;
+        if (PlayerPack is PlayerVisualPackId.SummingOriginal or PlayerVisualPackId.AsepritePilgrim ||
+            _gandalfCharacter.Length == 0) return false;
 
         var pose = ResolvePose(state, frame);
         var source = new Rectangle(pose.Column * CharacterCellWidth, pose.Row * CharacterCellHeight,
@@ -616,7 +617,7 @@ public sealed class VisualPackManager : IDisposable
     {
         ReplaceCharacter([]);
         ReplaceMerakintsugiCharacter(null, null);
-        if (PlayerPack == PlayerVisualPackId.SummingOriginal) return;
+        if (PlayerPack is PlayerVisualPackId.SummingOriginal or PlayerVisualPackId.AsepritePilgrim) return;
         if (PlayerPack == PlayerVisualPackId.MerakintsugiSample && _merakintsugiFiles is { } merakintsugiFiles)
         {
             Texture2D? idle = null;

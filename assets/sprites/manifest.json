@@ -165,6 +165,53 @@
         "rope",
         "archive"
       ]
+    },
+    "player_aseprite_locomotion": {
+      "file": "runtime/player_aseprite_locomotion.png",
+      "source": "aseprite/ashen_pilgrim.aseprite",
+      "cell": [
+        24,
+        24
+      ],
+      "frames": [
+        "idle_0",
+        "idle_1",
+        "run_0",
+        "run_1",
+        "run_2",
+        "run_3",
+        "takeoff",
+        "ascend",
+        "apex",
+        "fall",
+        "land"
+      ],
+      "generation": "Aseprite MCP using tools/aseprite/generate_ashen_pilgrim.lua"
+    },
+    "player_aseprite_traversal": {
+      "file": "runtime/player_aseprite_traversal.png",
+      "source": "aseprite/ashen_pilgrim.aseprite",
+      "cell": [
+        24,
+        24
+      ],
+      "frames": [
+        "crouch",
+        "crawl",
+        "slide",
+        "ledge",
+        "mantle",
+        "wall_cling",
+        "wall_jump",
+        "dash",
+        "rope",
+        "dig_0",
+        "dig_1",
+        "bomb",
+        "hurt",
+        "death"
+      ],
+      "generation": "Aseprite MCP using tools/aseprite/generate_ashen_pilgrim.lua"
     }
   },
   "source_concept": "source/summing-concept-white.png",

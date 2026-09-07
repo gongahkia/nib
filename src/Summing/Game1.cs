@@ -515,6 +515,8 @@ public sealed class Game1 : Game
             RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
         if (_frame == 240)
             RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.PlayerPack, 1));
+        if (_frame == 245)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.PlayerPack, 1));
         if (_frame == 250)
             RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
         if (_frame == 262)
