@@ -100,6 +100,13 @@ if (Environment.GetCommandLineArgs().Contains("--verify-serialization"))
             throw new InvalidDataException("world JSON round-trip changed authoritative data");
         if (loaded.Terrain.GetTile(1, 1).Damage != 2)
             throw new InvalidDataException("world JSON round-trip lost mutable tile damage");
+        if (loaded.Configuration.Seed != generated.Configuration.Seed ||
+            loaded.Configuration.Variant != generated.Configuration.Variant ||
+            loaded.Configuration.GeneratorVersion != generated.Configuration.GeneratorVersion ||
+            loaded.Spawn != generated.Spawn || loaded.SummitBounds != generated.SummitBounds ||
+            !loaded.RouteAnchors.SequenceEqual(generated.RouteAnchors) ||
+            loaded.Features.Count != generated.Features.Count || loaded.Weather.Count != generated.Weather.Count)
+            throw new InvalidDataException("world JSON round-trip changed generation, traversal, or placement data");
         Console.WriteLine($"roundtrip=ok bytes={new FileInfo(path).Length} fingerprint={loaded.Terrain.Fingerprint():x16}");
     }
     finally
