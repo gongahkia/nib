@@ -132,7 +132,7 @@ public sealed class Game1 : Game
         _smoothedFps = MathHelper.Lerp(_smoothedFps,
             (float)(1.0 / Math.Max(0.0001, gameTime.ElapsedGameTime.TotalSeconds)), 0.03f);
         _visualPackNoticeTimer = MathF.Max(0f, _visualPackNoticeTimer - GameConstants.FixedDelta);
-        if (_phase is not (GamePhase.Title or GamePhase.Binding) && _input.KeyPressed(Keys.F4)) CycleVisualPack();
+        if (_phase is GamePhase.Playing or GamePhase.Paused && _input.KeyPressed(Keys.F4)) CycleVisualPack();
 
         if (_phase == GamePhase.Binding)
         {
@@ -521,11 +521,12 @@ public sealed class Game1 : Game
         _visualPackNotice = _visualPacks.Cycle();
         _selectedVisualPack = _visualPacks.Current;
         _visualPackNoticeTimer = 2.4f;
-        _telemetry?.RecordEvent("visual-pack-changed", new
-        {
-            visualPack = _selectedVisualPack,
-            name = _visualPacks.CurrentName
-        });
+        if (_telemetry is { IsFinished: false })
+            _telemetry.RecordEvent("visual-pack-changed", new
+            {
+                visualPack = _selectedVisualPack,
+                name = _visualPacks.CurrentName
+            });
     }
 
     private void SaveEditorWorld() => SaveWorld("saves/editor-world.json");
