@@ -115,7 +115,7 @@ public sealed class VisualPackManager : IDisposable
         }
         NormalizePackAvailability();
         BuildCharacterChoices(saved == null);
-        if (saved != null)
+        if (saved != null && PlayerPack != PlayerVisualPackId.SummingOriginal)
         {
             SkinSheet = SelectExisting(_skinChoices, saved.SkinSheet, SkinSheet);
             LegSheet = SelectExisting(_legChoices, saved.LegSheet, LegSheet);
