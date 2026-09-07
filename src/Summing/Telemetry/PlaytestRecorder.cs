@@ -58,7 +58,7 @@ public sealed class PlaytestRecorder : IDisposable
         _screenshots.WriteLine("frame,time_s,file,event,phase");
         File.WriteAllText(Path.Combine(DirectoryPath, "metadata.json"), JsonSerializer.Serialize(new
         {
-            schemaVersion = 5,
+            schemaVersion = 6,
             startedAtUtc = DateTimeOffset.UtcNow,
             seed = generated.Configuration.Seed,
             generator = WorldGeneratorRegistry.Identifier(generated.Configuration.Variant),

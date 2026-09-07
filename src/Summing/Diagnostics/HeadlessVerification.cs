@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Summing.Camera;
@@ -27,7 +28,7 @@ public static class HeadlessVerification
         VerifyBrittleAndArchive();
         VerifyInputBindingPersistence();
         VerifyImpactFeedback();
-        Console.WriteLine("systems=ok movement=one-tile-jump-dash fall=one-heart rope=ledge-climb dig=four-directions camera=zoomed-out material=hardness terrain=bomb-burrower hazard=brittle archive=persistent-json input=remap-json feedback=shake-debris");
+        Console.WriteLine("systems=ok movement=one-tile-jump-dash fall=one-heart rope=ledge-climb dig=fast-four-directions camera=zoomed-out material=one-two-hit terrain=bomb-rocket-burrower hazard=brittle archive=persistent-json input=remap-json feedback=shake-debris");
     }
 
     private static void VerifyMovementTransitions()
@@ -204,7 +205,7 @@ public static class HeadlessVerification
         Strike(world, player, -Vector2.UnitY, InputAction.Up);
         Strike(world, player, Vector2.UnitY, InputAction.Down);
         if (world.GetTile(5, 6).Damage != 1 || world.GetTile(3, 6).Damage != 1 ||
-            world.GetTile(4, 5).Damage != 1 || world.GetTile(4, 7).Damage != 1 ||
+            world.GetTile(4, 5).Damage != 1 || world.GetTile(4, 7).Solid ||
             world.GetTile(6, 6).Damage != 0)
             throw new InvalidOperationException("tool swing did not hit only the adjacent terrain tile in all four directions");
     }
@@ -220,6 +221,7 @@ public static class HeadlessVerification
             input.SetSyntheticState(direction, direction, directionAction);
             tool.Update(input, player, world, GameConstants.FixedDelta);
         }
+        if (tool.Swinging) throw new InvalidOperationException("tool recovery still exceeds 0.2 seconds");
     }
 
     private static void VerifyRopePlacementAndClimbing()
@@ -273,6 +275,11 @@ public static class HeadlessVerification
 
     private static void VerifyMaterialHardness()
     {
+        var solids = MaterialCatalog.All.Where(material => material.Solid).ToArray();
+        if (solids.Any(material => material.Hardness is < 1 or > 2) ||
+            !solids.Any(material => material.Hardness == 1) || !solids.Any(material => material.Hardness == 2))
+            throw new InvalidOperationException("ordinary material hardness is not constrained to distinct one/two-hit tiers");
+
         var world = new TileWorld(8, 8);
         world.SetTile(3, 3, MaterialId.BlackBasalt);
         var hardness = MaterialCatalog.Get(MaterialId.BlackBasalt).Hardness;
@@ -287,6 +294,19 @@ public static class HeadlessVerification
 
     private static void VerifyBombAndBurrowerMutation()
     {
+        var edgePlayer = new PlayerController(new Vector2(160f, 120f));
+        var edgeHealth = edgePlayer.Health;
+        var edgeImpact = BombSystem.ApplyPlayerBlast(edgePlayer, edgePlayer.Bounds.Center + new Vector2(0f, 72f));
+        if (!edgeImpact.RocketBoost || edgeImpact.Damage != 0 || edgePlayer.Health != edgeHealth ||
+            edgePlayer.Velocity.Y >= -300f || edgePlayer.Stunned)
+            throw new InvalidOperationException("outer bomb blast did not produce a safe, controllable rocket jump");
+
+        var corePlayer = new PlayerController(new Vector2(160f, 120f));
+        var coreImpact = BombSystem.ApplyPlayerBlast(corePlayer, corePlayer.Bounds.Center);
+        if (coreImpact.RocketBoost || coreImpact.Damage != 2 || corePlayer.Health != corePlayer.MaximumHealth - 2 ||
+            !corePlayer.Stunned)
+            throw new InvalidOperationException("core bomb blast lost its damage and stun pressure");
+
         var world = new TileWorld(28, 18);
         for (var x = 2; x < 26; x++)
             for (var y = 9; y < 14; y++) world.SetTile(x, y, MaterialId.RedSandstone);
