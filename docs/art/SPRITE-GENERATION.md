@@ -1,12 +1,12 @@
 # Future sprite direction and Aseprite workflow
 
-The current build contains no runtime sprites. The sole renderer uses uniform collision rectangles, primitive object marks, and an exact white 18×22 px player body inside the 24×24 px terrain grid. This is intentional: movement, state transitions, rope transfers, collision, and procedural traversal must be settled before authored presentation returns.
+The current build contains one runtime sprite family: Ozzbit Games' Template Free player, explicitly authorized by its creator for this repository. Terrain remains sanitized uniform collision geometry with primitive object marks. The player sheets use 128×128 px cells, a fixed cropped presentation window, and a stable foot pivot over the authoritative 18×22 px collision body. States absent from the free pack deliberately use the nearest supplied pose.
 
-Downloaded third-party packs are not active art candidates or runtime dependencies. Their original ZIP files remain as ignored provenance archives under `third_party/art/source-archives/`; do not extract them into runtime content or use restricted packs as generative inputs.
+All other downloaded packs are inactive and their original ZIP files remain ignored provenance archives under `third_party/art/source-archives/`. Do not extract them into runtime content or use restricted packs as generative inputs.
 
 ## Locked future direction
 
-Future Summing sprites should be original and extremely flat-coloured. Use Nidhogg only as high-level vocabulary for bold single-colour silhouettes and immediate figure/background separation—never copy its characters, poses, palette, stages, or assets. Identity must come primarily from silhouette changes, timing, spacing, anticipation, follow-through, and detailed state-specific animation frames rather than internal texture or shading.
+The Template Free player is a practical movement-test skin, not a reversal of the longer-term direction. Future Summing-specific sprites should be original and extremely flat-coloured. Use Nidhogg only as high-level vocabulary for bold single-colour silhouettes and immediate figure/background separation—never copy its characters, poses, palette, stages, or assets. Identity must come primarily from silhouette changes, timing, spacing, anticipation, follow-through, and detailed state-specific animation frames rather than internal texture or shading.
 
 - Give the player one stable, high-contrast base colour that stays distinct from every biome background and collision surface.
 - Keep each character frame mostly one opaque colour. A second colour is reserved for an essential readability mark, not routine shading.

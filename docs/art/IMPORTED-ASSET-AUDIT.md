@@ -1,10 +1,10 @@
 # Imported asset audit
 
-Reviewed 2026-09-07. This assessment records provenance and historical fit only. No imported pack is extracted, runtime-integrated, or selectable in the current sanitized movement build.
+Reviewed 2026-09-07. This assessment records provenance and fit. The Template Free player is the sole imported runtime pack after its creator explicitly authorized this repository; every other pack remains archive-only.
 
 ## Storage policy
 
-Every unique received ZIP is preserved unchanged under the ignored `third_party/art/source-archives/`. Extracted images were removed when the runtime art pipeline was retired. Duplicate downloads are identified by SHA-256 rather than stored twice.
+Every unique received ZIP is preserved unchanged under the ignored `third_party/art/source-archives/`. Extracted images were removed when the old visual-pack pipeline was retired, except for the explicitly authorized Template Free player sheets under `assets/sprites/player/template-free/`. Duplicate downloads are identified by SHA-256 rather than stored twice.
 
 The ignored files are part of the local working copy but are not protected by Git. `git clean -fdx` would delete them. `third_party/art/catalog.json` contains the original names, byte sizes, and SHA-256 hashes needed to verify a backup or re-download.
 
@@ -21,7 +21,7 @@ The ignored files are part of the local working copy but are not protected by Gi
 | `ruins.zip` | The owner confirmed it was downloaded free from itch.io with permission to use it. It visually matches [NicoPardo's STONE RUINS](https://nicopardo.itch.io/stone-ruins), whose page permits personal/commercial use; the current official listing uses a differently named RAR | Restrained masonry fragments are a strong badlands ruin reference | Archived only. Raw redistribution permission is not established; the exact package revision remains uncertain. |
 | Dracula's Manor (`lilspook.zip`) | [Creator page](https://adamatomic.itch.io/dracula) explicitly places the pack in the public domain for personal or commercial use | High-contrast 8×8 gothic architecture with a strong silhouette vocabulary; its neon pink/green palette is not a natural fit for canonical badlands | Archived only. Reject as the canonical biome palette. |
 | Merakintsugi sample (`sample(idle&walk).zip`) | [Creator page](https://merakintsugi.itch.io/platformer-character-pack) permits commercial/non-commercial project use and modification, with optional attribution; raw asset redistribution, AI training, and NFTs are prohibited | Excellent animation, but the free archive contains only idle, idle-to-walk, and walk frames and its roughly 53×64 source body is much taller than Summing's one-tile player | Archived only and prohibited as a generative input. Reject as final canonical art because required traversal states are absent. |
-| Ozzbit free template (`template_free.zip`) | Bundled `LICENSE.txt` and [creator page](https://ozzbit-games.itch.io/action-platformer-character-template) restrict the free tier to personal, non-commercial projects with required credit | Clean one-tile template and a useful state vocabulary, although the received free tier contains only a subset of the advertised animations | Archived but explicitly rejected. Summing is not locked to non-commercial distribution; a separately acquired PRO/DELUXE license would need a new audit. |
+| Ozzbit free template (`template_free.zip`) | Bundled public license says personal/non-commercial use with credit. On 2026-09-07 the repository owner identified themself as the pack's creator and explicitly authorized its use here, superseding that restriction for this project. | Clean one-tile template and a useful but incomplete state vocabulary | Imported as the sole runtime player, with original license/readme and authorization record retained. Missing traversal states use nearest supplied poses; collision remains independent. |
 
 ## Current boundary
 

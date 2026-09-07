@@ -24,4 +24,4 @@ Hold Up or Down near a rope to grab and climb it. Releasing vertical input holds
 
 Hold a direction while digging to strike the immediately adjacent tile left, right, above, or below; a neutral swing follows the player's facing direction. Tool recovery is 0.16 seconds, and solid materials use one-hit or two-hit hardness tiers. A bomb's inner blast remains damaging, while its outer edge applies a controllable damage-free launch. Active grappling does not exist; placed ropes are the sole rope traversal resource.
 
-The only renderer is the movement-debug view: uniform collision tiles, an exact white player body, primitive ropes/bombs, a minimal red burrower marker, no background, no material identities, no sprites, no particles, and no visible camera shake. Simulation, telemetry, and terrain-impact shake state remain active.
+The only renderer is the movement-debug view: uniform collision tiles, the Template Free animated player, primitive ropes/bombs, a minimal red burrower marker, no background, no material identities, no environment sprites, no particles, and no visible camera shake. Simulation, telemetry, and terrain-impact shake state remain active.
