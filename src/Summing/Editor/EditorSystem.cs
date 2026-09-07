@@ -143,7 +143,7 @@ public sealed class EditorSystem
             new Vector2(10, 144), GamePalette.UiMuted);
         font.Draw(batch, "TAB TOOL  [ ] MATERIAL  LMB APPLY  RMB ERASE", new Vector2(10, 157), new Color(175, 181, 178));
         font.Draw(batch, "T SET SEED  V VARIANT  F2 REGEN  F3 RANDOM", new Vector2(10, 166), new Color(175, 181, 178));
-        font.Draw(batch, "1 2 3 OR P/RB PRESET  H DIFFICULTY  F4 ART", new Vector2(10, 175), new Color(175, 181, 178));
+        font.Draw(batch, "1 2 3 OR P/RB PRESET  H DIFFICULTY  K ART", new Vector2(10, 175), new Color(175, 181, 178));
         font.Draw(batch, "- + EROSION  , . RUINS  CTRL S/L/E SAVE/LOAD/EXPORT", new Vector2(10, 184), new Color(175, 181, 178));
         if (_typingSeed)
         {
