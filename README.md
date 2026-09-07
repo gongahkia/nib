@@ -16,7 +16,7 @@ The project scripts detect the documented per-user install at `~/.local/share/do
 
 Fedora's framework-dependent apphost cannot start when the system .NET host is incomplete. Debug builds on Linux are therefore self-contained, while the project scripts also verify the SDK host and prefer a working per-user install. To produce a clean runtime-independent release, use `make publish-fedora`, then launch `artifacts/linux-x64/Summing` directly.
 
-The title screen selects Easy/Hard, the deterministic seed, Heightmap/Cellular/Layered generation, climber palette, and in-game bindings. Keys `1`–`3` or gamepad right shoulder select labelled comparison presets; these are development conveniences rather than authored worlds. `Esc`/Start pauses during play. Death has no checkpoint; Easy repeats the world and Hard advances to another generated history. Reach the summit relay to complete the slice.
+The title screen selects Easy/Hard, the deterministic seed, Heightmap/Cellular/Layered generation, climber palette, visual art pack, and in-game bindings. `F4` (or left shoulder on the title screen) cycles the visual pack without changing terrain, collision, or generation; `F4` also hot-swaps it during a run. The locally installed Gandalf Overworld comparison pack is selected by default when present, with Summing's original art as the portable fallback. Keys `1`–`3` or gamepad right shoulder select labelled comparison presets; these are development conveniences rather than authored worlds. `Esc`/Start pauses during play. Death has no checkpoint; Easy repeats the world and Hard advances to another generated history. Reach the summit relay to complete the slice.
 
 Run all bounded non-visual verification with:
 
@@ -24,7 +24,7 @@ Run all bounded non-visual verification with:
 make verify
 ```
 
-This checks three-variant determinism and traversability, one-tile collision/state edge cases, complete JSON round-trip, hardness, terrain mutation, brittle collapse, and Archive persistence. `./run.sh --smoke-run` additionally runs a four-second native scripted render/telemetry check; `./run.sh --smoke-periodic` extends it past the ten-second periodic screenshot boundary. Diagnostic smoke runs accept `--variant=Heightmap|Cellular|Layered`, `--seed=<integer>`, and `--difficulty=Easy|Hard` for repeatable comparison.
+This checks three-variant determinism and traversability, one-tile collision/state edge cases, complete JSON round-trip, hardness, terrain mutation, brittle collapse, and Archive persistence. `./run.sh --smoke-run` additionally runs a four-second native scripted render/telemetry check; `./run.sh --smoke-periodic` extends it past the ten-second periodic screenshot boundary. Diagnostic smoke runs accept `--variant=Heightmap|Cellular|Layered`, `--seed=<integer>`, `--difficulty=Easy|Hard`, and `--art-pack=SummingOriginal|GandalfOverworld` for repeatable comparison.
 
 ## Project map
 

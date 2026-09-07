@@ -9,6 +9,7 @@ using Summing.Generation;
 using Summing.History;
 using Summing.Persistence;
 using Summing.Player;
+using Summing.Rendering;
 
 if (Environment.GetCommandLineArgs().Contains("--verify-generation"))
 {
@@ -128,6 +129,7 @@ var smokePeriodic = arguments.Contains("--smoke-periodic");
 var smokeTitle = arguments.Contains("--smoke-title");
 var initialConfiguration = new WorldGenerationConfig();
 var initialDifficulty = Difficulty.Easy;
+var initialVisualPack = VisualPackId.GandalfOverworld;
 foreach (var argument in arguments)
 {
     if (argument.StartsWith("--variant=", StringComparison.OrdinalIgnoreCase) &&
@@ -137,7 +139,9 @@ foreach (var argument in arguments)
         long.TryParse(argument[7..], out var seed)) initialConfiguration.Seed = seed;
     if (argument.StartsWith("--difficulty=", StringComparison.OrdinalIgnoreCase) &&
         Enum.TryParse<Difficulty>(argument[13..], true, out var difficulty)) initialDifficulty = difficulty;
+    if (argument.StartsWith("--art-pack=", StringComparison.OrdinalIgnoreCase) &&
+        Enum.TryParse<VisualPackId>(argument[11..], true, out var visualPack)) initialVisualPack = visualPack;
 }
 using var game = new Summing.Game1(smokeRun ? 240 : smokePeriodic ? 620 : smokeTitle ? 30 : 0,
-    smokeRun || smokePeriodic, smokeTitle, initialConfiguration, initialDifficulty);
+    smokeRun || smokePeriodic, smokeTitle, initialConfiguration, initialDifficulty, initialVisualPack);
 game.Run();

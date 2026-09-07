@@ -28,6 +28,7 @@ public sealed class Game1 : Game
     private Texture2D _pixel = null!;
     private PixelFont _font = null!;
     private SpriteLibrary _sprites = null!;
+    private VisualPackManager _visualPacks = null!;
     private AtmosphereRenderer _atmosphere = null!;
     private InputManager _input = null!;
     private TileWorld _world = null!;
@@ -60,13 +61,17 @@ public sealed class Game1 : Game
     private bool _typingTitleSeed;
     private string _titleSeedText = "";
     private int _appearanceIndex;
+    private VisualPackId _selectedVisualPack;
+    private string _visualPackNotice = "";
+    private float _visualPackNoticeTimer;
     private float _smoothedFps = 60f;
     private static readonly Color[] AppearanceTints = [Color.White, new Color(205, 232, 222), new Color(238, 191, 168)];
     private static readonly string[] AppearanceNames = ["BONE WRAPS", "SALT WRAPS", "OXIDE WRAPS"];
     private static readonly Keys[] TitlePresetKeys = [Keys.D1, Keys.D2, Keys.D3];
 
     public Game1(long autoExitFrame = 0, bool autoStart = true, bool captureTitleSmoke = false,
-        WorldGenerationConfig? initialConfiguration = null, Difficulty initialDifficulty = Difficulty.Easy)
+        WorldGenerationConfig? initialConfiguration = null, Difficulty initialDifficulty = Difficulty.Easy,
+        VisualPackId initialVisualPack = VisualPackId.GandalfOverworld)
     {
         _autoExitFrame = autoExitFrame;
         _autoStart = autoStart;
@@ -74,6 +79,9 @@ public sealed class Game1 : Game
         _syntheticSmoke = autoExitFrame > 0 && autoStart;
         _menuConfig = initialConfiguration == null ? new WorldGenerationConfig() : CopyConfiguration(initialConfiguration);
         _difficulty = initialDifficulty;
+        _selectedVisualPack = VisualPackFiles.IsAvailable(initialVisualPack)
+            ? initialVisualPack
+            : VisualPackId.SummingOriginal;
         _graphics = new GraphicsDeviceManager(this)
         {
             PreferredBackBufferWidth = GameConstants.WindowWidth,
@@ -105,8 +113,10 @@ public sealed class Game1 : Game
         _pixel = new Texture2D(GraphicsDevice, 1, 1);
         _pixel.SetData([Color.White]);
         _font = new PixelFont(_pixel);
-        _tileRenderer = new TileWorldRenderer(_pixel);
-        _sprites = new SpriteLibrary(GraphicsDevice);
+        _visualPacks = new VisualPackManager(GraphicsDevice, _selectedVisualPack);
+        _selectedVisualPack = _visualPacks.Current;
+        _tileRenderer = new TileWorldRenderer(_pixel, _visualPacks);
+        _sprites = new SpriteLibrary(GraphicsDevice, _visualPacks);
         _atmosphere = new AtmosphereRenderer(_pixel);
     }
 
@@ -121,6 +131,8 @@ public sealed class Game1 : Game
         if (_autoExitFrame > 0 && _frame >= _autoExitFrame && _phase is GamePhase.Title or GamePhase.Binding) Exit();
         _smoothedFps = MathHelper.Lerp(_smoothedFps,
             (float)(1.0 / Math.Max(0.0001, gameTime.ElapsedGameTime.TotalSeconds)), 0.03f);
+        _visualPackNoticeTimer = MathF.Max(0f, _visualPackNoticeTimer - GameConstants.FixedDelta);
+        if (_phase is not (GamePhase.Title or GamePhase.Binding) && _input.KeyPressed(Keys.F4)) CycleVisualPack();
 
         if (_phase == GamePhase.Binding)
         {
@@ -247,7 +259,7 @@ public sealed class Game1 : Game
 
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
             DrawHud();
-            _editor.DrawOverlay(_spriteBatch, _pixel, _font, _generated, _difficulty);
+            _editor.DrawOverlay(_spriteBatch, _pixel, _font, _generated, _difficulty, _visualPacks.CurrentName);
             DrawPhaseOverlay();
             _spriteBatch.End();
         }
@@ -283,12 +295,15 @@ public sealed class Game1 : Game
         _font.Draw(_spriteBatch, $"GENERATOR   {_menuConfig.Variant}", new Vector2(210, 171), Color.White, 2);
         _font.Draw(_spriteBatch, $"SEED        {_menuConfig.Seed}", new Vector2(210, 194), GamePalette.Bone, 2);
         _font.Draw(_spriteBatch, $"CLIMBER     {AppearanceNames[_appearanceIndex]}", new Vector2(210, 217), AppearanceTints[_appearanceIndex], 2);
-        _font.Draw(_spriteBatch, $"PRESET {DevelopmentSeedPresets.Label(_menuConfig)}", new Vector2(210, 238), GamePalette.SaltCyan);
-        _font.Draw(_spriteBatch, "UP DOWN DIFFICULTY   LEFT RIGHT GENERATOR", new Vector2(187, 252), GamePalette.UiMuted);
-        _font.Draw(_spriteBatch, "T SET SEED   R OR LS RANDOM   C OR Y CLIMBER", new Vector2(172, 263), GamePalette.UiMuted);
-        _font.Draw(_spriteBatch, "1 2 3 OR RB PRESET   B OR GAMEPAD B BINDINGS", new Vector2(177, 274), GamePalette.UiMuted);
-        _font.Draw(_spriteBatch, "ENTER OR A TO ASCEND", new Vector2(224, 298), GamePalette.SacredGold, 2);
-        _font.Draw(_spriteBatch, "F1 OPENS THE WORLD EDITOR DURING A RUN", new Vector2(202, 329), new Color(105, 116, 125));
+        _font.Draw(_spriteBatch, $"ART PACK    {_visualPacks.CurrentName}", new Vector2(210, 240), GamePalette.SaltCyan, 2);
+        _font.Draw(_spriteBatch, $"PRESET {DevelopmentSeedPresets.Label(_menuConfig)}", new Vector2(210, 260), GamePalette.SaltCyan);
+        _font.Draw(_spriteBatch, "UP DOWN DIFFICULTY   LEFT RIGHT GENERATOR", new Vector2(187, 273), GamePalette.UiMuted);
+        _font.Draw(_spriteBatch, "T SEED  R OR LS RANDOM  C OR Y CLIMBER", new Vector2(190, 284), GamePalette.UiMuted);
+        _font.Draw(_spriteBatch, "1 2 3 OR RB PRESET   F4 OR LB ART PACK", new Vector2(190, 295), GamePalette.UiMuted);
+        _font.Draw(_spriteBatch, "ENTER OR A TO ASCEND", new Vector2(224, 313), GamePalette.SacredGold, 2);
+        _font.Draw(_spriteBatch, "B BINDINGS  F1 WORLD EDITOR DURING A RUN", new Vector2(195, 341), new Color(105, 116, 125));
+        if (_visualPackNoticeTimer > 0f)
+            _font.Draw(_spriteBatch, _visualPackNotice, new Vector2(210, 326), GamePalette.SacredGold);
         if (_typingTitleSeed)
         {
             _spriteBatch.Draw(_pixel, new Rectangle(154, 132, 332, 92), new Color(7, 9, 14, 245));
@@ -390,6 +405,7 @@ public sealed class Game1 : Game
             _menuConfig.Seed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         if (_input.KeyPressed(Keys.C) || _input.Pressed(InputAction.Dig))
             _appearanceIndex = (_appearanceIndex + 1) % AppearanceTints.Length;
+        if (_input.KeyPressed(Keys.F4) || _input.ButtonPressed(Buttons.LeftShoulder)) CycleVisualPack();
         if (_input.KeyPressed(Keys.B) || _input.Pressed(InputAction.Slide)) { _phase = GamePhase.Binding; return; }
         if (_input.KeyPressed(Keys.Escape)) { Exit(); return; }
         if (_input.KeyPressed(Keys.Enter) || _input.Pressed(InputAction.Jump)) StartRun(CopyConfiguration(_menuConfig));
@@ -407,6 +423,7 @@ public sealed class Game1 : Game
         if (_frame == 82) actions.Add(InputAction.Dig);
         if (_frame == 108) actions.Add(InputAction.Slide);
         if (_frame == 126) actions.Add(InputAction.Rope);
+        if (_frame == 180) CycleVisualPack();
         _input.SetSyntheticState(move, Vector2.UnitX, actions.ToArray());
     }
 
@@ -485,7 +502,7 @@ public sealed class Game1 : Game
         _camera.Snap(new Vector2(generated.Spawn.X, generated.Spawn.Y - 40f));
         if (startTelemetry)
         {
-            _telemetry = new PlaytestRecorder(generated, _difficulty, _input.Bindings);
+            _telemetry = new PlaytestRecorder(generated, _difficulty, _input.Bindings, _selectedVisualPack);
             SaveWorld(Path.Combine(_telemetry.DirectoryPath, "world-start.json"));
         }
     }
@@ -497,6 +514,18 @@ public sealed class Game1 : Game
     {
         _difficulty = _difficulty == Difficulty.Easy ? Difficulty.Hard : Difficulty.Easy;
         RegenerateWorld(configuration);
+    }
+
+    private void CycleVisualPack()
+    {
+        _visualPackNotice = _visualPacks.Cycle();
+        _selectedVisualPack = _visualPacks.Current;
+        _visualPackNoticeTimer = 2.4f;
+        _telemetry?.RecordEvent("visual-pack-changed", new
+        {
+            visualPack = _selectedVisualPack,
+            name = _visualPacks.CurrentName
+        });
     }
 
     private void SaveEditorWorld() => SaveWorld("saves/editor-world.json");
@@ -535,6 +564,7 @@ public sealed class Game1 : Game
     protected override void UnloadContent()
     {
         _sprites.Dispose();
+        _visualPacks.Dispose();
         _scene.Dispose();
         _pixel.Dispose();
         _spriteBatch.Dispose();
@@ -570,7 +600,9 @@ public sealed class Game1 : Game
             _spriteBatch.Draw(_pixel, new Rectangle(125, 300, 390, 24), new Color(7, 10, 15, 230));
             _font.Draw(_spriteBatch, _relicSystem.LastDiscovery, new Vector2(141, 309), GamePalette.SacredGold);
         }
-        _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  R ROPE  Q BOMB  F8 MARK", new Vector2(12, 342), new Color(131, 132, 139));
+        if (_visualPackNoticeTimer > 0f)
+            _font.Draw(_spriteBatch, _visualPackNotice, new Vector2(12, 328), GamePalette.SaltCyan);
+        _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  R ROPE  Q BOMB  F4 ART", new Vector2(12, 342), new Color(131, 132, 139));
     }
 
     private static string Format(string value)
