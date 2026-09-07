@@ -1,7 +1,7 @@
 DOTNET ?= ./tools/dotnet.sh
 PROJECT := src/Summing/Summing.csproj
 
-.PHONY: restore build run publish-fedora format test verify clean assets
+.PHONY: restore build run publish-fedora format test verify clean
 
 restore:
 	$(DOTNET) restore $(PROJECT)
@@ -25,9 +25,6 @@ verify: build
 	$(DOTNET) src/Summing/bin/Debug/net9.0/Summing.dll --verify-generation
 	$(DOTNET) src/Summing/bin/Debug/net9.0/Summing.dll --verify-serialization
 	$(DOTNET) src/Summing/bin/Debug/net9.0/Summing.dll --verify-systems
-
-assets:
-	python3 tools/generate_sprites.py
 
 clean:
 	$(DOTNET) clean $(PROJECT)

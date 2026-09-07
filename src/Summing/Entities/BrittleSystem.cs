@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Summing.Gameplay;
 using Summing.Generation;
 using Summing.Player;
-using Summing.Rendering;
 using Summing.World;
 using Summing.World.Materials;
 
@@ -41,17 +39,6 @@ public sealed class BrittleSystem
             }
             if (structure.Update(world, dt) && structure.Tiles.Count > 0) Collapsed?.Invoke(structure.Tiles[0]);
         }
-    }
-
-    public void Draw(SpriteBatch batch, SpriteLibrary sprites)
-    {
-        foreach (var structure in _structures)
-            foreach (var tile in structure.Tiles)
-            {
-                if (structure.Collapsed) continue;
-                sprites.DrawBrittle(batch, new Vector2(tile.X * Core.GameConstants.TileSize,
-                    tile.Y * Core.GameConstants.TileSize), structure.CrackFrame);
-            }
     }
 
     private void OnTerrainChanged(TerrainChange change)

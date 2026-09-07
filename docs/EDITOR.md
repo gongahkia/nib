@@ -2,7 +2,7 @@
 
 Press `F1` to enter or leave the editor. Simulation pauses while editing; WASD pans and Shift accelerates the camera. The editor always mutates the same `TileWorld` and `WorldFeature` data used by generation and play.
 
-Press `K` while the editor is open to use the separate live visual selector. Player sprites and environment tiles can be changed independently without regenerating or mutating the edited world.
+The editor uses the same sole sanitized renderer as play. There is no visual selector or runtime sprite/tileset state; editor changes affect authoritative world data only.
 
 - `Tab`: cycle inspect, paint, erase, place burrower, place brittle site, place relic, place ruin, move entity, and delete entity tools.
 - `[` / `]`: select material. Left click applies the current tool; right click always erases a tile.

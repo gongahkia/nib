@@ -28,7 +28,7 @@ public static class HeadlessVerification
         VerifyBrittleAndArchive();
         VerifyInputBindingPersistence();
         VerifyImpactFeedback();
-        Console.WriteLine("systems=ok movement=one-tile-jump-dash fall=one-heart rope=solid-anchor-throw-climb dig=fast-four-directions camera=zoomed-out material=one-two-hit terrain=bomb-rocket-burrower hazard=brittle archive=persistent-json input=remap-json feedback=shake-debris");
+        Console.WriteLine("systems=ok movement=one-tile-jump-dash fall=one-heart rope=anchor-grip-jump-transfer dig=fast-four-directions camera=zoomed-out material=one-two-hit terrain=bomb-rocket-burrower hazard=brittle archive=persistent-json input=remap-json feedback=shake-debris");
     }
 
     private static void VerifyMovementTransitions()
@@ -291,6 +291,63 @@ public static class HeadlessVerification
             throw new InvalidOperationException("rope remained attached after its terrain anchor was destroyed");
 
         VerifyLedgeRopeStillAnchorsToTerrain();
+        VerifyRopeJumpTransfer();
+    }
+
+    private static void VerifyRopeJumpTransfer()
+    {
+        var world = new TileWorld(18, 22);
+        for (var x = 0; x < world.Width; x++) world.SetTile(x, 18, MaterialId.RedSandstone);
+        world.SetTile(7, 13, MaterialId.RuinAlloy);
+        world.SetTile(11, 13, MaterialId.RuinAlloy);
+        var player = new PlayerController(new Vector2(7.5f * GameConstants.TileSize, 18f * GameConstants.TileSize));
+        var input = new InputManager(new InputBindings());
+        var inventory = new PlayerInventory(DifficultyTuning.For(Difficulty.Easy));
+        var ropes = new RopeSystem();
+
+        for (var frame = 0; frame < 3; frame++)
+        {
+            input.SetSyntheticState(Vector2.Zero, -Vector2.UnitY);
+            player.Update(input, world, GameConstants.FixedDelta);
+        }
+        input.SetSyntheticState(Vector2.Zero, -Vector2.UnitY, InputAction.Rope);
+        ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        input.SetSyntheticState(Vector2.Zero, new Vector2(96f, -85f));
+        ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        input.SetSyntheticState(Vector2.Zero, new Vector2(96f, -85f), InputAction.Rope);
+        ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        if (ropes.Ropes.Count != 2)
+            throw new InvalidOperationException("rope transfer fixture did not place two distinct overhead ropes");
+
+        var source = ropes.Ropes[0];
+        var target = ropes.Ropes[1];
+        for (var frame = 0; frame < 90; frame++)
+        {
+            input.SetSyntheticState(-Vector2.UnitY, -Vector2.UnitY, InputAction.Up);
+            player.Update(input, world, GameConstants.FixedDelta);
+            ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        }
+        if (ropes.AttachedRope != source)
+            throw new InvalidOperationException("player did not retain an explicit grip on the source rope");
+
+        var jumped = false;
+        ropes.Jumped += (_, velocity) => jumped = velocity.X > 0f && velocity.Y < 0f;
+        input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right, InputAction.Jump);
+        player.Update(input, world, GameConstants.FixedDelta);
+        ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        if (!jumped || ropes.AttachedRope != null || player.VisualState != MovementState.RopeJump ||
+            player.Velocity.X <= 0f || player.Velocity.Y >= 0f)
+            throw new InvalidOperationException("directed rope jump did not release and launch away from its source");
+
+        for (var frame = 0; frame < 75 && ropes.AttachedRope != target; frame++)
+        {
+            input.SetSyntheticState(Vector2.UnitX, Vector2.UnitX, InputAction.Right);
+            player.Update(input, world, GameConstants.FixedDelta);
+            ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        }
+        if (ropes.AttachedRope != target)
+            throw new InvalidOperationException($"rope jump did not permit catching the target rope: " +
+                $"position={player.Position} velocity={player.Velocity}");
     }
 
     private static void VerifyLedgeRopeStillAnchorsToTerrain()

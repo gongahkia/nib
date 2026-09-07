@@ -1,9 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Summing.Core;
 using Summing.Input;
-using Summing.Rendering;
 using Summing.World;
 
 namespace Summing.Player;
@@ -208,9 +206,6 @@ public sealed class PlayerController
         ResolveState(moveX, shortBody);
     }
 
-    public void Draw(SpriteBatch batch, SpriteLibrary sprites, long frame, Color tint) =>
-        sprites.DrawPlayer(batch, VisualState, Position, Facing, frame, tint);
-
     public void ShowActionState(MovementState state, float duration)
     {
         _actionVisualState = state;
@@ -248,8 +243,26 @@ public sealed class PlayerController
             !RopePathClear(nextPosition, shortBody, world)) return false;
         Position = nextPosition;
         Velocity = Vector2.Zero;
+        Grounded = false;
+        _dashTimer = 0f;
         _shortBody = shortBody;
+        SetState(MovementState.RopeInteraction);
         ShowActionState(MovementState.RopeInteraction, 0.08f);
+        return true;
+    }
+
+    public bool TryRopeJump(int direction)
+    {
+        if (!Alive || Stunned) return false;
+        direction = direction < 0 ? -1 : 1;
+        Facing = direction;
+        Velocity = new Vector2(direction * 205f, -310f);
+        Grounded = false;
+        _dashTimer = 0f;
+        _coyoteTimer = 0f;
+        _jumpBufferTimer = 0f;
+        SetState(MovementState.RopeJump);
+        ShowActionState(MovementState.RopeJump, 0.14f);
         return true;
     }
 

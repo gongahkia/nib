@@ -9,7 +9,6 @@ using Summing.Generation;
 using Summing.History;
 using Summing.Persistence;
 using Summing.Player;
-using Summing.Rendering;
 using Summing.World.Materials;
 
 if (Environment.GetCommandLineArgs().Contains("--verify-generation"))
@@ -137,12 +136,9 @@ var arguments = Environment.GetCommandLineArgs();
 var smokeRun = arguments.Contains("--smoke-run");
 var smokePeriodic = arguments.Contains("--smoke-periodic");
 var smokeTitle = arguments.Contains("--smoke-title");
-var smokeVisualSelector = arguments.Contains("--smoke-visual-selector");
 var smokeMovementView = arguments.Contains("--smoke-movement-view");
 var initialConfiguration = new WorldGenerationConfig();
 var initialDifficulty = Difficulty.Easy;
-var initialVisualPack = VisualPackId.GandalfOverworld;
-var artPackSpecified = false;
 foreach (var argument in arguments)
 {
     if (argument.StartsWith("--variant=", StringComparison.OrdinalIgnoreCase) &&
@@ -152,15 +148,8 @@ foreach (var argument in arguments)
         long.TryParse(argument[7..], out var seed)) initialConfiguration.Seed = seed;
     if (argument.StartsWith("--difficulty=", StringComparison.OrdinalIgnoreCase) &&
         Enum.TryParse<Difficulty>(argument[13..], true, out var difficulty)) initialDifficulty = difficulty;
-    if (argument.StartsWith("--art-pack=", StringComparison.OrdinalIgnoreCase) &&
-        Enum.TryParse<VisualPackId>(argument[11..], true, out var visualPack))
-    {
-        initialVisualPack = visualPack;
-        artPackSpecified = true;
-    }
 }
 using var game = new Summing.Game1(
-    smokeRun ? 345 : smokePeriodic ? 620 : smokeMovementView ? 120 : smokeTitle || smokeVisualSelector ? 30 : 0,
-    smokeRun || smokePeriodic || smokeMovementView, smokeTitle, initialConfiguration, initialDifficulty,
-    initialVisualPack, smokeVisualSelector, !artPackSpecified, smokeMovementView);
+    smokeRun ? 345 : smokePeriodic ? 620 : smokeMovementView ? 120 : smokeTitle ? 30 : 0,
+    smokeRun || smokePeriodic || smokeMovementView, smokeTitle, initialConfiguration, initialDifficulty);
 game.Run();

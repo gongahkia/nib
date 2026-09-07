@@ -13,7 +13,6 @@ using Summing.Gameplay;
 using Summing.Generation;
 using Summing.Input;
 using Summing.Player;
-using Summing.Rendering;
 using Summing.World;
 
 namespace Summing.Telemetry;
@@ -42,8 +41,7 @@ public sealed class PlaytestRecorder : IDisposable
     private bool _disposed;
     private int _eventCount;
 
-    public PlaytestRecorder(GeneratedWorld generated, Difficulty difficulty, InputBindings bindings,
-        VisualSelectionSnapshot visualSelection, bool movementTestView)
+    public PlaytestRecorder(GeneratedWorld generated, Difficulty difficulty, InputBindings bindings)
     {
         var name = $"{DateTimeOffset.Now:yyyyMMdd-HHmmss-fff}-{generated.Configuration.Seed}";
         DirectoryPath = Path.Combine("playtests", name);
@@ -54,18 +52,17 @@ public sealed class PlaytestRecorder : IDisposable
         _frames = new StreamWriter(Path.Combine(DirectoryPath, "frames.csv"));
         _events = new StreamWriter(Path.Combine(DirectoryPath, "events.jsonl"));
         _screenshots = new StreamWriter(Path.Combine(DirectoryPath, "screenshots", "index.csv"));
-        _frames.WriteLine("frame,time_s,input_down,input_pressed,input_released,move_x,move_y,aim_x,aim_y,player_x,player_y,body_width,body_height,velocity_x,velocity_y,movement_state,visual_state,camera_x,camera_y,lookahead_x,lookahead_y,shake_x,shake_y,shake_strength,grounded,ceiling,left_wall,right_wall,left_climbable,right_climbable,collision_normals,wall_stamina,dash_charges,coyote_used,jump_buffer_used,health,stunned,bombs,ropes,wind,nearby_tiles,route_anchor,altitude_band");
+        _frames.WriteLine("frame,time_s,input_down,input_pressed,input_released,move_x,move_y,aim_x,aim_y,player_x,player_y,body_width,body_height,velocity_x,velocity_y,movement_state,visual_state,camera_x,camera_y,lookahead_x,lookahead_y,shake_x,shake_y,shake_strength,grounded,ceiling,left_wall,right_wall,left_climbable,right_climbable,collision_normals,wall_stamina,dash_charges,coyote_used,jump_buffer_used,health,stunned,bombs,ropes,rope_attached,rope_anchor_x,rope_anchor_y,wind,nearby_tiles,route_anchor,altitude_band");
         _screenshots.WriteLine("frame,time_s,file,event,phase");
         File.WriteAllText(Path.Combine(DirectoryPath, "metadata.json"), JsonSerializer.Serialize(new
         {
-            schemaVersion = 7,
+            schemaVersion = 8,
             startedAtUtc = DateTimeOffset.UtcNow,
             seed = generated.Configuration.Seed,
             generator = WorldGeneratorRegistry.Identifier(generated.Configuration.Variant),
             generated.Configuration,
             difficulty,
-            visualSelection,
-            movementTestViewAtStart = movementTestView,
+            renderMode = "sanitized-collision",
             historyId = generated.History.Id,
             epoch = generated.History.EpochName,
             generated.Diagnostics,
@@ -75,7 +72,7 @@ public sealed class PlaytestRecorder : IDisposable
             periodicScreenshotFrames = 600,
             eventScreenshotPhases = new[] { "event", "post-12-frames" },
             manualBookmark = "F8 on keyboard or right shoulder on gamepad",
-            notes = "positions are world pixels; tile size and full starting world are in world-start.json"
+            notes = "positions are world pixels; the render is always sanitized; tile size and full starting world are in world-start.json"
         }, _json));
         RequestScreenshot("session-start", true);
     }
@@ -87,7 +84,7 @@ public sealed class PlaytestRecorder : IDisposable
     public void BeginFrame(long frame) => _frame = frame;
 
     public void RecordFrame(long frame, InputManager input, PlayerController player, Camera2D camera, TileWorld world,
-        PlayerInventory inventory, GeneratedWorld generated)
+        PlayerInventory inventory, RopeSystem ropes, GeneratedWorld generated)
     {
         _frame = frame;
         var actions = string.Join('|', Enum.GetValues<InputAction>().Where(input.Down));
@@ -103,6 +100,7 @@ public sealed class PlaytestRecorder : IDisposable
         var routeAnchor = NearestRouteAnchor(generated, player.Position);
         var altitude = 1f - player.Position.Y / world.PixelHeight;
         var altitudeBand = altitude < 0.34f ? "lower" : altitude < 0.67f ? "middle" : "upper";
+        var ropeAnchor = ropes.AttachedRope?.AnchorTile;
         _frames.WriteLine(string.Join(',', frame, F(frame / 60f), Csv(actions), Csv(pressed), Csv(released), F(input.Move.X), F(input.Move.Y),
             F(input.Aim.X), F(input.Aim.Y), F(player.Position.X), F(player.Position.Y), F(player.Bounds.Width),
             F(player.Bounds.Height), F(player.Velocity.X),
@@ -111,7 +109,8 @@ public sealed class PlaytestRecorder : IDisposable
             F(camera.ShakeStrength), player.Grounded, player.TouchingCeiling, player.TouchingLeftWall,
             player.TouchingRightWall, player.LeftWallClimbable, player.RightWallClimbable, Csv(normals), F(player.WallStamina), player.DashCharges,
             player.UsedCoyoteThisFrame, player.UsedJumpBufferThisFrame, player.Health, player.Stunned, inventory.Bombs,
-            inventory.Ropes, F(generated.WindAt(player.Position.Y)), Csv(nearby), routeAnchor, altitudeBand));
+            inventory.Ropes, ropeAnchor.HasValue, ropeAnchor?.X ?? -1, ropeAnchor?.Y ?? -1,
+            F(generated.WindAt(player.Position.Y)), Csv(nearby), routeAnchor, altitudeBand));
         if (frame % 120 == 0) _frames.Flush();
         if (frame % 600 == 0) RequestScreenshot("periodic", false);
     }

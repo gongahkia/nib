@@ -1,7 +1,7 @@
 # Third-party notices
 
-Summing depends on MonoGame Framework DesktopGL and its transitive packages through NuGet. Their package licenses and notices remain authoritative in the restored package metadata. No third-party gameplay source was copied or adapted.
+Summing depends on MonoGame Framework DesktopGL and transitive NuGet packages; their package metadata contains the authoritative licenses and notices. No third-party gameplay source or art asset is copied into the runtime.
 
-The named game and art references in design documents were used only as high-level design vocabulary. No proprietary sprite, palette, faction, terminology, text, sound, or code from those works is distributed here.
+The named games and art references in design documents are high-level design vocabulary only. No proprietary sprite, pose sheet, palette, character, stage, faction, terminology, text, sound, or code from those works is distributed here.
 
-`assets/sprites/source/summing-concept-white.png` was generated for this project with OpenAI image generation from the exact prompt recorded in `docs/art/SPRITE-GENERATION.md`. Every runtime sheet is generated locally by the original Pillow drawing script and has no third-party image input.
+Downloaded art packs are retained only as ignored local ZIP archives for provenance. They are not extracted runtime assets, shipped content, or generative inputs. See `third_party/art/catalog.json` for the license audit and `docs/art/SPRITE-GENERATION.md` for the original future-art boundary.

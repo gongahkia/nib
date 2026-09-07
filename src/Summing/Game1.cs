@@ -27,9 +27,6 @@ public sealed class Game1 : Game
     private RenderTarget2D _scene = null!;
     private Texture2D _pixel = null!;
     private PixelFont _font = null!;
-    private SpriteLibrary _sprites = null!;
-    private VisualPackManager _visualPacks = null!;
-    private AtmosphereRenderer _atmosphere = null!;
     private InputManager _input = null!;
     private TileWorld _world = null!;
     private GeneratedWorld _generated = null!;
@@ -53,42 +50,25 @@ public sealed class Game1 : Game
     private readonly long _autoExitFrame;
     private readonly bool _autoStart;
     private readonly bool _captureTitleSmoke;
-    private readonly bool _captureVisualSelectorSmoke;
-    private bool _visualSelectorSmokeCaptured;
-    private readonly bool _loadSavedVisualSelection;
     private readonly bool _syntheticSmoke;
-    private bool _movementTestView;
     private readonly BindingMenu _bindingMenu = new();
-    private readonly VisualSelectionScreen _visualSelector = new();
     private readonly WorldGenerationConfig _menuConfig;
     private GamePhase _phase = GamePhase.Title;
     private float _phaseTimer;
     private bool _typingTitleSeed;
     private string _titleSeedText = "";
-    private int _appearanceIndex;
-    private VisualPackId _selectedVisualPack;
     private float _smoothedFps = 60f;
-    private static readonly Color[] AppearanceTints = [Color.White, new Color(205, 232, 222), new Color(238, 191, 168)];
-    private static readonly string[] AppearanceNames = ["BONE WRAPS", "SALT WRAPS", "OXIDE WRAPS"];
     private static readonly Keys[] TitlePresetKeys = [Keys.D1, Keys.D2, Keys.D3];
 
     public Game1(long autoExitFrame = 0, bool autoStart = true, bool captureTitleSmoke = false,
-        WorldGenerationConfig? initialConfiguration = null, Difficulty initialDifficulty = Difficulty.Easy,
-        VisualPackId initialVisualPack = VisualPackId.GandalfOverworld, bool captureVisualSelectorSmoke = false,
-        bool loadSavedVisualSelection = true, bool initialMovementTestView = false)
+        WorldGenerationConfig? initialConfiguration = null, Difficulty initialDifficulty = Difficulty.Easy)
     {
         _autoExitFrame = autoExitFrame;
         _autoStart = autoStart;
         _captureTitleSmoke = captureTitleSmoke;
-        _captureVisualSelectorSmoke = captureVisualSelectorSmoke;
-        _loadSavedVisualSelection = loadSavedVisualSelection;
-        _movementTestView = initialMovementTestView;
         _syntheticSmoke = autoExitFrame > 0 && autoStart;
         _menuConfig = initialConfiguration == null ? new WorldGenerationConfig() : CopyConfiguration(initialConfiguration);
         _difficulty = initialDifficulty;
-        _selectedVisualPack = VisualPackFiles.IsAvailable(initialVisualPack)
-            ? initialVisualPack
-            : VisualPackId.SummingOriginal;
         _graphics = new GraphicsDeviceManager(this)
         {
             PreferredBackBufferWidth = GameConstants.WindowWidth,
@@ -108,7 +88,6 @@ public sealed class Game1 : Game
         _input = new InputManager(InputBindings.LoadOrCreate("saves/bindings.json"));
         _archive = new ArchiveStore("archive/archive.json");
         LoadGeneratedWorld(ValidatedWorldGenerator.Generate(_menuConfig), false);
-        if (_captureVisualSelectorSmoke) _visualSelector.Open();
         if (_autoExitFrame > 0 && _autoStart) StartRun(CopyConfiguration(_menuConfig));
         base.Initialize();
     }
@@ -121,44 +100,23 @@ public sealed class Game1 : Game
         _pixel = new Texture2D(GraphicsDevice, 1, 1);
         _pixel.SetData([Color.White]);
         _font = new PixelFont(_pixel);
-        _visualPacks = new VisualPackManager(GraphicsDevice, _selectedVisualPack,
-            loadSavedSelection: _loadSavedVisualSelection && _autoExitFrame == 0,
-            persistSelection: _autoExitFrame == 0);
-        _tileRenderer = new TileWorldRenderer(_pixel, _visualPacks);
-        _sprites = new SpriteLibrary(GraphicsDevice, _visualPacks);
-        _atmosphere = new AtmosphereRenderer(_pixel);
+        _tileRenderer = new TileWorldRenderer(_pixel);
     }
 
     protected override void Update(GameTime gameTime)
     {
-        var playerScreen = _movementTestView
-            ? _camera.WorldToStableScreen(_player.Bounds.Center)
-            : _camera.WorldToScreen(_player.Bounds.Center);
+        var playerScreen = _camera.WorldToStableScreen(_player.Bounds.Center);
         _input.Update(playerScreen, new Vector2(GraphicsDevice.Viewport.Width / (float)GameConstants.VirtualWidth,
             GraphicsDevice.Viewport.Height / (float)GameConstants.VirtualHeight));
         _frame++;
         _telemetry?.BeginFrame(_frame);
         if (_syntheticSmoke) ApplySyntheticSmokeInput();
-        if (_captureVisualSelectorSmoke) ApplySyntheticVisualSelectorInput();
-        if (_autoExitFrame > 0 && _frame >= _autoExitFrame && _phase is GamePhase.Title or GamePhase.Binding &&
-            (!_captureVisualSelectorSmoke || _visualSelectorSmokeCaptured)) Exit();
+        if (_autoExitFrame > 0 && _frame >= _autoExitFrame && _phase is GamePhase.Title or GamePhase.Binding) Exit();
         _smoothedFps = MathHelper.Lerp(_smoothedFps,
             (float)(1.0 / Math.Max(0.0001, gameTime.ElapsedGameTime.TotalSeconds)), 0.03f);
         if (_phase == GamePhase.Binding)
         {
             if (_bindingMenu.Update(_input, "saves/bindings.json")) _phase = GamePhase.Title;
-            base.Update(gameTime);
-            return;
-        }
-        if (_visualSelector.Active)
-        {
-            if (_visualSelector.Update(_input, _visualPacks, out var change)) RecordVisualSelectionChange(change);
-            base.Update(gameTime);
-            return;
-        }
-        if (_input.KeyPressed(Keys.K) || _phase == GamePhase.Title && _input.ButtonPressed(Buttons.LeftShoulder))
-        {
-            _visualSelector.Open();
             base.Update(gameTime);
             return;
         }
@@ -187,12 +145,6 @@ public sealed class Game1 : Game
             if (_autoExitFrame > 0 && _frame >= _autoExitFrame) Exit();
             base.Update(gameTime);
             return;
-        }
-
-        if (_input.KeyPressed(Keys.M))
-        {
-            _movementTestView = !_movementTestView;
-            _telemetry?.RecordEvent("movement-test-view", new { enabled = _movementTestView }, false);
         }
 
         _editor.Update(_input, _camera, GraphicsDevice.Viewport, _generated, _difficulty, RegenerateWorld,
@@ -234,7 +186,7 @@ public sealed class Game1 : Game
                 routeAnchor = NearestRouteAnchorIndex(_player.Position),
                 state = _player.VisualState
             });
-        _telemetry?.RecordFrame(_frame, _input, _player, _camera, _world, _inventory, _generated);
+        _telemetry?.RecordFrame(_frame, _input, _player, _camera, _world, _inventory, _ropeSystem, _generated);
         if (!_player.Alive)
         {
             _phase = GamePhase.Dead;
@@ -265,26 +217,20 @@ public sealed class Game1 : Game
         {
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
             DrawTitle();
-            _visualSelector.Draw(_spriteBatch, _pixel, _font, _sprites, _visualPacks, _frame,
-                AppearanceTints[_appearanceIndex]);
             _spriteBatch.End();
         }
         else
         {
-            _spriteBatch.Begin(transformMatrix: _movementTestView ? _camera.StableView : _camera.View,
+            _spriteBatch.Begin(transformMatrix: _camera.StableView,
                 samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
-            if (_movementTestView) DrawMovementTestWorld();
-            else DrawStandardWorld();
+            DrawSanitizedWorld();
             _editor.DrawWorld(_spriteBatch, _pixel);
             _spriteBatch.End();
 
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-            if (_movementTestView) DrawMovementTestHud();
-            else DrawHud();
-            _editor.DrawOverlay(_spriteBatch, _pixel, _font, _generated, _difficulty, _visualPacks.CurrentName);
+            DrawSanitizedHud();
+            _editor.DrawOverlay(_spriteBatch, _pixel, _font, _generated, _difficulty);
             DrawPhaseOverlay();
-            _visualSelector.Draw(_spriteBatch, _pixel, _font, _sprites, _visualPacks, _frame,
-                AppearanceTints[_appearanceIndex]);
             _spriteBatch.End();
         }
         GraphicsDevice.SetRenderTarget(null);
@@ -295,14 +241,6 @@ public sealed class Game1 : Game
             using var stream = File.Create("artifacts/title-smoke.png");
             _scene.SaveAsPng(stream, _scene.Width, _scene.Height);
         }
-        if (_captureVisualSelectorSmoke && _frame >= 22 && !_visualSelectorSmokeCaptured)
-        {
-            Directory.CreateDirectory("artifacts");
-            using var stream = File.Create("artifacts/visual-selector-smoke.png");
-            _scene.SaveAsPng(stream, _scene.Width, _scene.Height);
-            _visualSelectorSmokeCaptured = true;
-        }
-
         GraphicsDevice.Clear(Color.Black);
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
         _spriteBatch.Draw(_scene, GraphicsDevice.Viewport.Bounds, Color.White);
@@ -313,11 +251,6 @@ public sealed class Game1 : Game
     private void DrawTitle()
     {
         _spriteBatch.Draw(_pixel, new Rectangle(0, 0, 640, 360), GamePalette.DeepSky);
-        for (var x = 0; x < 640; x += 22)
-        {
-            var height = 35 + Math.Abs((x * 13) % 95);
-            _spriteBatch.Draw(_pixel, new Rectangle(x, 360 - height, 17, height), GamePalette.FarStone);
-        }
         _spriteBatch.Draw(_pixel, new Rectangle(0, 280, 640, 80), new Color(10, 13, 20, 210));
         _font.Draw(_spriteBatch, "SUMMING", new Vector2(182, 40), GamePalette.Bone, 6);
         _font.Draw(_spriteBatch, "THE LORN REACH", new Vector2(244, 79), GamePalette.SacredGold);
@@ -325,13 +258,11 @@ public sealed class Game1 : Game
         _font.Draw(_spriteBatch, $"DIFFICULTY  {_difficulty}", new Vector2(210, 148), _difficulty == Difficulty.Easy ? GamePalette.SaltCyan : GamePalette.Danger, 2);
         _font.Draw(_spriteBatch, $"GENERATOR   {_menuConfig.Variant}", new Vector2(210, 171), Color.White, 2);
         _font.Draw(_spriteBatch, $"SEED        {_menuConfig.Seed}", new Vector2(210, 194), GamePalette.Bone, 2);
-        _font.Draw(_spriteBatch, $"CLIMBER     {AppearanceNames[_appearanceIndex]}", new Vector2(210, 217), AppearanceTints[_appearanceIndex], 2);
-        _font.Draw(_spriteBatch, $"PLAYER ART  {_visualPacks.PlayerName}", new Vector2(210, 240), GamePalette.SaltCyan);
-        _font.Draw(_spriteBatch, $"WORLD ART   {_visualPacks.EnvironmentName}", new Vector2(210, 251), GamePalette.SaltCyan);
-        _font.Draw(_spriteBatch, $"PRESET {DevelopmentSeedPresets.Label(_menuConfig)}", new Vector2(210, 263), GamePalette.SaltCyan);
+        _font.Draw(_spriteBatch, "RENDER      SANITIZED COLLISION", new Vector2(210, 217), Color.White, 2);
+        _font.Draw(_spriteBatch, $"PRESET {DevelopmentSeedPresets.Label(_menuConfig)}", new Vector2(210, 251), GamePalette.SaltCyan);
         _font.Draw(_spriteBatch, "UP DOWN DIFFICULTY   LEFT RIGHT GENERATOR", new Vector2(187, 276), GamePalette.UiMuted);
-        _font.Draw(_spriteBatch, "T SEED  R OR LS RANDOM  C OR Y CLIMBER", new Vector2(190, 287), GamePalette.UiMuted);
-        _font.Draw(_spriteBatch, "1 2 3 OR RB PRESET   K OR LB VISUAL SELECTOR", new Vector2(174, 298), GamePalette.UiMuted);
+        _font.Draw(_spriteBatch, "T SEED  R OR LS RANDOM", new Vector2(224, 287), GamePalette.UiMuted);
+        _font.Draw(_spriteBatch, "1 2 3 OR RB PRESET", new Vector2(236, 298), GamePalette.UiMuted);
         _font.Draw(_spriteBatch, "ENTER OR A TO ASCEND", new Vector2(224, 313), GamePalette.SacredGold, 2);
         _font.Draw(_spriteBatch, "B BINDINGS  F1 WORLD EDITOR DURING A RUN", new Vector2(195, 341), new Color(105, 116, 125));
         if (_typingTitleSeed)
@@ -343,37 +274,9 @@ public sealed class Game1 : Game
         }
     }
 
-    private void DrawSummitMarker()
+    private void DrawSanitizedWorld()
     {
-        var bounds = _generated.SummitBounds;
-        var center = bounds.Center;
-        _spriteBatch.Draw(_pixel, new Rectangle(center.X - 18, bounds.Bottom - 62, 36, 62), new Color(48, 45, 55));
-        _spriteBatch.Draw(_pixel, new Rectangle(center.X - 4, bounds.Bottom - 92, 8, 34), GamePalette.SacredGold);
-        _spriteBatch.Draw(_pixel, new Rectangle(center.X - 12, bounds.Bottom - 88, 24, 3), GamePalette.SaltCyan);
-        _spriteBatch.Draw(_pixel, new Rectangle(center.X - 20, bounds.Bottom - 66, 40, 4), GamePalette.Bone);
-    }
-
-    private void DrawStandardWorld()
-    {
-        DrawBackdrop();
-        _atmosphere.DrawWorldDither(_spriteBatch, _camera.Position, _frame, Camera2D.WorldZoom);
         _tileRenderer.Draw(_spriteBatch, _world, _camera.Position, Camera2D.WorldZoom);
-        _terrainBreakEffects.Draw(_spriteBatch, _pixel);
-        foreach (var feature in _generated.Features)
-            if (feature.Kind != WorldFeatureKind.RelicCandidate) _sprites.DrawFeature(_spriteBatch, feature);
-        DrawSummitMarker();
-        _brittleSystem.Draw(_spriteBatch, _sprites);
-        _relicSystem.Draw(_spriteBatch, _sprites);
-        _ropeSystem.Draw(_spriteBatch, _pixel);
-        _bombSystem.Draw(_spriteBatch, _pixel);
-        _burrowerSystem.Draw(_spriteBatch, _sprites);
-        _player.Draw(_spriteBatch, _sprites, _frame, AppearanceTints[_appearanceIndex]);
-        _digTool.Draw(_spriteBatch, _pixel, _player);
-    }
-
-    private void DrawMovementTestWorld()
-    {
-        _tileRenderer.DrawSanitized(_spriteBatch, _world, _camera.Position, Camera2D.WorldZoom);
         var summit = _generated.SummitBounds;
         _spriteBatch.Draw(_pixel, new Rectangle(summit.Center.X - 2, summit.Top, 4, summit.Height),
             new Color(170, 175, 183));
@@ -416,31 +319,6 @@ public sealed class Game1 : Game
         }
     }
 
-    private void DrawBackdrop()
-    {
-        _spriteBatch.Draw(_pixel, new Rectangle(-100, -100, _world.PixelWidth + 200, _world.PixelHeight + 200), GamePalette.DeepSky);
-        DrawDistantRidge((int)_camera.Position.Y + 105, 92, new Color(20, 24, 37), 31);
-        DrawDistantRidge((int)_camera.Position.Y + 145, 68, GamePalette.FarStone, 53);
-        for (var x = -80; x < _world.PixelWidth + 80; x += 32)
-        {
-            var height = 30 + Math.Abs((x * 17) % 90);
-            _spriteBatch.Draw(_pixel, new Rectangle(x, _world.PixelHeight - height - 30, 25, height), GamePalette.FarStone);
-        }
-    }
-
-    private void DrawDistantRidge(int horizon, int step, Color color, int phase)
-    {
-        var viewLeft = (int)_camera.Position.X - (int)(_camera.VisibleWorldWidth * 0.5f) - step;
-        var first = (int)MathF.Floor(viewLeft / (float)step) * step;
-        for (var x = first; x < viewLeft + _camera.VisibleWorldWidth + step * 2; x += step)
-        {
-            var height = 34 + Math.Abs((x / step * 37 + phase) % 92);
-            var width = step - 5;
-            _spriteBatch.Draw(_pixel, new Rectangle(x, horizon - height, width, height + 240), color);
-            _spriteBatch.Draw(_pixel, new Rectangle(x, horizon - height, width, 2), color == GamePalette.FarStone ? GamePalette.Stone : GamePalette.FarStone);
-        }
-    }
-
     private void UpdateTitle()
     {
         if (_typingTitleSeed)
@@ -472,8 +350,6 @@ public sealed class Game1 : Game
             DevelopmentSeedPresets.Apply(_menuConfig, DevelopmentSeedPresets.Next(_menuConfig));
         if (_input.KeyPressed(Keys.R) || _input.Pressed(InputAction.Rope))
             _menuConfig.Seed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        if (_input.KeyPressed(Keys.C) || _input.Pressed(InputAction.Dig))
-            _appearanceIndex = (_appearanceIndex + 1) % AppearanceTints.Length;
         if (_input.KeyPressed(Keys.B) || _input.Pressed(InputAction.Slide)) { _phase = GamePhase.Binding; return; }
         if (_input.KeyPressed(Keys.Escape)) { Exit(); return; }
         if (_input.KeyPressed(Keys.Enter) || _input.Pressed(InputAction.Jump)) StartRun(CopyConfiguration(_menuConfig));
@@ -493,56 +369,7 @@ public sealed class Game1 : Game
         if (_frame == 82) actions.Add(InputAction.Dig);
         if (_frame == 108) actions.Add(InputAction.Slide);
         if (_frame == 126) actions.Add(InputAction.Rope);
-        if (_frame == 180)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
-        if (_frame == 190)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
-        if (_frame == 195)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.PlayerPack, 1));
-        if (_frame == 200)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
-        if (_frame == 205)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.SkinSheet, 1));
-        if (_frame == 210)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
-        if (_frame == 215)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.TorsoSheet, 1));
-        if (_frame == 220)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
-        if (_frame == 225)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.PlayerPack, 1));
-        if (_frame == 230)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
-        if (_frame == 240)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.PlayerPack, 1));
-        if (_frame == 245)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.PlayerPack, 1));
-        if (_frame == 250)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
-        if (_frame == 262)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.TerrainSheet, 1));
-        if (_frame == 274)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.TerrainBand, 1));
-        if (_frame == 286)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.TerrainBand, 1));
-        if (_frame == 298)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
-        if (_frame == 310)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.TerrainBand, 1));
-        if (_frame == 322)
-            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.TerrainBand, 1));
         _input.SetSyntheticState(move, Vector2.UnitX, actions.ToArray());
-    }
-
-    private void ApplySyntheticVisualSelectorInput()
-    {
-        var actions = _frame switch
-        {
-            2 or 6 or 10 or 20 => new[] { InputAction.Right },
-            4 or 8 or 12 or 14 or 16 or 18 => new[] { InputAction.Down },
-            _ => []
-        };
-        _input.SetSyntheticState(Vector2.Zero, Vector2.UnitX, actions);
     }
 
     private void StartRun(WorldGenerationConfig configuration)
@@ -621,6 +448,10 @@ public sealed class Game1 : Game
             });
         _ropeSystem.Detached += rope => _telemetry?.RecordEvent("rope-detached",
             new { rope.AnchorTile, reason = "anchor-destroyed" }, false);
+        _ropeSystem.Grabbed += rope => _telemetry?.RecordEvent("rope-grabbed",
+            new { rope.AnchorTile, _player.Position, _player.Velocity }, false);
+        _ropeSystem.Jumped += (rope, velocity) => _telemetry?.RecordEvent("rope-jump",
+            new { sourceAnchor = rope.AnchorTile, _player.Position, velocity, facing = _player.Facing });
         _ropeSystem.PlacementRejected += reason => _telemetry?.RecordEvent("rope-placement-rejected",
             new { reason, _player.Position, _input.Move, _input.Aim, facing = _player.Facing }, false);
         _player.StatusEvent += status => _telemetry?.RecordEvent(status.StartsWith("death", StringComparison.Ordinal)
@@ -636,11 +467,7 @@ public sealed class Game1 : Game
         _camera.Snap(new Vector2(generated.Spawn.X, generated.Spawn.Y - 40f));
         if (startTelemetry)
         {
-            var visualSelection = _visualPacks == null
-                ? VisualPackManager.StartupSelection(_selectedVisualPack)
-                : _visualPacks.Selection;
-            _telemetry = new PlaytestRecorder(generated, _difficulty, _input.Bindings, visualSelection,
-                _movementTestView);
+            _telemetry = new PlaytestRecorder(generated, _difficulty, _input.Bindings);
             SaveWorld(Path.Combine(_telemetry.DirectoryPath, "world-start.json"));
         }
     }
@@ -652,16 +479,6 @@ public sealed class Game1 : Game
     {
         _difficulty = _difficulty == Difficulty.Easy ? Difficulty.Hard : Difficulty.Easy;
         RegenerateWorld(configuration);
-    }
-
-    private void RecordVisualSelectionChange(VisualSelectionChange change)
-    {
-        if (!change.Changed || _telemetry is not { IsFinished: false }) return;
-        _telemetry.RecordEvent("visual-selection-changed", new
-        {
-            option = change.Option,
-            selection = _visualPacks.Selection
-        });
     }
 
     private void SaveEditorWorld() => SaveWorld("saves/editor-world.json");
@@ -699,8 +516,6 @@ public sealed class Game1 : Game
 
     protected override void UnloadContent()
     {
-        _sprites.Dispose();
-        _visualPacks.Dispose();
         _scene.Dispose();
         _pixel.Dispose();
         _spriteBatch.Dispose();
@@ -713,35 +528,7 @@ public sealed class Game1 : Game
         base.OnExiting(sender, args);
     }
 
-    private void DrawHud()
-    {
-        _spriteBatch.Draw(_pixel, new Rectangle(7, 7, 310, 51), new Color(6, 8, 13, 220));
-        _font.Draw(_spriteBatch, $"STATE {Format(_player.VisualState.ToString())}", new Vector2(12, 12), new Color(226, 207, 158));
-        _font.Draw(_spriteBatch, $"VEL {(int)_player.Velocity.X},{(int)_player.Velocity.Y}  DASH {_player.DashCharges}", new Vector2(12, 21), new Color(144, 158, 166));
-        _font.Draw(_spriteBatch, $"WALL STAMINA {(int)(_player.WallStamina * 100f / PlayerController.WallStaminaMaximum)}%", new Vector2(12, 30), new Color(144, 158, 166));
-        var target = _world.GetTile(_digTool.TargetTile.X, _digTool.TargetTile.Y);
-        var targetName = target.Solid ? World.Materials.MaterialCatalog.Get(target.Material).Name : "air";
-        _font.Draw(_spriteBatch, $"TOOL {targetName}", new Vector2(12, 39), new Color(169, 124, 94));
-        _font.Draw(_spriteBatch, $"HEALTH {_player.Health}/{_player.MaximumHealth}  BOMB {_inventory.Bombs}  ROPE {_inventory.Ropes}",
-            new Vector2(12, 48), new Color(205, 111, 92));
-        _font.Draw(_spriteBatch, $"SEED {_generated.Configuration.Seed}  {Format(_generated.Configuration.Variant.ToString())}",
-            new Vector2(350, 12), GamePalette.UiMuted);
-        _font.Draw(_spriteBatch, $"ARCHIVE {_archive.Discoveries.Count}", new Vector2(520, 21), GamePalette.SacredGold);
-        _font.Draw(_spriteBatch, $"VALID ROUTE {_generated.Diagnostics.Traversability.CheckedTransitions}  REJECTED {_generated.Diagnostics.RejectedSeeds.Count}",
-            new Vector2(350, 30), _generated.Diagnostics.Traversability.Solvable ? GamePalette.SaltCyan : GamePalette.Danger);
-        var altitude = Math.Clamp((int)((1f - _player.Position.Y / _world.PixelHeight) * 100f), 0, 100);
-        _font.Draw(_spriteBatch, $"ALTITUDE {altitude}%  FPS {(int)_smoothedFps}", new Vector2(480, 39), GamePalette.UiMuted);
-        if (_relicSystem.DiscoveryVisible && _relicSystem.LastDiscovery != null)
-        {
-            _spriteBatch.Draw(_pixel, new Rectangle(125, 300, 390, 24), new Color(7, 10, 15, 230));
-            _font.Draw(_spriteBatch, _relicSystem.LastDiscovery, new Vector2(141, 309), GamePalette.SacredGold);
-        }
-        if (_ropeSystem.NoticeVisible)
-            _font.Draw(_spriteBatch, _ropeSystem.Notice, new Vector2(12, 328), GamePalette.SacredGold);
-        _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  R ROPE  Q BOMB/BOOST  K VISUALS  M TEST", new Vector2(12, 342), new Color(131, 132, 139));
-    }
-
-    private void DrawMovementTestHud()
+    private void DrawSanitizedHud()
     {
         var muted = new Color(166, 170, 177);
         _spriteBatch.Draw(_pixel, new Rectangle(7, 7, 322, 48), new Color(8, 9, 11, 235));
@@ -752,7 +539,7 @@ public sealed class Game1 : Game
         _font.Draw(_spriteBatch,
             $"VEL {(int)_player.Velocity.X},{(int)_player.Velocity.Y}  GROUND {_player.Grounded}  DASH {_player.DashCharges}",
             new Vector2(12, 39), muted);
-        _font.Draw(_spriteBatch, "M FULL VIEW   UNIFORM COLLISION TILES   WHITE PLAYER BODY",
+        _font.Draw(_spriteBatch, "UNIFORM COLLISION TILES   WHITE PLAYER BODY   ROPE JUMP SPACE PLUS LEFT OR RIGHT",
             new Vector2(12, 342), Color.White);
     }
 
