@@ -490,7 +490,9 @@ public sealed class Game1 : Game
         _bombSystem.Placed += bomb => _telemetry?.RecordEvent("bomb-use",
             new { bomb.Position, bomb.Velocity, bomb.Fuse }, false);
         _ropeSystem.Placed += rope => _telemetry?.RecordEvent("rope-use",
-            new { rope.X, rope.Top, rope.Bottom });
+            new { rope.X, rope.Top, rope.Bottom, rope.LedgeDirection });
+        _ropeSystem.PlacementRejected += reason => _telemetry?.RecordEvent("rope-placement-rejected",
+            new { reason, _player.Position, facing = _player.Facing }, false);
         _player.StatusEvent += status => _telemetry?.RecordEvent(status.StartsWith("death", StringComparison.Ordinal)
             ? "death" : status.StartsWith("fall", StringComparison.Ordinal) ? "large-fall" : "damage", new { status, _player.Health });
         _player.Dashed += () => _telemetry?.RecordEvent("dash",
@@ -605,6 +607,8 @@ public sealed class Game1 : Game
         }
         if (_visualPackNoticeTimer > 0f)
             _font.Draw(_spriteBatch, _visualPackNotice, new Vector2(12, 328), GamePalette.SaltCyan);
+        else if (_ropeSystem.NoticeVisible)
+            _font.Draw(_spriteBatch, _ropeSystem.Notice, new Vector2(12, 328), GamePalette.SacredGold);
         _font.Draw(_spriteBatch, "WASD MOVE  SPACE JUMP  SHIFT DASH  LMB DIG  R ROPE  Q BOMB  K ART", new Vector2(12, 342), new Color(131, 132, 139));
     }
 

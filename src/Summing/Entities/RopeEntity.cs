@@ -5,16 +5,18 @@ namespace Summing.Entities;
 
 public sealed class RopeEntity
 {
-    public RopeEntity(float x, float top, float bottom)
+    public RopeEntity(float x, float top, float bottom, int ledgeDirection)
     {
         X = x;
         Top = top;
         Bottom = bottom;
+        LedgeDirection = ledgeDirection;
     }
 
     public float X { get; }
     public float Top { get; }
     public float Bottom { get; }
+    public int LedgeDirection { get; }
 
     public void Draw(SpriteBatch batch, Texture2D pixel)
     {
