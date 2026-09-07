@@ -19,3 +19,7 @@ playtests/
 saves/
 screenshots/
 exports/
+
+# third-party art with redistribution restrictions or unresolved provenance
+third_party/art/source-archives/
+third_party/art/local-only/

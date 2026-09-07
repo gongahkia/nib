@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "reviewedOn": "2026-09-07",
+  "runtimeIntegrated": false,
+  "packages": [
+    {
+      "id": "gandalfhardcore-character",
+      "archive": "GandalfHardcore FREE Character Asset Pack.zip",
+      "archiveSha256": "aa83e0ec57fe96559d2c0f8ad9c2c9800f8ace2ac7479ec7211527de79be48c8",
+      "archiveBytes": 440095,
+      "creator": "GandalfHardcore",
+      "title": "FREE - 2D Pixel Art Male and Female Character - Sidescroller",
+      "source": "https://gandalfhardcore.itch.io/2d-pixel-art-male-and-female-character",
+      "licenseEvidence": "bundled READ ME.txt and creator page",
+      "licenseStatus": "game-use-permitted-raw-redistribution-prohibited",
+      "storage": "local-only",
+      "extractedPath": "third_party/art/local-only/gandalfhardcore-character/",
+      "designStatus": "reject-as-summing-player",
+      "notes": [
+        "80x64 animation cells and a much taller figure do not fit the 24x24 runtime footprint cleanly",
+        "the supplied state set does not cover Summing's traversal states",
+        "may be inspected for manual animation timing only",
+        "must not be used for AI training or as image-generation input"
+      ]
+    },
+    {
+      "id": "gandalfhardcore-platformer",
+      "archive": "GandalfHardcore FREE Platformer Assets.zip",
+      "archiveSha256": "2024192d8020802ec17071959c05d3347e7b7e9ae7d67bf42ca314941fcbbdbc",
+      "archiveBytes": 969887,
+      "creator": "GandalfHardcore",
+      "title": "FREE - Pixel Art Sidescroller Asset Pack 32x32 Overworld",
+      "source": "https://gandalfhardcore.itch.io/free-pixel-art-sidescroller-asset-pack-32x32-overworld",
+      "licenseEvidence": "bundled READ ME.txt and creator page",
+      "licenseStatus": "game-use-permitted-raw-redistribution-prohibited",
+      "storage": "local-only",
+      "extractedPath": "third_party/art/local-only/gandalfhardcore-platformer/",
+      "designStatus": "selective-reference-or-prop-source",
+      "notes": [
+        "32x32 tiles do not map cleanly to Summing's 24x24 grid",
+        "forest, seasonal, house, and fantasy-town assets conflict with the badlands identity",
+        "rock piles, tomb markers, reeds, statue, furnace, and small machinery silhouettes may be adapted selectively",
+        "must not be used for AI training or as image-generation input"
+      ]
+    },
+    {
+      "id": "gandalfhardcore-hp-bar",
+      "archive": "GandalfHardcore Hp bar.zip",
+      "archiveSha256": "4af675472fa29dc794b9f213519fcb3a834c4f24e4851b6a8b99caed3af3f087",
+      "archiveBytes": 10607,
+      "creator": "GandalfHardcore",
+      "title": "FREE Pixel Art HP Bar",
+      "source": "https://gandalfhardcore.itch.io/free-pixel-art-sidescroller-asset-pack-32x32-overworld",
+      "licenseEvidence": "bundled READ ME.txt and creator page",
+      "licenseStatus": "game-use-permitted-raw-redistribution-prohibited",
+      "storage": "local-only",
+      "extractedPath": "third_party/art/local-only/gandalfhardcore-hp-bar/",
+      "designStatus": "reject-for-current-slice",
+      "notes": [
+        "ornate continuous bars conflict with Summing's discrete-heart health model and restrained UI",
+        "must not be used for AI training or as image-generation input"
+      ]
+    },
+    {
+      "id": "pixel-fantasy-caves",
+      "archive": "PixelFantasy_Caves_1.0.zip",
+      "archiveSha256": "3cec94280d769f1f1707ca7e4662bcc6167e4a0f605c6555449b6534fa14ff48",
+      "archiveBytes": 1913874,
+      "creator": "Szadi art.",
+      "title": "Pixel Fantasy Caves",
+      "source": "https://szadiart.itch.io/pixel-fantasy-caves",
+      "licenseEvidence": "creator page permits personal and commercial use; credit is optional",
+      "licenseStatus": "game-use-permitted-raw-redistribution-not-granted",
+      "storage": "local-only",
+      "extractedPath": "third_party/art/local-only/pixel-fantasy-caves/",
+      "designStatus": "reject-as-primary-terrain-selective-reference",
+      "notes": [
+        "16x16 authored grid requires non-integer scaling to the 24x24 terrain grid",
+        "the pack is strongly cave-oriented and too detailed to define the open-air badlands",
+        "isolated rock silhouettes, props, or parallax techniques may be adapted manually"
+      ]
+    },
+    {
+      "id": "adve",
+      "archive": "adve.zip",
+      "archiveSha256": "682514d1ed7e7f07135f7aad450d174008d8952ab0bbcd1806d52b03a318ea00",
+      "archiveBytes": 56152,
+      "creator": "egordorichev",
+      "title": "Adve",
+      "source": "https://egordorichev.itch.io/adve",
+      "licenseEvidence": "creator page explicitly declares CC0 1.0",
+      "licenseStatus": "cc0-1.0",
+      "storage": "tracked",
+      "extractedPath": "third_party/art/cc0/adve/",
+      "designStatus": "approved-reference-and-selective-source",
+      "notes": [
+        "8x8 tiles scale exactly 3x to Summing's 24x24 grid",
+        "the cave-room composition should not replace the open-air badlands generator",
+        "useful for compact ladders, chains, edge readability, and limited-palette interaction cues"
+      ]
+    },
+    {
+      "id": "monochrome-caves",
+      "archive": "monochrome-caves.zip",
+      "archiveSha256": "7316a9842093608dd2bae4f328f838b8b575b5a7e0186f962c9547416e438b35",
+      "archiveBytes": 4453,
+      "creator": "Adam Saltsman",
+      "title": "Monochrome Caves",
+      "source": "https://adamatomic.itch.io/mc-caves",
+      "licenseEvidence": "creator page explicitly dedicates the assets to the public domain",
+      "licenseStatus": "public-domain",
+      "storage": "tracked",
+      "extractedPath": "third_party/art/cc0/monochrome-caves/",
+      "designStatus": "approved-reference-and-selective-source",
+      "notes": [
+        "strong source for silhouette economy, readable edge vocabulary, and sparse detail",
+        "direct one-bit foreground use would hide Summing's material distinctions",
+        "best used as structural reference or recolored background and ruin fragments"
+      ]
+    },
+    {
+      "id": "stone-ruins-candidate",
+      "archive": "ruins.zip",
+      "archiveSha256": "80d35d24a05a1fe7fc24354a0e1ffb92032db0124e73d427dc9ad138a2c2b392",
+      "archiveBytes": 22594,
+      "creator": "unverified; likely NicoPardo",
+      "title": "unverified; visually resembles STONE RUINS",
+      "possibleSource": "https://nicopardo.itch.io/stone-ruins",
+      "licenseEvidence": "none in archive; possible creator page permits personal and commercial use",
+      "licenseStatus": "provenance-pending",
+      "storage": "local-only",
+      "extractedPath": "third_party/art/local-only/stone-ruins-provenance-pending/",
+      "designStatus": "do-not-use-until-provenance-confirmed",
+      "notes": [
+        "the received ZIP name and contents differ from the official Stone Ruins RAR listing",
+        "the restrained ruin palette and fragmented masonry are a strong tonal fit if provenance is confirmed",
+        "raw redistribution permission is not established"
+      ]
+    }
+  ]
+}
