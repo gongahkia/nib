@@ -98,7 +98,16 @@ public static class WorldSerializer
         index = 0;
         foreach (var rope in ropes.Ropes)
             entities.Add(new EntitySnapshot($"rope-{index++}", "placed-rope", rope.X, rope.Top, "placed",
-                new() { ["bottom"] = F(rope.Bottom), ["ledgeDirection"] = rope.LedgeDirection.ToString() }));
+                new()
+                {
+                    ["bottom"] = F(rope.Bottom),
+                    ["climbTop"] = F(rope.ClimbTop),
+                    ["exitX"] = F(rope.ExitX),
+                    ["ledgeDirection"] = rope.LedgeDirection.ToString(),
+                    ["anchorTileX"] = rope.AnchorTile.X.ToString(),
+                    ["anchorTileY"] = rope.AnchorTile.Y.ToString(),
+                    ["anchorKind"] = rope.IsOverhangAnchor ? "overhang" : "ledge"
+                }));
         index = 0;
         foreach (var bomb in bombs.Bombs)
             entities.Add(new EntitySnapshot($"bomb-{index++}", "bomb", bomb.Position.X, bomb.Position.Y, "fuse",

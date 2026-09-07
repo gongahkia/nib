@@ -28,7 +28,7 @@ public static class HeadlessVerification
         VerifyBrittleAndArchive();
         VerifyInputBindingPersistence();
         VerifyImpactFeedback();
-        Console.WriteLine("systems=ok movement=one-tile-jump-dash fall=one-heart rope=ledge-climb dig=fast-four-directions camera=zoomed-out material=one-two-hit terrain=bomb-rocket-burrower hazard=brittle archive=persistent-json input=remap-json feedback=shake-debris");
+        Console.WriteLine("systems=ok movement=one-tile-jump-dash fall=one-heart rope=solid-anchor-throw-climb dig=fast-four-directions camera=zoomed-out material=one-two-hit terrain=bomb-rocket-burrower hazard=brittle archive=persistent-json input=remap-json feedback=shake-debris");
     }
 
     private static void VerifyMovementTransitions()
@@ -226,51 +226,92 @@ public static class HeadlessVerification
 
     private static void VerifyRopePlacementAndClimbing()
     {
-        var world = new TileWorld(14, 20);
-        for (var x = 2; x <= 5; x++) world.SetTile(x, 7, MaterialId.RedSandstone);
-        for (var x = 6; x < world.Width; x++) world.SetTile(x, 16, MaterialId.RedSandstone);
-        var player = new PlayerController(new Vector2(4.5f * GameConstants.TileSize, 7f * GameConstants.TileSize));
+        var world = new TileWorld(16, 22);
+        for (var x = 0; x < world.Width; x++) world.SetTile(x, 18, MaterialId.RedSandstone);
+        var player = new PlayerController(new Vector2(7.5f * GameConstants.TileSize, 18f * GameConstants.TileSize));
         var input = new InputManager(new InputBindings());
         for (var frame = 0; frame < 3; frame++)
         {
-            input.SetSyntheticState(Vector2.Zero, Vector2.UnitX);
+            input.SetSyntheticState(Vector2.Zero, -Vector2.UnitY);
             player.Update(input, world, GameConstants.FixedDelta);
         }
 
         var inventory = new PlayerInventory(DifficultyTuning.For(Difficulty.Easy));
         var startingRopes = inventory.Ropes;
         var ropes = new RopeSystem();
-        input.SetSyntheticState(Vector2.Zero, Vector2.UnitX, InputAction.Rope);
+        input.SetSyntheticState(Vector2.Zero, -Vector2.UnitY, InputAction.Rope);
         ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
         if (ropes.Ropes.Count != 0 || inventory.Ropes != startingRopes)
-            throw new InvalidOperationException("rope placement away from a ledge consumed inventory");
+            throw new InvalidOperationException("rope placement without a solid anchor consumed inventory");
 
-        player.Teleport(new Vector2(5.5f * GameConstants.TileSize, 7f * GameConstants.TileSize));
-        input.SetSyntheticState(Vector2.Zero, Vector2.UnitX);
+        input.SetSyntheticState(Vector2.Zero, -Vector2.UnitY);
         ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
-        input.SetSyntheticState(Vector2.Zero, Vector2.UnitX, InputAction.Rope);
+        world.SetTile(7, 10, MaterialId.BlackBasalt);
+        input.SetSyntheticState(Vector2.Zero, -Vector2.UnitY, InputAction.Rope);
+        ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        if (ropes.Ropes.Count != 0 || inventory.Ropes != startingRopes)
+            throw new InvalidOperationException("rope attached beyond its six-tile throw limit");
+
+        world.SetTile(7, 10, MaterialId.Air);
+        world.SetTile(7, 13, MaterialId.RuinAlloy);
+        input.SetSyntheticState(Vector2.Zero, -Vector2.UnitY);
+        ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        input.SetSyntheticState(Vector2.Zero, -Vector2.UnitY, InputAction.Rope);
         ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
         if (ropes.Ropes.Count != 1 || inventory.Ropes != startingRopes - 1)
-            throw new InvalidOperationException("valid ledge rope was not placed exactly once");
-
+            throw new InvalidOperationException("valid overhead rope was not placed exactly once");
         var rope = ropes.Ropes[0];
-        input.SetSyntheticState(Vector2.UnitY, Vector2.UnitY, InputAction.Down);
-        player.Update(input, world, GameConstants.FixedDelta);
-        ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
-        if (player.Position.Y <= rope.Top || MathF.Abs(player.Position.X - rope.X) > 0.01f)
-            throw new InvalidOperationException("down input did not attach to and descend the rope without wall grab");
+        if (!rope.IsOverhangAnchor || rope.AnchorTile != new Point(7, 13) ||
+            !world.GetTile(rope.AnchorTile.X, rope.AnchorTile.Y).Solid ||
+            Vector2.Distance(player.Position, new Vector2(rope.X, rope.Top)) > RopeSystem.MaximumThrowRange)
+            throw new InvalidOperationException("overhead rope did not retain a solid in-range anchor");
 
-        player.Teleport(new Vector2(rope.X, rope.Top + GameConstants.TileSize * 4f));
-        for (var frame = 0; frame < 180; frame++)
+        for (var frame = 0; frame < 90; frame++)
         {
             input.SetSyntheticState(-Vector2.UnitY, -Vector2.UnitY, InputAction.Up);
             player.Update(input, world, GameConstants.FixedDelta);
             ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
         }
-        var expectedLedgeX = rope.X - rope.LedgeDirection * (GameConstants.TileSize * 0.5f + 10f);
-        if (MathF.Abs(player.Position.X - expectedLedgeX) > 0.01f || MathF.Abs(player.Position.Y - rope.Top) > 0.01f)
-            throw new InvalidOperationException($"up input did not climb the rope and return the player to its ledge: " +
-                $"position={player.Position} expected={expectedLedgeX},{rope.Top} bounds={player.Bounds}");
+        if (MathF.Abs(player.Position.X - rope.X) > 0.01f || MathF.Abs(player.Position.Y - rope.ClimbTop) > 0.01f)
+            throw new InvalidOperationException($"up input did not climb to the overhead anchor: " +
+                $"position={player.Position} expected={rope.X},{rope.ClimbTop} bounds={player.Bounds}");
+
+        input.SetSyntheticState(Vector2.UnitY, Vector2.UnitY, InputAction.Down);
+        player.Update(input, world, GameConstants.FixedDelta);
+        ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        if (player.Position.Y <= rope.ClimbTop || MathF.Abs(player.Position.X - rope.X) > 0.01f)
+            throw new InvalidOperationException("down input did not descend from the overhead anchor");
+
+        var detached = false;
+        ropes.Detached += _ => detached = true;
+        world.SetTile(rope.AnchorTile.X, rope.AnchorTile.Y, MaterialId.Air);
+        input.SetSyntheticState(Vector2.Zero, -Vector2.UnitY);
+        ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        if (ropes.Ropes.Count != 0 || !detached)
+            throw new InvalidOperationException("rope remained attached after its terrain anchor was destroyed");
+
+        VerifyLedgeRopeStillAnchorsToTerrain();
+    }
+
+    private static void VerifyLedgeRopeStillAnchorsToTerrain()
+    {
+        var world = new TileWorld(14, 20);
+        for (var x = 2; x <= 5; x++) world.SetTile(x, 7, MaterialId.RedSandstone);
+        for (var x = 6; x < world.Width; x++) world.SetTile(x, 16, MaterialId.RedSandstone);
+        var player = new PlayerController(new Vector2(5.5f * GameConstants.TileSize, 7f * GameConstants.TileSize));
+        var input = new InputManager(new InputBindings());
+        for (var frame = 0; frame < 3; frame++)
+        {
+            input.SetSyntheticState(Vector2.Zero, Vector2.UnitX);
+            player.Update(input, world, GameConstants.FixedDelta);
+        }
+        var inventory = new PlayerInventory(DifficultyTuning.For(Difficulty.Easy));
+        var ropes = new RopeSystem();
+        input.SetSyntheticState(Vector2.Zero, Vector2.UnitX, InputAction.Rope);
+        ropes.Update(input, player, inventory, world, GameConstants.FixedDelta);
+        if (ropes.Ropes.Count != 1 || ropes.Ropes[0].IsOverhangAnchor ||
+            !world.GetTile(ropes.Ropes[0].AnchorTile.X, ropes.Ropes[0].AnchorTile.Y).Solid)
+            throw new InvalidOperationException("close ledge rope did not retain an explicit terrain anchor");
     }
 
     private static void VerifyMaterialHardness()

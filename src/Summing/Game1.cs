@@ -586,9 +586,21 @@ public sealed class Game1 : Game
         _bombSystem.Placed += bomb => _telemetry?.RecordEvent("bomb-use",
             new { bomb.Position, bomb.Velocity, bomb.Fuse }, false);
         _ropeSystem.Placed += rope => _telemetry?.RecordEvent("rope-use",
-            new { rope.X, rope.Top, rope.Bottom, rope.LedgeDirection });
+            new
+            {
+                rope.X,
+                rope.Top,
+                rope.Bottom,
+                rope.ClimbTop,
+                rope.LedgeDirection,
+                rope.AnchorTile,
+                rope.IsOverhangAnchor,
+                maximumThrowRange = RopeSystem.MaximumThrowRange
+            });
+        _ropeSystem.Detached += rope => _telemetry?.RecordEvent("rope-detached",
+            new { rope.AnchorTile, reason = "anchor-destroyed" }, false);
         _ropeSystem.PlacementRejected += reason => _telemetry?.RecordEvent("rope-placement-rejected",
-            new { reason, _player.Position, facing = _player.Facing }, false);
+            new { reason, _player.Position, _input.Move, _input.Aim, facing = _player.Facing }, false);
         _player.StatusEvent += status => _telemetry?.RecordEvent(status.StartsWith("death", StringComparison.Ordinal)
             ? "death" : status.StartsWith("fall", StringComparison.Ordinal) ? "large-fall" : "damage", new { status, _player.Health });
         _player.Dashed += () => _telemetry?.RecordEvent("dash",
