@@ -482,8 +482,10 @@ public sealed class Game1 : Game
     private void ApplySyntheticSmokeInput()
     {
         var actions = new List<InputAction>();
-        var move = _frame == 82 ? Vector2.UnitY : _frame is >= 12 and <= 155 ? Vector2.UnitX : Vector2.Zero;
+        var move = _frame == 82 ? Vector2.UnitY : _frame is >= 12 and <= 155 ? Vector2.UnitX :
+            _frame is >= 232 and <= 238 ? -Vector2.UnitX : Vector2.Zero;
         if (move.X > 0f) actions.Add(InputAction.Right);
+        if (move.X < 0f) actions.Add(InputAction.Left);
         if (move.Y > 0f) actions.Add(InputAction.Down);
         if (_frame is >= 18 and <= 34) actions.Add(InputAction.Jump);
         if (_frame == 8) actions.Add(InputAction.Bomb);
@@ -507,8 +509,26 @@ public sealed class Game1 : Game
             RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.TorsoSheet, 1));
         if (_frame == 220)
             RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
+        if (_frame == 225)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.PlayerPack, 1));
         if (_frame == 230)
             RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
+        if (_frame == 240)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.PlayerPack, 1));
+        if (_frame == 250)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
+        if (_frame == 262)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.TerrainSheet, 1));
+        if (_frame == 274)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.TerrainBand, 1));
+        if (_frame == 286)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.TerrainBand, 1));
+        if (_frame == 298)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.EnvironmentPack, 1));
+        if (_frame == 310)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.TerrainBand, 1));
+        if (_frame == 322)
+            RecordVisualSelectionChange(_visualPacks.Adjust(VisualSelectionOption.TerrainBand, 1));
         _input.SetSyntheticState(move, Vector2.UnitX, actions.ToArray());
     }
 

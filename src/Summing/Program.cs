@@ -160,7 +160,7 @@ foreach (var argument in arguments)
     }
 }
 using var game = new Summing.Game1(
-    smokeRun ? 240 : smokePeriodic ? 620 : smokeMovementView ? 120 : smokeTitle || smokeVisualSelector ? 30 : 0,
+    smokeRun ? 345 : smokePeriodic ? 620 : smokeMovementView ? 120 : smokeTitle || smokeVisualSelector ? 30 : 0,
     smokeRun || smokePeriodic || smokeMovementView, smokeTitle, initialConfiguration, initialDifficulty,
     initialVisualPack, smokeVisualSelector, !artPackSpecified, smokeMovementView);
 game.Run();
