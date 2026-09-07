@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Summing.Core;
 using Summing.Input;
 using Summing.Player;
 using Summing.World;
@@ -22,7 +23,7 @@ public sealed class BombSystem
         {
             var throwDirection = input.Move.LengthSquared() > 0.15f ? input.Move : new Vector2(player.Facing, 0f);
             if (throwDirection.LengthSquared() > 1f) throwDirection.Normalize();
-            var bomb = new BombEntity(player.Bounds.Center + new Vector2(player.Facing * 12f, -3f),
+            var bomb = new BombEntity(FindClearSpawn(player, world),
                 new Vector2(throwDirection.X * 155f, throwDirection.Y * 145f - 95f) + player.Velocity * 0.3f);
             _bombs.Add(bomb);
             Placed?.Invoke(bomb);
@@ -68,5 +69,18 @@ public sealed class BombSystem
             batch.Draw(pixel, new Rectangle((int)blast.Position.X - radius, (int)blast.Position.Y - 2, radius * 2, 4), new Color(229, 126, 76, 160));
             batch.Draw(pixel, new Rectangle((int)blast.Position.X - 2, (int)blast.Position.Y - radius, 4, radius * 2), new Color(237, 197, 124, 150));
         }
+    }
+
+    private static Vector2 FindClearSpawn(PlayerController player, TileWorld world)
+    {
+        Vector2[] candidates =
+        [
+            player.Bounds.Center + new Vector2(player.Facing * 12f, -3f),
+            player.Bounds.Center + new Vector2(0f, -5f),
+            player.Bounds.Center
+        ];
+        foreach (var candidate in candidates)
+            if (!world.OverlapsSolid(new Aabb(candidate.X - 6f, candidate.Y - 6f, 12f, 12f))) return candidate;
+        return player.Bounds.Center;
     }
 }

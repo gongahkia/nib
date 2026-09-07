@@ -10,9 +10,9 @@ namespace Summing.Player;
 
 public sealed class PlayerController
 {
-    private const float StandingWidth = 18f;
-    private const float StandingHeight = 22f;
-    private const float CrouchingHeight = 14f;
+    public const float BodyWidth = 18f;
+    public const float StandingBodyHeight = 22f;
+    public const float CrouchingBodyHeight = 14f;
     private const float RunSpeed = 150f;
     private const float GroundAcceleration = 1300f;
     private const float AirAcceleration = 760f;
@@ -33,12 +33,14 @@ public sealed class PlayerController
     private float _stateTimer;
     private float _landingTimer;
     private float _ledgeTimer;
+    private float _ledgeRegrabTimer;
     private int _wallDirection;
     private bool _jumpHeldLastFrame;
     private bool _shortBody;
     private MovementState _actionVisualState;
     private float _actionVisualTimer;
     private float _stunTimer;
+    private Vector2 _mantleTarget;
 
     public PlayerController(Vector2 spawn, int maximumHealth = 5)
     {
@@ -72,16 +74,33 @@ public sealed class PlayerController
     public bool Alive => Health > 0;
     public bool Stunned => _stunTimer > 0f;
     public event Action<string>? StatusEvent;
+    public event Action? Dashed;
 
     public void Reset(Vector2 spawn)
     {
         Position = spawn;
         Velocity = Vector2.Zero;
         Grounded = false;
+        TouchingCeiling = false;
+        TouchingLeftWall = false;
+        TouchingRightWall = false;
+        LeftWallClimbable = false;
+        RightWallClimbable = false;
         DashCharges = MaximumDashCharges;
         WallStamina = WallStaminaMaximum;
         State = MovementState.Falling;
         Health = MaximumHealth;
+        _coyoteTimer = 0f;
+        _jumpBufferTimer = 0f;
+        _dashTimer = 0f;
+        _stateTimer = 0f;
+        _landingTimer = 0f;
+        _ledgeTimer = 0f;
+        _ledgeRegrabTimer = 0f;
+        _wallDirection = 0;
+        _jumpHeldLastFrame = false;
+        _shortBody = false;
+        _actionVisualTimer = 0f;
         _stunTimer = 0f;
     }
 
@@ -104,6 +123,7 @@ public sealed class PlayerController
         _coyoteTimer = MathF.Max(0f, _coyoteTimer - dt);
         _jumpBufferTimer = MathF.Max(0f, _jumpBufferTimer - dt);
         _landingTimer = MathF.Max(0f, _landingTimer - dt);
+        _ledgeRegrabTimer = MathF.Max(0f, _ledgeRegrabTimer - dt);
         RefreshContacts(world);
 
         if (Grounded)
@@ -121,7 +141,7 @@ public sealed class PlayerController
         }
         if (State == MovementState.LedgeHang)
         {
-            UpdateLedge(input);
+            UpdateLedge(input, dt);
             return;
         }
         if (input.Pressed(InputAction.Dash) && DashCharges > 0) BeginDash(input);
@@ -129,10 +149,19 @@ public sealed class PlayerController
         if (_dashTimer > 0f)
         {
             _dashTimer -= dt;
-            MoveAndCollide(world, Velocity * dt);
-            if (_dashTimer <= 0f) Velocity *= new Vector2(0.82f, 0.72f);
-            SetState(MovementState.Dash);
+            var collision = MoveAndCollide(world, Velocity * dt);
             RefreshContacts(world);
+            if (collision.Horizontal || collision.Vertical)
+            {
+                _dashTimer = 0f;
+                Velocity *= new Vector2(0.82f, 0.72f);
+                ResolveState(0f, _shortBody);
+            }
+            else
+            {
+                if (_dashTimer <= 0f) Velocity *= new Vector2(0.82f, 0.72f);
+                SetState(MovementState.Dash);
+            }
             return;
         }
 
@@ -214,8 +243,8 @@ public sealed class PlayerController
 
     private static Aabb BodyAt(Vector2 footPosition, bool shortBody)
     {
-        var height = shortBody ? CrouchingHeight : StandingHeight;
-        return new Aabb(footPosition.X - StandingWidth * 0.5f, footPosition.Y - height, StandingWidth, height);
+        var height = shortBody ? CrouchingBodyHeight : StandingBodyHeight;
+        return new Aabb(footPosition.X - BodyWidth * 0.5f, footPosition.Y - height, BodyWidth, height);
     }
 
     private void BeginDash(InputManager input)
@@ -227,6 +256,7 @@ public sealed class PlayerController
         _dashTimer = DashDuration;
         Velocity = direction * DashSpeed;
         SetState(MovementState.Dash);
+        Dashed?.Invoke();
     }
 
     private void UpdateWallInteraction(InputManager input, float dt)
@@ -251,6 +281,7 @@ public sealed class PlayerController
             Facing = -wall;
             _jumpBufferTimer = 0f;
             SetState(MovementState.WallJump);
+            ShowActionState(MovementState.WallJump, 0.12f);
         }
     }
 
@@ -263,30 +294,34 @@ public sealed class PlayerController
         _jumpBufferTimer = 0f;
         _coyoteTimer = 0f;
         SetState(MovementState.Takeoff);
+        ShowActionState(MovementState.Takeoff, 0.08f);
     }
 
     private void TryCatchLedge(InputManager input, ICollisionWorld world)
     {
-        if (Grounded || Velocity.Y < 0f || State == MovementState.Dash) return;
+        if (Grounded || Velocity.Y < 0f || State == MovementState.Dash || _ledgeRegrabTimer > 0f ||
+            input.Down(InputAction.Down)) return;
         var direction = MathF.Abs(input.Move.X) > 0.2f ? Math.Sign(input.Move.X) : Facing;
+        if (input.Move.X * direction < -0.2f) return;
         var body = Bounds;
         var chestProbe = new Aabb(direction > 0 ? body.Right : body.Left - 2f, body.Top + 6f, 2f, 13f);
         var headProbe = new Aabb(chestProbe.X, body.Top - 7f, 2f, 10f);
-        var clearance = BodyAt(new Vector2(Position.X, Position.Y - 18f), false);
-        if (!world.OverlapsSolid(chestProbe) || world.OverlapsSolid(headProbe) || world.OverlapsSolid(clearance)) return;
+        if (!world.OverlapsSolid(chestProbe) || world.OverlapsSolid(headProbe) ||
+            !TryFindMantleTarget(world, direction, out _mantleTarget)) return;
         _wallDirection = direction;
         Velocity = Vector2.Zero;
         _ledgeTimer = 0f;
         SetState(MovementState.LedgeHang);
     }
 
-    private void UpdateLedge(InputManager input)
+    private void UpdateLedge(InputManager input, float dt)
     {
-        _ledgeTimer += GameConstants.FixedDelta;
+        _ledgeTimer += dt;
         Velocity = Vector2.Zero;
         if (input.Down(InputAction.Down) || input.Move.X * _wallDirection < -0.3f)
         {
             Position += new Vector2(-_wallDirection * 3f, 3f);
+            _ledgeRegrabTimer = 0.16f;
             SetState(MovementState.Falling);
             return;
         }
@@ -295,13 +330,24 @@ public sealed class PlayerController
 
     private void UpdateMantle(ICollisionWorld world, float dt)
     {
-        MoveAndCollide(world, new Vector2(_wallDirection * 70f, -105f) * dt);
-        if (_stateTimer < 0.22f) return;
-        Velocity = new Vector2(_wallDirection * 70f, 0f);
-        SetState(MovementState.Idle);
+        var toTarget = _mantleTarget - Position;
+        var verticalStep = Math.Clamp(toTarget.Y, -185f * dt, 185f * dt);
+        if (MathF.Abs(toTarget.Y) > 0.5f) MoveAndCollide(world, new Vector2(0f, verticalStep));
+        toTarget = _mantleTarget - Position;
+        if (MathF.Abs(toTarget.Y) <= 2f)
+        {
+            var horizontalStep = Math.Clamp(toTarget.X, -220f * dt, 220f * dt);
+            MoveAndCollide(world, new Vector2(horizontalStep, 0f));
+        }
+        RefreshContacts(world);
+        if (Vector2.DistanceSquared(Position, _mantleTarget) <= 2.25f || _stateTimer >= 0.48f)
+        {
+            Velocity = Vector2.Zero;
+            SetState(Grounded ? MovementState.Idle : MovementState.Falling);
+        }
     }
 
-    private void MoveAndCollide(ICollisionWorld world, Vector2 delta)
+    private CollisionResult MoveAndCollide(ICollisionWorld world, Vector2 delta)
     {
         var wasGrounded = Grounded;
         var hitX = MoveAxis(world, delta.X, true);
@@ -313,6 +359,7 @@ public sealed class PlayerController
             if (delta.Y > 0f) HandleLanding(Velocity.Y);
             Velocity = new Vector2(Velocity.X, 0f);
         }
+        return new CollisionResult(hitX, hitY);
     }
 
     private void HandleLanding(float fallSpeed)
@@ -352,6 +399,7 @@ public sealed class PlayerController
     private void ResolveState(float moveX, bool shortBody)
     {
         if (_dashTimer > 0f || State is MovementState.LedgeHang or MovementState.Mantle) return;
+        if (State == MovementState.Slide && Grounded && shortBody && MathF.Abs(Velocity.X) >= 45f) return;
         if (State == MovementState.WallCling && !Grounded && (TouchingLeftWall || TouchingRightWall)) return;
         if (Grounded)
         {
@@ -373,5 +421,22 @@ public sealed class PlayerController
 
     private static float Approach(float value, float target, float amount) =>
         value < target ? MathF.Min(value + amount, target) : MathF.Max(value - amount, target);
+
+    private bool TryFindMantleTarget(ICollisionWorld world, int direction, out Vector2 target)
+    {
+        for (var rise = 4f; rise <= GameConstants.TileSize + 10f; rise += 1f)
+            for (var across = 10f; across <= GameConstants.TileSize + BodyWidth; across += 1f)
+            {
+                var candidate = Position + new Vector2(direction * across, -rise);
+                var body = BodyAt(candidate, false);
+                if (world.OverlapsSolid(body) || !world.OverlapsSolid(body.Offset(0f, 1f))) continue;
+                target = candidate;
+                return true;
+            }
+        target = Position;
+        return false;
+    }
+
+    private readonly record struct CollisionResult(bool Horizontal, bool Vertical);
 
 }

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Summing.Camera;
 using Summing.Entities;
@@ -51,11 +52,11 @@ public sealed class PlaytestRecorder : IDisposable
         _frames = new StreamWriter(Path.Combine(DirectoryPath, "frames.csv"));
         _events = new StreamWriter(Path.Combine(DirectoryPath, "events.jsonl"));
         _screenshots = new StreamWriter(Path.Combine(DirectoryPath, "screenshots", "index.csv"));
-        _frames.WriteLine("frame,time_s,input_down,input_pressed,input_released,move_x,move_y,aim_x,aim_y,player_x,player_y,velocity_x,velocity_y,movement_state,visual_state,camera_x,camera_y,lookahead_x,lookahead_y,shake_x,shake_y,shake_strength,grounded,ceiling,left_wall,right_wall,left_climbable,right_climbable,collision_normals,wall_stamina,dash_charges,coyote_used,jump_buffer_used,health,stunned,bombs,ropes,wind,nearby_tiles");
+        _frames.WriteLine("frame,time_s,input_down,input_pressed,input_released,move_x,move_y,aim_x,aim_y,player_x,player_y,body_width,body_height,velocity_x,velocity_y,movement_state,visual_state,camera_x,camera_y,lookahead_x,lookahead_y,shake_x,shake_y,shake_strength,grounded,ceiling,left_wall,right_wall,left_climbable,right_climbable,collision_normals,wall_stamina,dash_charges,coyote_used,jump_buffer_used,health,stunned,bombs,ropes,wind,nearby_tiles,route_anchor,altitude_band");
         _screenshots.WriteLine("frame,time_s,file,event,phase");
         File.WriteAllText(Path.Combine(DirectoryPath, "metadata.json"), JsonSerializer.Serialize(new
         {
-            schemaVersion = 2,
+            schemaVersion = 3,
             startedAtUtc = DateTimeOffset.UtcNow,
             seed = generated.Configuration.Seed,
             generator = WorldGeneratorRegistry.Identifier(generated.Configuration.Variant),
@@ -68,6 +69,7 @@ public sealed class PlaytestRecorder : IDisposable
             fixedUpdateHz = 60,
             periodicScreenshotFrames = 600,
             eventScreenshotPhases = new[] { "event", "post-12-frames" },
+            manualBookmark = "F8 on keyboard or right shoulder on gamepad",
             notes = "positions are world pixels; tile size and full starting world are in world-start.json"
         }, _json));
         RequestScreenshot("session-start", true);
@@ -93,14 +95,18 @@ public sealed class PlaytestRecorder : IDisposable
         if (player.TouchingRightWall) contacts.Add("-1:0");
         var normals = string.Join('|', contacts);
         var nearby = NearbyTiles(world, player);
+        var routeAnchor = NearestRouteAnchor(generated, player.Position);
+        var altitude = 1f - player.Position.Y / world.PixelHeight;
+        var altitudeBand = altitude < 0.34f ? "lower" : altitude < 0.67f ? "middle" : "upper";
         _frames.WriteLine(string.Join(',', frame, F(frame / 60f), Csv(actions), Csv(pressed), Csv(released), F(input.Move.X), F(input.Move.Y),
-            F(input.Aim.X), F(input.Aim.Y), F(player.Position.X), F(player.Position.Y), F(player.Velocity.X),
+            F(input.Aim.X), F(input.Aim.Y), F(player.Position.X), F(player.Position.Y), F(player.Bounds.Width),
+            F(player.Bounds.Height), F(player.Velocity.X),
             F(player.Velocity.Y), player.State, player.VisualState, F(camera.Position.X), F(camera.Position.Y),
             F(camera.LookAhead.X), F(camera.LookAhead.Y), F(camera.ShakeOffset.X), F(camera.ShakeOffset.Y),
             F(camera.ShakeStrength), player.Grounded, player.TouchingCeiling, player.TouchingLeftWall,
             player.TouchingRightWall, player.LeftWallClimbable, player.RightWallClimbable, Csv(normals), F(player.WallStamina), player.DashCharges,
             player.UsedCoyoteThisFrame, player.UsedJumpBufferThisFrame, player.Health, player.Stunned, inventory.Bombs,
-            inventory.Ropes, F(generated.WindAt(player.Position.Y)), Csv(nearby)));
+            inventory.Ropes, F(generated.WindAt(player.Position.Y)), Csv(nearby), routeAnchor, altitudeBand));
         if (frame % 120 == 0) _frames.Flush();
         if (frame % 600 == 0) RequestScreenshot("periodic", false);
     }
@@ -189,6 +195,22 @@ public sealed class PlaytestRecorder : IDisposable
             rows.Add(string.Join('|', row));
         }
         return string.Join('/', rows);
+    }
+
+    private static int NearestRouteAnchor(GeneratedWorld generated, Vector2 position)
+    {
+        var tile = generated.Terrain.WorldToTile(position);
+        var nearest = 0;
+        var best = int.MaxValue;
+        for (var index = 0; index < generated.RouteAnchors.Count; index++)
+        {
+            var anchor = generated.RouteAnchors[index];
+            var distance = Math.Abs(anchor.X - tile.X) + Math.Abs(anchor.Y - tile.Y);
+            if (distance >= best) continue;
+            best = distance;
+            nearest = index;
+        }
+        return nearest;
     }
 
     private static string F(float value) => value.ToString("0.###", CultureInfo.InvariantCulture);

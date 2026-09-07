@@ -2,7 +2,7 @@
 
 Bindings are editable from the in-game binding panel and persisted as readable JSON.
 
-On the title screen, D-pad/left stick selects difficulty and generator, A starts, B opens bindings, Y changes the climber palette, and left-stick click randomizes the seed. In the bindings panel, Up/Down selects an action, Left/Right selects keyboard or gamepad, A begins rebinding, and Start returns.
+On the title screen, D-pad/left stick selects difficulty and generator, A starts, B opens bindings, Y changes the climber palette, and left-stick click randomizes the seed. Keys `1`–`3`, `P`, or gamepad right shoulder select/cycle the three labelled development seed presets. In the bindings panel, Up/Down selects an action, Left/Right selects keyboard or gamepad, A begins rebinding, and Start returns.
 
 | Action | Keyboard / mouse | Gamepad |
 |---|---|---|
@@ -17,5 +17,6 @@ On the title screen, D-pad/left stick selects difficulty and generator, A starts
 | Aim dash direction | mouse / movement direction | right stick |
 | Debug/editor | F1 | Back |
 | Pause | Escape | Start |
+| Playtest bookmark | F8 | right shoulder |
 
-Editor controls appear in the overlay because their meaning depends on the selected tool.
+The bookmark records a frame-linked event and immediate/post-event screenshots; it does not alter play. Editor controls appear in the overlay because their meaning depends on the selected tool. Active grappling does not exist; placed ropes are the sole rope traversal resource.

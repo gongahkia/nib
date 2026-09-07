@@ -13,7 +13,7 @@ public sealed class BadlandsParameters
 public sealed class WorldGenerationConfig
 {
     public long Seed { get; set; } = 9042026;
-    public string GeneratorVersion { get; set; } = "badlands-v1";
+    public string GeneratorVersion { get; set; } = WorldGeneratorRegistry.CurrentVersion;
     public GeneratorVariant Variant { get; set; } = GeneratorVariant.Layered;
     public BadlandsParameters Parameters { get; set; } = new();
 }
