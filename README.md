@@ -1,6 +1,6 @@
 # Nib
 
-Nib is a coordinated light/dark theme family for [Ghostty](https://ghostty.org/) and [Neovim](https://neovim.io/). Its light mode places deep blue-black fountain-pen ink on warm ivory; its dark sibling uses cool ivory ink on near-black navy. Moss leads the non-blue syntax colors, followed by peacock teal, restrained burgundy, rust, violet, amber, sepia, and graphite.
+Nib is a coordinated light/dark theme family for [Ghostty](https://ghostty.org/), [Neovim](https://neovim.io/), [GNU Emacs](https://www.gnu.org/software/emacs/), [VS Code](https://code.visualstudio.com/), [Cursor](https://www.cursor.com/), and [Zed](https://zed.dev/). Its light mode places deep blue-black fountain-pen ink on warm ivory; its dark sibling uses cool ivory ink on near-black navy. Moss leads the non-blue syntax colors, followed by peacock teal, restrained burgundy, rust, violet, amber, sepia, and graphite.
 
 The core themes are opaque, dependency-free, and complete without shaders. No normal foreground or background is pure black or pure white.
 
@@ -75,6 +75,42 @@ background-opacity = 1
 
 The installer does not edit `~/.config/ghostty/config`, load a shader, or overwrite an existing theme unless `--force` is explicit. Linux, macOS, symlink, backup, uninstall, tmux, and SSH instructions are in the [Ghostty guide](docs/GHOSTTY.md).
 
+### Emacs
+
+Copy the two generated custom-theme files into a directory on
+`custom-theme-load-path`, then load one exact variant:
+
+```elisp
+(add-to-list 'custom-theme-load-path
+             (expand-file-name "themes" user-emacs-directory))
+(load-theme 'nib-dark t) ; or nib-light
+```
+
+The [Emacs guide](docs/EMACS.md) covers local installation, switching,
+terminal colors, removal, supported faces, and batch verification.
+
+### VS Code and Cursor
+
+The theme-only extension under `vscode/` works in both editors. It contributes
+exactly `nib-light` and `nib-dark`, with TextMate and semantic-token coverage.
+Package it locally without publishing:
+
+```sh
+cd vscode
+npx --yes @vscode/vsce@3.6.2 package --no-dependencies \
+  --out nib-color-theme-0.1.0.vsix
+```
+
+Install the VSIX in either editor and choose the variant through
+**Preferences: Color Theme**. See the [VS Code and Cursor guide](docs/VSCODE.md)
+for development-host, install, and uninstall details.
+
+### Zed
+
+From Zed's Extensions page, choose **Install Dev Extension** and select the
+repository's `zed/` directory. The [Zed guide](docs/ZED.md) includes exact
+selection, paired system-mode settings, removal, and compatibility notes.
+
 ## Setup API
 
 The API intentionally stays small:
@@ -128,7 +164,7 @@ Additional committed renders:
 
 ## Design and accessibility
 
-One canonical [palette](palette/palette.json), validated by its [schema](palette/schema.json), generates the application palettes, entry points, Ghostty themes, preview data, machine export, contrast table, ANSI table, and color-vision report. Physical inks and external palettes informed relationships only; none supplied an “exact” screen color.
+One canonical [palette](palette/palette.json), validated by its [schema](palette/schema.json), generates the Neovim palettes and entry points, Ghostty themes, Emacs custom themes, VS Code/Cursor extension themes, Zed extension theme, preview data, machine export, contrast table, ANSI table, and color-vision report. Physical inks and external palettes informed relationships only; none supplied an “exact” screen color.
 
 Principal text targets 7:1 contrast where aesthetically reasonable. Meaningful text requires 4.5:1, and relevant boundaries/non-text indicators require 3:1. Comments pass the ordinary-text target in both modes. Protanopia, deuteranopia, and tritanopia simulations are regression-tested, while critical states also use letters, signs, undercurls, weight, strikethrough, or distinct surface tints. These scoped checks are not blanket accessibility certification.
 
@@ -138,6 +174,9 @@ Read the [palette rationale](docs/PALETTE.md), [accessibility report](docs/ACCES
 
 - Neovim 0.10 or newer. The release suite passes under Neovim 0.10.4 and 0.11.6.
 - Ghostty 1.3.0 or newer for automatic paired light/dark selection. Theme validation passes under Ghostty 1.3.1.
+- GNU Emacs 27.1 or newer. Batch validation runs when Emacs is available.
+- VS Code `^1.85.0`, and Cursor versions compatible with that VS Code theme-extension API.
+- Zed versions supporting the current theme schema v0.2.0; Zed does not publish a stable app-version mapping for that schema.
 - A truecolor terminal is recommended for Neovim. The 16-color Ghostty palette remains intentionally conventional for remote and degraded sessions.
 
 The runtime Lua has no dependencies and performs no network requests. Development checks use Python 3.11 or newer; Node.js, Ghostty, and `glslc` add checks when present as documented in the [development guide](docs/DEVELOPMENT.md).
@@ -150,7 +189,7 @@ Run the complete local suite:
 make verify
 ```
 
-It checks the schema, required roles, color format, generation drift, contrast, semantic and ANSI distinguishability, color-vision regressions, Neovim loading/switching/setup behavior, Ghostty structure and runtime validation when installed, shader structure and compilation when `glslc` is installed, preview data and artifacts, fixtures, documentation links, syntax, and `git diff --check`.
+It checks the schema, required roles, color format, generation drift, contrast, semantic and ANSI distinguishability, color-vision regressions, Neovim and Emacs loading behavior, VS Code/Cursor and Zed extension structure, Ghostty structure and runtime validation when installed, shader structure and compilation when `glslc` is installed, preview data and artifacts, fixtures, documentation links, syntax, and `git diff --check`. Optional editor runtimes are reported as skipped when unavailable.
 
 ## Troubleshooting
 

@@ -7,6 +7,9 @@
     "color_space": "sRGB",
     "minimum_neovim": "0.10.0",
     "minimum_ghostty": "1.3.0",
+    "minimum_emacs": "27.1",
+    "minimum_vscode": "1.85.0",
+    "zed_theme_schema": "0.2.0",
     "description": "Fountain-pen ink on warm ivory and near-black navy paper."
   },
   "modes": {

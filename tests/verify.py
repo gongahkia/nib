@@ -201,6 +201,206 @@ def verify_ansi() -> None:
             require(distance >= 0.025, f"{style}: ANSI {index}/{index + 8} are too similar ({distance:.3f})")
 
 
+def canonical_colors(mode: dict[str, Any]) -> set[str]:
+    return {color for _, color in iter_colors(mode)}
+
+
+def validate_elisp_structure(source: str, path: Path) -> None:
+    stack: list[str] = []
+    pairs = {")": "(", "]": "["}
+    in_string = False
+    escaped = False
+    in_comment = False
+    for character in source:
+        if in_comment:
+            if character == "\n":
+                in_comment = False
+            continue
+        if in_string:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                in_string = False
+            continue
+        if character == ";":
+            in_comment = True
+        elif character == '"':
+            in_string = True
+        elif character in "([":
+            stack.append(character)
+        elif character in ")]":
+            require(bool(stack) and stack.pop() == pairs[character], f"{path}: unbalanced {character}")
+    require(not in_string, f"{path}: unterminated string")
+    require(not stack, f"{path}: unclosed delimiter {stack[-1] if stack else ''}")
+
+
+def verify_emacs() -> None:
+    theme_directory = ROOT / "emacs"
+    require(
+        sorted(path.name for path in theme_directory.glob("*-theme.el")) == ["nib-dark-theme.el", "nib-light-theme.el"],
+        "Emacs variants must be exactly nib-light and nib-dark",
+    )
+    required_faces = {
+        "default", "cursor", "region", "mode-line", "line-number-current-line",
+        "font-lock-comment-face", "font-lock-function-name-face", "font-lock-keyword-face",
+        "font-lock-string-face", "font-lock-type-face", "diff-added", "diff-removed",
+        "flymake-error", "flymake-warning", "org-level-1", "markdown-code-face",
+    }
+    for style in ("light", "dark"):
+        path = theme_directory / f"nib-{style}-theme.el"
+        source = path.read_text(encoding="utf-8")
+        validate_elisp_structure(source, path)
+        forms = "\n".join(line for line in source.splitlines() if not line.lstrip().startswith(";")).lstrip()
+        require(forms.startswith(f"(deftheme nib-{style}"), f"{path}: deftheme is not the first form")
+        require(f"(provide-theme 'nib-{style})" in source, f"{path}: provide-theme is missing")
+        require(all(f"'({face} " in source for face in required_faces), f"{path}: required face coverage is incomplete")
+        colors = set(re.findall(r"#[0-9A-F]{6}", source))
+        require(colors <= canonical_colors(PALETTE["modes"][style]), f"{path}: contains a non-canonical color")
+        ansi = [entry["hex"] for entry in PALETTE["modes"][style]["ansi"]]
+        require(all(color in source for color in ansi), f"{path}: ANSI colors are incomplete")
+
+    emacs = shutil.which("emacs")
+    if emacs is None:
+        print("  Emacs runtime: skipped (emacs unavailable; Lisp structure and generated colors passed)")
+        return
+    result = command([emacs, "--batch", "-Q", "-l", "tests/emacs_spec.el"])
+    output = (result.stdout + result.stderr).strip()
+    require("Emacs runtime: pass" in output, f"Emacs test did not report success:\n{output}")
+    version = command([emacs, "--batch", "-Q", "--eval", "(princ emacs-version)"]).stdout.strip()
+    print(f"  Emacs runtime: pass ({version})")
+
+
+def verify_vscode() -> None:
+    extension = ROOT / "vscode"
+    require((extension / "LICENSE").read_bytes() == (ROOT / "LICENSE").read_bytes(), "VS Code licence copy drifted")
+    package = json.loads((extension / "package.json").read_text(encoding="utf-8"))
+    require(package["name"] == "nib-color-theme", "VS Code extension name changed")
+    require(package["version"] == PALETTE["meta"]["version"], "VS Code extension version drifted")
+    require(package["engines"]["vscode"] == f"^{PALETTE['meta']['minimum_vscode']}", "VS Code baseline drifted")
+    contributions = package["contributes"]["themes"]
+    require(
+        contributions
+        == [
+            {"label": "nib-light", "uiTheme": "vs", "path": "./themes/nib-light-color-theme.json"},
+            {"label": "nib-dark", "uiTheme": "vs-dark", "path": "./themes/nib-dark-color-theme.json"},
+        ],
+        "VS Code/Cursor theme contributions are not the exact light/dark pair",
+    )
+    required_colors = {
+        "editor.background", "editor.foreground", "editorCursor.foreground",
+        "editor.selectionBackground", "editor.findMatchBackground", "editor.lineHighlightBackground",
+        "editorError.foreground", "editorWarning.foreground", "editorInfo.foreground", "editorHint.foreground",
+        "diffEditor.insertedTextBackground", "diffEditor.removedTextBackground",
+        "editorSuggestWidget.background", "statusBar.background", "sideBar.background",
+    }
+    required_semantic = {
+        "type", "class", "function", "method", "keyword", "string", "comment",
+        "*.readonly", "*.deprecated", "variable.defaultLibrary", "function.defaultLibrary",
+    }
+    required_scope_fragments = {
+        "comment", "string", "constant.numeric", "entity.name.function", "entity.name.type",
+        "keyword", "keyword.control", "keyword.operator", "invalid.deprecated", "markup.heading",
+    }
+    ansi_names = ("Black", "Red", "Green", "Yellow", "Blue", "Magenta", "Cyan", "White")
+    for style in ("light", "dark"):
+        path = extension / "themes" / f"nib-{style}-color-theme.json"
+        theme = json.loads(path.read_text(encoding="utf-8"))
+        require(theme["$schema"] == "vscode://schemas/color-theme", f"{path}: wrong schema")
+        require(theme["name"] == f"nib-{style}", f"{path}: wrong theme name")
+        require(theme["semanticHighlighting"] is True, f"{path}: semantic highlighting is disabled")
+        require(required_colors <= theme["colors"].keys(), f"{path}: workbench/editor coverage is incomplete")
+        require(required_semantic <= theme["semanticTokenColors"].keys(), f"{path}: semantic coverage is incomplete")
+        scopes = {
+            scope
+            for rule in theme["tokenColors"]
+            for scope in ([rule["scope"]] if isinstance(rule["scope"], str) else rule["scope"])
+        }
+        require(required_scope_fragments <= scopes, f"{path}: TextMate baseline is incomplete")
+        serialized_colors = set(re.findall(r"#[0-9A-Fa-f]{6,8}\b", path.read_text(encoding="utf-8")))
+        require(all(HEX_RE.fullmatch(color) for color in serialized_colors), f"{path}: colors must be uppercase six-digit sRGB")
+        require(serialized_colors <= canonical_colors(PALETTE["modes"][style]), f"{path}: contains a non-canonical color")
+        ansi = PALETTE["modes"][style]["ansi"]
+        for index, name in enumerate(ansi_names):
+            require(theme["colors"][f"terminal.ansi{name}"] == ansi[index]["hex"], f"{path}: ANSI {index} drifted")
+            require(theme["colors"][f"terminal.ansiBright{name}"] == ansi[index + 8]["hex"], f"{path}: ANSI {index + 8} drifted")
+        for foreground, background in (
+            ("button.foreground", "button.background"),
+            ("button.secondaryForeground", "button.secondaryBackground"),
+            ("badge.foreground", "badge.background"),
+            ("input.foreground", "input.background"),
+            ("dropdown.foreground", "dropdown.background"),
+            ("list.activeSelectionForeground", "list.activeSelectionBackground"),
+            ("list.inactiveSelectionForeground", "list.inactiveSelectionBackground"),
+            ("list.focusForeground", "list.focusBackground"),
+            ("activityBarBadge.foreground", "activityBarBadge.background"),
+            ("editor.foreground", "editor.background"),
+            ("editor.selectionForeground", "editor.selectionBackground"),
+            ("editor.findMatchForeground", "editor.findMatchBackground"),
+            ("editor.findMatchHighlightForeground", "editor.findMatchHighlightBackground"),
+            ("editorSuggestWidget.selectedForeground", "editorSuggestWidget.selectedBackground"),
+            ("peekViewResult.selectionForeground", "peekViewResult.selectionBackground"),
+            ("statusBar.debuggingForeground", "statusBar.debuggingBackground"),
+            ("menu.selectionForeground", "menu.selectionBackground"),
+        ):
+            ratio = contrast(theme["colors"][foreground], theme["colors"][background])
+            require(ratio >= 4.5, f"{path}: {foreground}/{background} contrast is {ratio:.2f}:1")
+    if shutil.which("code") is None and shutil.which("cursor") is None:
+        print("  VS Code/Cursor runtime: skipped (editors unavailable; extension structure passed)")
+
+
+def verify_zed() -> None:
+    extension = ROOT / "zed"
+    require((extension / "LICENSE").read_bytes() == (ROOT / "LICENSE").read_bytes(), "Zed licence copy drifted")
+    manifest = tomllib.loads((extension / "extension.toml").read_text(encoding="utf-8"))
+    require(manifest["id"] == "nib-theme", "Zed extension ID changed")
+    require(manifest["name"] == "nib", "Zed extension name changed")
+    require(manifest["version"] == PALETTE["meta"]["version"], "Zed extension version drifted")
+    require(manifest["schema_version"] == 1, "Zed extension manifest schema changed")
+    path = extension / "themes" / "nib.json"
+    family = json.loads(path.read_text(encoding="utf-8"))
+    require(
+        family["$schema"] == f"https://zed.dev/schema/themes/v{PALETTE['meta']['zed_theme_schema']}.json",
+        "Zed theme schema drifted",
+    )
+    require(family["name"] == "nib" and family["author"] == "nib contributors", "Zed family metadata changed")
+    require([theme["name"] for theme in family["themes"]] == ["nib-light", "nib-dark"], "Zed variants changed")
+    require([theme["appearance"] for theme in family["themes"]] == ["light", "dark"], "Zed appearances changed")
+    required_style = {
+        "background.appearance", "background", "surface.background", "elevated_surface.background",
+        "border", "border.focused", "text", "text.muted", "editor.background", "editor.foreground",
+        "editor.active_line.background", "editor.line_number", "editor.active_line_number",
+        "search.match_background", "search.active_match_background", "error", "warning", "info", "hint", "success", "players", "syntax",
+        "terminal.background", "terminal.foreground",
+    }
+    required_syntax = {
+        "attribute", "boolean", "comment", "constant", "constructor", "function", "keyword",
+        "number", "operator", "property", "punctuation", "string", "type", "variable",
+        "diff.plus", "diff.minus",
+    }
+    ansi_names = ("black", "red", "green", "yellow", "blue", "magenta", "cyan", "white")
+    for style, theme in zip(("light", "dark"), family["themes"]):
+        values = theme["style"]
+        require(required_style <= values.keys(), f"Zed {style}: UI/editor coverage is incomplete")
+        require(values["background.appearance"] == "opaque", f"Zed {style}: core theme is not opaque")
+        require(len(values["players"]) == 8, f"Zed {style}: collaborative cursor palette is incomplete")
+        require(values["players"][0]["selection"] == PALETTE["modes"][style]["selection"]["background"], f"Zed {style}: local selection drifted")
+        require(required_syntax <= values["syntax"].keys(), f"Zed {style}: syntax coverage is incomplete")
+        for highlight, definition in values["syntax"].items():
+            require(set(definition) <= {"color", "font_style", "font_weight"}, f"Zed {style}: invalid syntax style {highlight}")
+            require("color" in definition, f"Zed {style}: syntax style has no color: {highlight}")
+        serialized_colors = set(re.findall(r"#[0-9A-Fa-f]{6,8}\b", json.dumps(theme)))
+        require(all(HEX_RE.fullmatch(color) for color in serialized_colors), f"Zed {style}: colors must be uppercase six-digit sRGB")
+        require(serialized_colors <= canonical_colors(PALETTE["modes"][style]), f"Zed {style}: contains a non-canonical color")
+        ansi = PALETTE["modes"][style]["ansi"]
+        for index, name in enumerate(ansi_names):
+            require(values[f"terminal.ansi.{name}"] == ansi[index]["hex"], f"Zed {style}: ANSI {index} drifted")
+            require(values[f"terminal.ansi.bright_{name}"] == ansi[index + 8]["hex"], f"Zed {style}: ANSI {index + 8} drifted")
+    if shutil.which("zed") is None:
+        print("  Zed runtime: skipped (zed unavailable; v0.2.0 schema structure passed)")
+
+
 def parse_ghostty_theme(path: Path) -> dict[str, Any]:
     values: dict[str, Any] = {"palette": []}
     for raw in path.read_text(encoding="utf-8").splitlines():
@@ -395,6 +595,7 @@ def verify_documentation() -> None:
         "README.md", "CHANGELOG.md", "CONTRIBUTING.md", "LICENSE", "THIRD_PARTY_REFERENCES.md",
         "docs/ACCESSIBILITY.md", "docs/ARTIFACTS.md", "docs/GHOSTTY.md", "docs/NEOVIM.md",
         "docs/PALETTE.md", "docs/RESEARCH.md", "docs/SHADERS.md", "docs/DEVELOPMENT.md",
+        "docs/EMACS.md", "docs/VSCODE.md", "docs/ZED.md",
     ]
     for relative in required:
         require((ROOT / relative).is_file(), f"required documentation is missing: {relative}")
@@ -410,6 +611,11 @@ def verify_documentation() -> None:
 
 def verify_repository_hygiene() -> None:
     command([sys.executable, "-m", "compileall", "-q", "scripts", "tests"])
+    ruff = shutil.which("ruff")
+    if ruff:
+        command([ruff, "check", "scripts", "tests"])
+    else:
+        print("  Python lint: skipped (ruff unavailable; byte compilation passed)")
     command(["git", "diff", "--check"])
     tracked = command(["git", "ls-files", "AGENTS.md"]).stdout.strip()
     require(not tracked, "workspace-provided AGENTS.md must remain untracked")
@@ -421,6 +627,9 @@ CHECKS: tuple[tuple[str, Callable[[], None]], ...] = (
     ("contrast and accent distinguishability", verify_contrast),
     ("colour-vision simulations and redundant state", verify_colour_vision),
     ("ANSI identity, contrast, and normal/bright separation", verify_ansi),
+    ("Emacs theme structure and runtime", verify_emacs),
+    ("VS Code and Cursor extension structure", verify_vscode),
+    ("Zed extension and theme structure", verify_zed),
     ("Ghostty themes and paired configuration", verify_ghostty),
     ("dry-run installer, backups, and symlinks", verify_installer),
     ("static shader structure and compilation", verify_shaders),

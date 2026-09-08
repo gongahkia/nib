@@ -46,6 +46,72 @@ document research; linked assets are not bundled or hotlinked.
 - **Required attribution:** Apache-2.0 notices apply to copied source; none was
   copied. Links are retained as provenance.
 
+### GNU Emacs custom-theme documentation
+
+- **Creator/publisher:** Free Software Foundation / GNU Project
+- **URLs:** <https://www.gnu.org/software/emacs/manual/html_node/elisp/Custom-Themes.html>
+  and <https://www.gnu.org/s/emacs/manual/html_node/emacs/Custom-Themes.html>
+- **Stated licence:** GNU Free Documentation License 1.3 or later for the GNU
+  Emacs manuals.
+- **AI disclosure:** none stated
+- **Visual/technical lesson:** verified `deftheme`, `custom-theme-set-faces`,
+  `custom-theme-set-variables`, `provide-theme`, `load-theme`, theme-file
+  naming, and `custom-theme-load-path` behavior.
+- **Exact reusable values:** API and file-format facts only; no theme colors.
+- **Required attribution:** none for independently authored implementation;
+  links are retained as provenance.
+
+### Visual Studio Code theming and extension documentation
+
+- **Creator/publisher:** Microsoft
+- **URLs:** <https://code.visualstudio.com/api/extension-guides/color-theme>,
+  <https://code.visualstudio.com/api/extension-capabilities/theming>,
+  <https://code.visualstudio.com/api/references/theme-color>,
+  <https://code.visualstudio.com/api/references/contribution-points#contributes.themes>,
+  and <https://code.visualstudio.com/api/language-extensions/semantic-highlight-guide>
+- **Stated licence:** Code - OSS reference source is MIT; the linked web pages
+  do not state a separate page licence.
+- **AI disclosure:** none stated
+- **Visual/technical lesson:** verified theme contributions, `vs`/`vs-dark`
+  UI kinds, workbench colors, TextMate `tokenColors`, semantic highlighting,
+  token-selector syntax, modifier styling, and six/eight-digit RGB support.
+- **Exact reusable values:** configuration identifiers and format facts only;
+  no theme colors or implementation copied.
+- **Required attribution:** none identified; links are retained as provenance.
+
+### Cursor theme documentation
+
+- **Creator/publisher:** Anysphere / Cursor
+- **URL:** <https://docs.cursor.com/en/configuration/themes>
+- **Stated licence:** no separate documentation licence stated on the page.
+- **AI disclosure:** none stated
+- **Visual/technical lesson:** Cursor inherits VS Code theming and can consume
+  a VS Code-compatible color-theme extension, allowing one generated artifact
+  instead of a divergent duplicate.
+- **Exact reusable values:** compatibility fact only; no theme colors.
+- **Required attribution:** none identified; linked for verification.
+
+### Zed theme and extension documentation
+
+- **Creator/publisher:** Zed Industries
+- **URLs:** <https://zed.dev/docs/extensions/themes>,
+  <https://zed.dev/docs/extensions/developing-extensions>,
+  <https://zed.dev/docs/extensions/publishing/prerequisites>,
+  <https://zed.dev/docs/appearance>, and
+  <https://zed.dev/schema/themes/v0.2.0.json>
+- **Stated licence:** Zed source is primarily GPL-3.0-or-later with marked
+  Apache-2.0 components; the linked web pages do not state a separate page
+  licence.
+- **AI disclosure:** none stated
+- **Visual/technical lesson:** verified theme-family structure, v0.2.0 JSON
+  schema, `extension.toml`, theme-only extension layout, appearance names,
+  UI/syntax/terminal fields, development installation, and paired system-mode
+  settings.
+- **Exact reusable values:** schema identifiers and format facts only; no
+  upstream theme colors or source code copied.
+- **Required attribution:** none for independently authored theme data; links
+  are retained as provenance.
+
 ### Plugin highlight definitions
 
 - **Creator/publisher:** the respective upstream projects
@@ -153,5 +219,6 @@ or exact value was copied, so there is no required attribution.
 Nib is an independent software theme. It is not affiliated with,
 sponsored by, endorsed by, or licensed by Pilot Corporation, C. Josef Lamy
 GmbH, The Sailor Pen Co., Diamine Inks, Pelikan, Paleto, itch.io, Ghostty,
-Neovim, or the plugin projects listed above. Manufacturer and product names
-appear only for factual research attribution.
+Neovim, GNU/FSF, Microsoft, Visual Studio Code, Cursor/Anysphere, Zed
+Industries, or the plugin projects listed above. Manufacturer and product
+names appear only for factual research attribution.
