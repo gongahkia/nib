@@ -1,6 +1,6 @@
 # Preview artifacts
 
-The committed PNG files in `output/playwright/preview/` are deterministic browser reference renders of the static preview laboratory. They are not Ghostty or Neovim screenshots. In particular, `shader-comparison-render.png` is visibly labelled as a simulation and does not claim to reproduce Ghostty's post-processing exactly.
+The committed PNG files in `output/playwright/preview/` are deterministic browser reference renders of the static preview laboratory. They are not Ghostty or Neovim screenshots; Ghostty was available for configuration validation, but no compositor-level terminal capture was used. In particular, `shader-comparison-render.png` is visibly labelled as a simulation and does not claim to reproduce Ghostty's post-processing exactly.
 
 The release-candidate renders were captured on Fedora Linux 43 with:
 
@@ -44,7 +44,7 @@ Every committed PNG was inspected at native resolution. The browser reported no 
 | --- | ---: | --- |
 | `light-overview-render.png` | 742 × 833 | light palette, editor, swatches, and terminal |
 | `dark-overview-render.png` | 742 × 833 | dark palette, editor, swatches, and terminal |
-| `ansi-comparison-render.png` | 1504 × 638 | normal and bright ANSI identities plus transcript |
+| `ansi-comparison-render.png` | 1504 × 733 | normal and bright ANSI identities plus transcript |
 | `syntax-detail-render.png` | 1504 × 686 | syntax hierarchy, selection, search, completion, diagnostics, and statusline |
 | `shader-comparison-render.png` | 1504 × 406 | truthfully labelled shader-off/reference-simulation comparison |
 
