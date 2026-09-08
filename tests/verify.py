@@ -214,6 +214,7 @@ def verify_ghostty() -> None:
         path = ROOT / "ghostty" / "themes" / f"Quireveil {style}"
         values = parse_ghostty_theme(path)
         require(required <= values.keys(), f"{path}: missing theme keys")
+        require(set(values) == required | {"palette"}, f"{path}: contains an unaudited theme key")
         require(not any("shader" in key for key in values), f"{path}: core theme unexpectedly loads a shader")
         indexes = [int(entry.split("=", 1)[0]) for entry in values["palette"]]
         require(indexes == list(range(16)), f"{path}: ANSI palette is incomplete")
@@ -242,8 +243,43 @@ def verify_ghostty() -> None:
         environment = os.environ.copy()
         environment["XDG_CONFIG_HOME"] = str(config_home)
         command([ghostty, "+validate-config", f"--config-file={config}"], env=environment)
+        for preset in ("daily", "showcase"):
+            shader_config = config_home / f"shaders-{preset}.conf"
+            source = (ROOT / "ghostty" / "examples" / f"shaders-{preset}.conf").read_text(encoding="utf-8")
+            shader_config.write_text(source.replace("/absolute/path/to/quireveil", str(ROOT)), encoding="utf-8")
+            command([ghostty, "+validate-config", f"--config-file={shader_config}"], env=environment)
     version = command([ghostty, "+version"]).stdout.splitlines()[0]
     print(f"  Ghostty runtime: pass ({version})")
+
+
+def verify_installer() -> None:
+    script = [sys.executable, "scripts/install_ghostty.py"]
+    with tempfile.TemporaryDirectory(prefix="quireveil-installer-") as temporary:
+        root = Path(temporary)
+        copy_destination = root / "copy" / "themes"
+        command(script + ["--dest", str(copy_destination)])
+        require(not copy_destination.exists(), "installer dry-run created a destination")
+        command(script + ["--dest", str(copy_destination), "--apply"])
+        for source in (ROOT / "ghostty" / "themes").iterdir():
+            require((copy_destination / source.name).read_bytes() == source.read_bytes(), f"installer copy mismatch: {source.name}")
+        command(script + ["--dest", str(copy_destination), "--apply"])
+
+        occupied = copy_destination / "Quireveil Light"
+        occupied.write_text("user content\n", encoding="utf-8")
+        blocked = subprocess.run(script + ["--dest", str(copy_destination), "--apply"], cwd=ROOT, text=True, capture_output=True)
+        require(blocked.returncode == 2, "installer did not refuse an occupied destination")
+        require(occupied.read_text(encoding="utf-8") == "user content\n", "blocked install changed user content")
+        command(script + ["--dest", str(copy_destination), "--apply", "--force"])
+        backups = list(copy_destination.glob("Quireveil Light.bak-*"))
+        require(len(backups) == 1, "forced install did not make exactly one backup")
+        require(backups[0].read_text(encoding="utf-8") == "user content\n", "installer backup lost user content")
+
+        link_destination = root / "link" / "themes"
+        command(script + ["--dest", str(link_destination), "--link", "--apply"])
+        for source in (ROOT / "ghostty" / "themes").iterdir():
+            installed = link_destination / source.name
+            require(installed.is_symlink(), f"link install created a non-symlink: {source.name}")
+            require(installed.resolve() == source.resolve(), f"link install points to the wrong source: {source.name}")
 
 
 def verify_shaders() -> None:
@@ -377,6 +413,7 @@ CHECKS: tuple[tuple[str, Callable[[], None]], ...] = (
     ("colour-vision simulations and redundant state", verify_colour_vision),
     ("ANSI identity, contrast, and normal/bright separation", verify_ansi),
     ("Ghostty themes and paired configuration", verify_ghostty),
+    ("dry-run installer, backups, and symlinks", verify_installer),
     ("static shader structure and compilation", verify_shaders),
     ("preview laboratory and committed renders", verify_preview),
     ("language and terminal fixtures", verify_fixtures),
