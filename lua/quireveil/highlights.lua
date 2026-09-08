@@ -147,7 +147,7 @@ local function legacy_syntax(palette, options)
   }
 end
 
-local function treesitter_groups()
+local function treesitter_groups(options)
   return {
     ["@variable"] = { link = "Identifier" },
     ["@variable.builtin"] = { link = "Special" },
@@ -212,7 +212,7 @@ local function treesitter_groups()
     ["@comment.todo"] = { link = "Todo" },
     ["@comment.note"] = { link = "DiagnosticInfo" },
     ["@markup.strong"] = { bold = true },
-    ["@markup.italic"] = { italic = true },
+    ["@markup.italic"] = options.italics and { italic = true } or {},
     ["@markup.strikethrough"] = { strikethrough = true },
     ["@markup.underline"] = { underline = true },
     ["@markup.heading"] = { link = "Title" },
@@ -281,7 +281,7 @@ local function diagnostic_groups(palette)
   }
 end
 
-local function semantic_groups()
+local function semantic_groups(options)
   return {
     ["@lsp.type.class"] = { link = "@type" },
     ["@lsp.type.comment"] = { link = "@comment" },
@@ -308,7 +308,7 @@ local function semantic_groups()
     ["@lsp.type.variable"] = { link = "@variable" },
     ["@lsp.mod.deprecated"] = { strikethrough = true },
     ["@lsp.mod.readonly"] = { bold = true },
-    ["@lsp.mod.documentation"] = { italic = true },
+    ["@lsp.mod.documentation"] = options.italics and { italic = true } or {},
     ["@lsp.mod.defaultLibrary"] = { underline = true },
     ["@lsp.typemod.variable.readonly"] = { link = "@constant" },
     ["@lsp.typemod.property.readonly"] = { link = "@constant" },
@@ -349,9 +349,9 @@ function M.groups(palette, options)
     "force",
     editor_groups(palette, options),
     legacy_syntax(palette, options),
-    treesitter_groups(),
+    treesitter_groups(options),
     diagnostic_groups(palette),
-    semantic_groups(),
+    semantic_groups(options),
     markdown_and_help()
   )
 end
