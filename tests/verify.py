@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dependency-free release checks for Quireveil."""
+"""Dependency-free release checks for Nib."""
 
 from __future__ import annotations
 
@@ -106,7 +106,7 @@ def validate_schema(value: Any, rule: dict[str, Any], path: str = "$") -> None:
 
 def verify_palette() -> None:
     validate_schema(PALETTE, SCHEMA)
-    require(PALETTE["meta"]["slug"] == "quireveil", "unexpected palette slug")
+    require(PALETTE["meta"]["slug"] == "nib", "unexpected palette slug")
     require(PALETTE["meta"]["minimum_neovim"] == "0.10.0", "unexpected Neovim baseline")
     require(PALETTE["meta"]["minimum_ghostty"] == "1.3.0", "unexpected Ghostty baseline")
     for style, mode in PALETTE["modes"].items():
@@ -121,17 +121,26 @@ def verify_palette() -> None:
 
 def verify_generation() -> None:
     command([sys.executable, "scripts/generate.py", "--check"])
+    require(
+        sorted(path.name for path in (ROOT / "colors").glob("*.lua")) == ["nib-dark.lua", "nib-light.lua", "nib.lua"],
+        "public Neovim entry points must be exactly nib, nib-light, and nib-dark",
+    )
+    require(
+        sorted(path.name for path in (ROOT / "ghostty" / "themes").iterdir()) == ["nib-dark", "nib-light"],
+        "public Ghostty variants must be exactly nib-light and nib-dark",
+    )
+    require((ROOT / "lua" / "nib" / "init.lua").is_file(), "nib Lua namespace is missing")
     first = render_files(PALETTE)
     second = render_files(load_palette(ROOT))
     require(first == second, "generator output is not deterministic")
     for relative, content in first.items():
         require(MARKER in "\n".join(content.splitlines()[:3]), f"generated marker missing: {relative}")
     authored = [
-        ROOT / "colors" / "quireveil.lua",
-        ROOT / "lua" / "quireveil" / "init.lua",
-        ROOT / "lua" / "quireveil" / "highlights.lua",
-        ROOT / "lua" / "quireveil" / "integrations.lua",
-        ROOT / "lua" / "lualine" / "themes" / "quireveil.lua",
+        ROOT / "colors" / "nib.lua",
+        ROOT / "lua" / "nib" / "init.lua",
+        ROOT / "lua" / "nib" / "highlights.lua",
+        ROOT / "lua" / "nib" / "integrations.lua",
+        ROOT / "lua" / "lualine" / "themes" / "nib.lua",
         ROOT / "preview" / "index.html",
         ROOT / "preview" / "style.css",
         ROOT / "preview" / "app.js",
@@ -170,7 +179,7 @@ def verify_colour_vision() -> None:
                 distance = oklab_distance(first, second, deficiency)
                 require(math.isfinite(distance), f"{style} {label}: invalid {deficiency} result")
                 require(distance >= 0.025, f"{style} {label}: {deficiency} distance regressed ({distance:.3f})")
-    highlights = (ROOT / "lua" / "quireveil" / "highlights.lua").read_text(encoding="utf-8")
+    highlights = (ROOT / "lua" / "nib" / "highlights.lua").read_text(encoding="utf-8")
     require(highlights.count("undercurl = true") >= 9, "diagnostics/spelling lack undercurl redundancy")
     require("strikethrough = true" in highlights, "deprecated content lacks strikethrough redundancy")
     require(all(f"DiagnosticSign{name}" in highlights for name in ("Error", "Warn", "Info", "Hint")), "diagnostic signs are incomplete")
@@ -210,8 +219,8 @@ def parse_ghostty_theme(path: Path) -> dict[str, Any]:
 
 def verify_ghostty() -> None:
     required = {"background", "foreground", "cursor-color", "cursor-text", "selection-background", "selection-foreground"}
-    for style in ("Light", "Dark"):
-        path = ROOT / "ghostty" / "themes" / f"Quireveil {style}"
+    for style in ("light", "dark"):
+        path = ROOT / "ghostty" / "themes" / f"nib-{style}"
         values = parse_ghostty_theme(path)
         require(required <= values.keys(), f"{path}: missing theme keys")
         require(set(values) == required | {"palette"}, f"{path}: contains an unaudited theme key")
@@ -219,7 +228,7 @@ def verify_ghostty() -> None:
         indexes = [int(entry.split("=", 1)[0]) for entry in values["palette"]]
         require(indexes == list(range(16)), f"{path}: ANSI palette is incomplete")
     paired = (ROOT / "ghostty" / "examples" / "paired.conf").read_text(encoding="utf-8")
-    require("theme = light:Quireveil Light,dark:Quireveil Dark" in paired, "paired theme syntax is missing")
+    require("theme = light:nib-light,dark:nib-dark" in paired, "paired theme syntax is missing")
     require("window-theme = system" in paired, "paired example does not follow OS appearance")
     for preset in ("daily", "showcase"):
         example = (ROOT / "ghostty" / "examples" / f"shaders-{preset}.conf").read_text(encoding="utf-8")
@@ -232,7 +241,7 @@ def verify_ghostty() -> None:
     if ghostty is None:
         print("  Ghostty runtime: skipped (ghostty unavailable; structural checks passed)")
         return
-    with tempfile.TemporaryDirectory(prefix="quireveil-ghostty-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="nib-ghostty-") as temporary:
         config_home = Path(temporary)
         theme_dir = config_home / "ghostty" / "themes"
         theme_dir.mkdir(parents=True)
@@ -246,7 +255,7 @@ def verify_ghostty() -> None:
         for preset in ("daily", "showcase"):
             shader_config = config_home / f"shaders-{preset}.conf"
             source = (ROOT / "ghostty" / "examples" / f"shaders-{preset}.conf").read_text(encoding="utf-8")
-            shader_config.write_text(source.replace("/absolute/path/to/quireveil", str(ROOT)), encoding="utf-8")
+            shader_config.write_text(source.replace("/absolute/path/to/nib", str(ROOT)), encoding="utf-8")
             command([ghostty, "+validate-config", f"--config-file={shader_config}"], env=environment)
     version = command([ghostty, "+version"]).stdout.splitlines()[0]
     print(f"  Ghostty runtime: pass ({version})")
@@ -254,7 +263,7 @@ def verify_ghostty() -> None:
 
 def verify_installer() -> None:
     script = [sys.executable, "scripts/install_ghostty.py"]
-    with tempfile.TemporaryDirectory(prefix="quireveil-installer-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="nib-installer-") as temporary:
         root = Path(temporary)
         copy_destination = root / "copy" / "themes"
         command(script + ["--dest", str(copy_destination)])
@@ -264,13 +273,13 @@ def verify_installer() -> None:
             require((copy_destination / source.name).read_bytes() == source.read_bytes(), f"installer copy mismatch: {source.name}")
         command(script + ["--dest", str(copy_destination), "--apply"])
 
-        occupied = copy_destination / "Quireveil Light"
+        occupied = copy_destination / "nib-light"
         occupied.write_text("user content\n", encoding="utf-8")
         blocked = subprocess.run(script + ["--dest", str(copy_destination), "--apply"], cwd=ROOT, text=True, capture_output=True)
         require(blocked.returncode == 2, "installer did not refuse an occupied destination")
         require(occupied.read_text(encoding="utf-8") == "user content\n", "blocked install changed user content")
         command(script + ["--dest", str(copy_destination), "--apply", "--force"])
-        backups = list(copy_destination.glob("Quireveil Light.bak-*"))
+        backups = list(copy_destination.glob("nib-light.bak-*"))
         require(len(backups) == 1, "forced install did not make exactly one backup")
         require(backups[0].read_text(encoding="utf-8") == "user content\n", "installer backup lost user content")
 
@@ -367,7 +376,7 @@ def verify_fixtures() -> None:
         result = command([gofmt, "-d", "fixtures/go/ledger.go"])
         require(not result.stdout, "Go fixture is not gofmt-clean")
     transcript = (ROOT / "fixtures" / "terminal" / "transcript.txt").read_text(encoding="utf-8")
-    for evidence in ("$ ls -F", "$ git status --short", "PASS", "WARN", "FAIL", "$ man quireveil", "https://", "remote host"):
+    for evidence in ("$ ls -F", "$ git status --short", "PASS", "WARN", "FAIL", "$ man nib", "https://", "remote host"):
         require(evidence in transcript, f"terminal fixture lacks representative output: {evidence}")
 
 

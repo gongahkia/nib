@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate all palette-derived Quireveil assets."""
+"""Generate all palette-derived Nib assets."""
 
 from __future__ import annotations
 
@@ -44,12 +44,12 @@ def generated_lua_palette(style: str, mode: dict[str, Any]) -> str:
 def generated_entry(style: str) -> str:
     return (
         f"-- {MARKER}\n"
-        f"require(\"quireveil\").load(\"{style}\", \"quireveil{'' if style == 'auto' else '-' + style}\")\n"
+        f"require(\"nib\").load(\"{style}\", \"nib{'' if style == 'auto' else '-' + style}\")\n"
     )
 
 
 def generated_ghostty(style: str, mode: dict[str, Any]) -> str:
-    title = f"Quireveil {style.title()}"
+    title = f"nib-{style}"
     lines = [
         f"# {MARKER}",
         f"# {title} — opaque core theme",
@@ -65,7 +65,7 @@ def generated_ghostty(style: str, mode: dict[str, Any]) -> str:
 
 
 def css_name(path: str) -> str:
-    return "--q-" + path.replace(".", "-").replace("_", "-")
+    return "--nib-" + path.replace(".", "-").replace("_", "-")
 
 
 def generated_css(palette: dict[str, Any]) -> str:
@@ -78,14 +78,14 @@ def generated_css(palette: dict[str, Any]) -> str:
                 continue
             blocks.append(f"  {css_name(path)}: {color};")
         for entry in mode["ansi"]:
-            blocks.append(f"  --q-ansi-{entry['index']}: {entry['hex']};")
+            blocks.append(f"  --nib-ansi-{entry['index']}: {entry['hex']};")
         blocks.append("}")
     return "\n".join(blocks) + "\n"
 
 
 def generated_javascript(palette: dict[str, Any]) -> str:
     data = json.dumps(palette, indent=2, sort_keys=True)
-    return f"/* {MARKER} */\nwindow.QUIREVEIL_PALETTE = {data};\n"
+    return f"/* {MARKER} */\nwindow.NIB_PALETTE = {data};\n"
 
 
 def generated_export(palette: dict[str, Any]) -> str:
@@ -233,20 +233,20 @@ def generated_color_vision(palette: dict[str, Any]) -> str:
 
 def render_files(palette: dict[str, Any]) -> dict[Path, str]:
     files: dict[Path, str] = {
-        Path("colors/quireveil.lua"): generated_entry("auto"),
-        Path("colors/quireveil-light.lua"): generated_entry("light"),
-        Path("colors/quireveil-dark.lua"): generated_entry("dark"),
-        Path("ghostty/themes/Quireveil Light"): generated_ghostty("light", palette["modes"]["light"]),
-        Path("ghostty/themes/Quireveil Dark"): generated_ghostty("dark", palette["modes"]["dark"]),
+        Path("colors/nib.lua"): generated_entry("auto"),
+        Path("colors/nib-light.lua"): generated_entry("light"),
+        Path("colors/nib-dark.lua"): generated_entry("dark"),
+        Path("ghostty/themes/nib-light"): generated_ghostty("light", palette["modes"]["light"]),
+        Path("ghostty/themes/nib-dark"): generated_ghostty("dark", palette["modes"]["dark"]),
         Path("preview/generated/palette.css"): generated_css(palette),
         Path("preview/generated/palette.js"): generated_javascript(palette),
-        Path("dist/quireveil-palette.json"): generated_export(palette),
+        Path("dist/nib-palette.json"): generated_export(palette),
         Path("docs/generated/CONTRAST.md"): generated_contrast(palette),
         Path("docs/generated/ANSI.md"): generated_ansi(palette),
         Path("docs/generated/COLOR_VISION.md"): generated_color_vision(palette),
     }
     for style, mode in palette["modes"].items():
-        files[Path(f"lua/quireveil/palette/{style}.lua")] = generated_lua_palette(style, mode)
+        files[Path(f"lua/nib/palette/{style}.lua")] = generated_lua_palette(style, mode)
     return files
 
 

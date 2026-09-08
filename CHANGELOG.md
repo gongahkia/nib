@@ -1,10 +1,12 @@
 # Changelog
 
-All notable changes to Quireveil are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+All notable changes to Nib are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
-No changes yet.
+### Changed
+
+- Renamed the public theme and Lua namespace to `nib`; the explicit Neovim and Ghostty variants are now exactly `nib-light` and `nib-dark`.
 
 ## 0.1.0 - 2026-09-09
 

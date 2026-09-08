@@ -6,22 +6,27 @@ record consequential technical and design decisions; the source ledger is in
 
 ## Name collision check
 
-The chosen name is **Quireveil**, with the lowercase slug `quireveil`. A quire
-is a gathering of folded paper; “veil” suggests the theme's restrained surface
-texture. The name is descriptive without borrowing an ink manufacturer's name.
+The final user-directed name is **nib**, with the lowercase slug and base theme
+identifier `nib`; its explicit variants are `nib-light` and `nib-dark`. The
+name directly evokes the writing instrument central to the visual identity and
+does not borrow an ink manufacturer's name.
 
 The point-in-time check covered:
 
-- GitHub repository and code search (`gh search repos/code quireveil`)
+- GitHub repository search (`gh search repos 'nib in:name'`)
 - the installed Ghostty 1.3.1 theme catalog (`ghostty +list-themes --plain`)
 - npm, PyPI, crates.io, and RubyGems registry endpoints
 - web searches for Neovim plugins, Ghostty themes, software packages, and exact
   trademark wording
 
-No exact project, plugin, theme, registry package, or relevant exact-word mark
-was found. Unrelated search results were substring/OCR matches. This is a basic
-collision screen, not a legal clearance opinion, and registry availability can
-change after the access date.
+Unlike the earlier autonomous candidate name, `nib` is not unique. Exact-name
+GitHub repositories include `stylus/nib`, `nib-edit/nib`, and `mudler/nib`;
+packages named `nib` exist on npm, PyPI, crates.io, and RubyGems. No exact
+`nib`, `nib-light`, or `nib-dark` entry was present in the installed Ghostty
+theme catalog. The user explicitly selected this generic name after reviewing
+the completed theme, so these collisions are documented rather than used to
+override that decision. This is a basic point-in-time screen, not a legal
+clearance opinion, and availability can change after the access date.
 
 ## Verified technical behavior
 
@@ -31,7 +36,7 @@ change after the access date.
   `$XDG_CONFIG_HOME/ghostty/themes` (normally `~/.config/ghostty/themes`) and
   then in Ghostty's resources `themes` directory.
 - A paired theme requires both selectors and accepts
-  `theme = light:Quireveil Light,dark:Quireveil Dark`. Whitespace is trimmed;
+  `theme = light:nib-light,dark:nib-dark`. Whitespace is trimmed;
   selector order is not significant. Paired automatic theme selection is
   documented as available since Ghostty 1.3.0.
 - Theme-safe color settings used here are `background`, `foreground`,
@@ -60,7 +65,7 @@ change after the access date.
   `@lsp.typemod.<type>.<modifier>.<ft>`. Modifier and typemod priorities are
   respectively one and two above the semantic-token base priority.
 - Because server legends can be inconsistent and may contain off-spec names,
-  Quireveil maps standard semantic types conservatively, keeps the Tree-sitter
+  Nib maps standard semantic types conservatively, keeps the Tree-sitter
   baseline complete, and uses modifiers mainly for non-color cues such as
   readonly emphasis and deprecated strikethrough.
 - Terminal colors are exposed through `vim.g.terminal_color_0` through `15`.
@@ -69,7 +74,7 @@ change after the access date.
 
 Physical ink photographs are not colorimetric references. Line width, feed,
 paper absorbency and coating, illumination, camera white balance, scanning,
-compression, and display calibration all change appearance. Quireveil borrows
+compression, and display calibration all change appearance. Nib borrows
 relationships instead: blue-black depth, pooling-like value steps, moss before
 teal in non-blue prominence, and a small set of wine, violet, ochre, sepia, and
 graphite accents.
@@ -112,4 +117,3 @@ included in this repository.
   and/or chroma. They are not repainted into a blue monochrome.
 - The generator works entirely in six-digit sRGB. No hidden interpolation or
   display-dependent conversion is used, keeping regeneration deterministic.
-

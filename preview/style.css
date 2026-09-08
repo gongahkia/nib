@@ -4,8 +4,8 @@
 
 :root {
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  color: var(--q-foreground-primary);
-  background: var(--q-background);
+  color: var(--nib-foreground-primary);
+  background: var(--nib-background);
   font-synthesis: none;
 }
 
@@ -17,9 +17,9 @@ body {
   margin: 0;
   min-width: 20rem;
   background:
-    radial-gradient(circle at 8% 5%, color-mix(in srgb, var(--q-search-background) 18%, transparent), transparent 28rem),
-    var(--q-background);
-  color: var(--q-foreground-primary);
+    radial-gradient(circle at 8% 5%, color-mix(in srgb, var(--nib-search-background) 18%, transparent), transparent 28rem),
+    var(--nib-background);
+  color: var(--nib-foreground-primary);
 }
 
 button,
@@ -28,7 +28,7 @@ select {
 }
 
 a {
-  color: var(--q-hyperlink);
+  color: var(--nib-hyperlink);
   text-underline-offset: 0.18em;
 }
 
@@ -39,8 +39,8 @@ a {
   z-index: 10;
   transform: translateY(-200%);
   padding: 0.7rem 1rem;
-  color: var(--q-cursor-foreground);
-  background: var(--q-cursor-background);
+  color: var(--nib-cursor-foreground);
+  background: var(--nib-cursor-background);
 }
 
 .skip-link:focus {
@@ -56,14 +56,14 @@ main,
 
 .hero {
   padding: 6rem 0 3.5rem;
-  border-bottom: 1px solid var(--q-border-default);
+  border-bottom: 1px solid var(--nib-border-default);
 }
 
 .eyebrow,
 .kicker,
 .mode-meta,
 .render-label {
-  color: var(--q-moss-primary);
+  color: var(--nib-moss-primary);
   font-size: 0.73rem;
   font-weight: 750;
   letter-spacing: 0.14em;
@@ -81,7 +81,7 @@ p {
 h1 {
   max-width: 12ch;
   margin: 0.2rem 0 0.8rem;
-  color: var(--q-blue-ink-deep);
+  color: var(--nib-blue-ink-deep);
   font-family: Georgia, ui-serif, serif;
   font-size: clamp(4.5rem, 11vw, 9.5rem);
   font-weight: 500;
@@ -92,7 +92,7 @@ h1 {
 .lede {
   max-width: 49rem;
   margin-bottom: 2rem;
-  color: var(--q-foreground-secondary);
+  color: var(--nib-foreground-secondary);
   font-family: Georgia, ui-serif, serif;
   font-size: clamp(1.2rem, 2.6vw, 1.75rem);
   line-height: 1.45;
@@ -115,7 +115,7 @@ h1 {
 
 .controls legend,
 .controls label {
-  color: var(--q-foreground-muted);
+  color: var(--nib-foreground-muted);
   font-size: 0.78rem;
   font-weight: 700;
 }
@@ -133,10 +133,10 @@ h1 {
 button,
 select {
   min-height: 2.5rem;
-  border: 1px solid var(--q-border-default);
+  border: 1px solid var(--nib-border-default);
   border-radius: 0.2rem;
-  color: var(--q-foreground-primary);
-  background: var(--q-surface-floating);
+  color: var(--nib-foreground-primary);
+  background: var(--nib-surface-floating);
 }
 
 button {
@@ -151,14 +151,14 @@ select {
 
 button:hover,
 button.is-active {
-  color: var(--q-selection-foreground);
-  background: var(--q-selection-background);
+  color: var(--nib-selection-foreground);
+  background: var(--nib-selection-background);
 }
 
 button:focus-visible,
 select:focus-visible,
 a:focus-visible {
-  outline: 3px solid var(--q-focus);
+  outline: 3px solid var(--nib-focus);
   outline-offset: 3px;
 }
 
@@ -180,7 +180,7 @@ main {
 
 .section-heading h2 {
   margin: 0;
-  color: var(--q-blue-ink-deep);
+  color: var(--nib-blue-ink-deep);
   font-family: Georgia, ui-serif, serif;
   font-size: clamp(2rem, 4vw, 3.4rem);
   font-weight: 500;
@@ -190,7 +190,7 @@ main {
 .section-heading > p {
   max-width: 34rem;
   margin: 0;
-  color: var(--q-foreground-muted);
+  color: var(--nib-foreground-muted);
   line-height: 1.55;
 }
 
@@ -211,11 +211,11 @@ main {
 .mode-card {
   overflow: hidden;
   padding: clamp(1.3rem, 2.8vw, 2.4rem);
-  border: 1px solid var(--q-border-default);
+  border: 1px solid var(--nib-border-default);
   border-radius: 0.45rem;
-  color: var(--q-foreground-primary);
-  background: var(--q-background);
-  box-shadow: 0 1.8rem 5rem color-mix(in srgb, var(--q-ansi-0) 18%, transparent);
+  color: var(--nib-foreground-primary);
+  background: var(--nib-background);
+  box-shadow: 0 1.8rem 5rem color-mix(in srgb, var(--nib-ansi-0) 18%, transparent);
 }
 
 .mode-grid.show-light [data-mode-card="dark"],
@@ -251,15 +251,15 @@ main {
   height: 2rem;
   place-items: center;
   border-radius: 50%;
-  color: var(--q-cursor-foreground);
-  background: var(--q-cursor-background);
+  color: var(--nib-cursor-foreground);
+  background: var(--nib-cursor-background);
   font-size: 0.75rem;
   font-weight: 800;
 }
 
 .mode-header h3 {
   margin: 0;
-  color: var(--q-blue-ink-deep);
+  color: var(--nib-blue-ink-deep);
   font-family: Georgia, ui-serif, serif;
   font-size: 1.65rem;
   font-weight: 500;
@@ -268,13 +268,13 @@ main {
 .notebook-rule {
   height: 0.35rem;
   margin: 1.25rem 0 1.35rem;
-  border-top: 1px solid var(--q-border-default);
-  border-bottom: 1px solid var(--q-border-subtle);
+  border-top: 1px solid var(--nib-border-default);
+  border-bottom: 1px solid var(--nib-border-subtle);
 }
 
 .mode-intro {
   min-height: 4.8rem;
-  color: var(--q-foreground-secondary);
+  color: var(--nib-foreground-secondary);
   line-height: 1.6;
 }
 
@@ -284,10 +284,10 @@ main {
 .ansi-columns article,
 .state-grid article,
 .paper-sample {
-  border: 1px solid var(--q-border-default);
+  border: 1px solid var(--nib-border-default);
   border-radius: 0.3rem;
-  color: var(--q-foreground-primary);
-  background: var(--q-surface-elevated);
+  color: var(--nib-foreground-primary);
+  background: var(--nib-surface-elevated);
 }
 
 .mini-editor,
@@ -321,9 +321,9 @@ code {
 .mini-terminal::before {
   display: block;
   padding: 0.45rem 0.8rem;
-  border-bottom: 1px solid var(--q-border-default);
-  color: var(--q-foreground-muted);
-  background: var(--q-surface-subtle);
+  border-bottom: 1px solid var(--nib-border-default);
+  color: var(--nib-foreground-muted);
+  background: var(--nib-surface-subtle);
   font-family: ui-monospace, monospace;
   font-size: 0.7rem;
 }
@@ -333,7 +333,7 @@ code {
 }
 
 .mini-terminal::before {
-  content: "ghostty  —  quireveil";
+  content: "ghostty  —  nib";
 }
 
 .swatches {
@@ -348,7 +348,7 @@ code {
 
 .swatch-color {
   height: 2rem;
-  border: 1px solid var(--q-border-default);
+  border: 1px solid var(--nib-border-default);
   border-radius: 0.18rem;
 }
 
@@ -356,7 +356,7 @@ code {
   display: block;
   overflow: hidden;
   margin-top: 0.3rem;
-  color: var(--q-foreground-muted);
+  color: var(--nib-foreground-muted);
   font-size: 0.62rem;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -367,20 +367,20 @@ code {
 .audit {
   margin-top: 5rem;
   padding-top: 3rem;
-  border-top: 1px solid var(--q-border-default);
+  border-top: 1px solid var(--nib-border-default);
 }
 
 .editor-window {
   overflow: hidden;
-  background: var(--q-background);
-  box-shadow: 0 1.4rem 4rem color-mix(in srgb, var(--q-ansi-0) 16%, transparent);
+  background: var(--nib-background);
+  box-shadow: 0 1.4rem 4rem color-mix(in srgb, var(--nib-ansi-0) 16%, transparent);
 }
 
 .window-bar {
   padding: 0.65rem 1rem;
-  border-bottom: 1px solid var(--q-border-default);
-  color: var(--q-foreground-muted);
-  background: var(--q-surface-elevated);
+  border-bottom: 1px solid var(--nib-border-default);
+  color: var(--nib-foreground-muted);
+  background: var(--nib-surface-elevated);
   font-family: ui-monospace, monospace;
   font-size: 0.72rem;
 }
@@ -391,13 +391,13 @@ code {
   grid-template-columns: 2.8rem 1fr;
   min-height: 29rem;
   padding: 1.15rem 0;
-  background: var(--q-background);
+  background: var(--nib-background);
 }
 
 .gutter {
   padding-right: 0.8rem;
-  color: var(--q-foreground-disabled);
-  background: var(--q-background);
+  color: var(--nib-foreground-disabled);
+  background: var(--nib-background);
   font-family: ui-monospace, monospace;
   font-size: 0.78rem;
   line-height: 1.75;
@@ -409,7 +409,7 @@ code {
   overflow: hidden;
   margin: 0;
   padding-right: 1rem;
-  color: var(--q-foreground-primary);
+  color: var(--nib-foreground-primary);
   font-size: 0.78rem;
   line-height: 1.75;
   white-space: pre;
@@ -419,10 +419,10 @@ code {
 .diagnostic-float {
   position: absolute;
   z-index: 2;
-  border: 1px solid var(--q-border-default);
+  border: 1px solid var(--nib-border-default);
   border-radius: 0.2rem;
-  background: var(--q-surface-floating);
-  box-shadow: 0 0.8rem 2rem color-mix(in srgb, var(--q-ansi-0) 20%, transparent);
+  background: var(--nib-surface-floating);
+  box-shadow: 0 0.8rem 2rem color-mix(in srgb, var(--nib-ansi-0) 20%, transparent);
   font-size: 0.68rem;
 }
 
@@ -442,23 +442,23 @@ code {
 
 .completion strong,
 .completion strong + span {
-  color: var(--q-selection-foreground);
-  background: var(--q-selection-background);
+  color: var(--nib-selection-foreground);
+  background: var(--nib-selection-background);
 }
 
 .completion b {
-  color: var(--q-blue-ink-bright);
+  color: var(--nib-blue-ink-bright);
 }
 
 .completion i {
-  color: var(--q-moss-primary);
+  color: var(--nib-moss-primary);
 }
 
 .diagnostic-float {
   right: 1rem;
   bottom: 1.1rem;
   padding: 0.65rem 0.75rem;
-  color: var(--q-diagnostic-error);
+  color: var(--nib-diagnostic-error);
 }
 
 .diagnostic-float b {
@@ -467,20 +467,20 @@ code {
   height: 1.25rem;
   margin-right: 0.35rem;
   place-items: center;
-  color: var(--q-background);
-  background: var(--q-diagnostic-error);
+  color: var(--nib-background);
+  background: var(--nib-diagnostic-error);
 }
 
 .diagnostic-float small {
   margin-left: 1.65rem;
-  color: var(--q-foreground-muted);
+  color: var(--nib-foreground-muted);
 }
 
 .statusline {
   min-height: 2rem;
   padding-right: 0.8rem;
-  color: var(--q-foreground-muted);
-  background: var(--q-surface-subtle);
+  color: var(--nib-foreground-muted);
+  background: var(--nib-surface-subtle);
   font-family: ui-monospace, monospace;
   font-size: 0.68rem;
 }
@@ -490,26 +490,26 @@ code {
   display: grid;
   place-items: center;
   padding: 0 0.8rem;
-  color: var(--q-cursor-foreground);
-  background: var(--q-blue-ink-primary);
+  color: var(--nib-cursor-foreground);
+  background: var(--nib-blue-ink-primary);
 }
 
-.tok-comment { color: var(--q-foreground-muted); font-style: italic; }
-.tok-keyword { color: var(--q-blue-ink-deep); font-weight: 700; }
-.tok-control { color: var(--q-burgundy); font-weight: 700; }
-.tok-type { color: var(--q-moss-primary); font-weight: 700; }
-.tok-function { color: var(--q-blue-ink-bright); font-weight: 700; }
-.tok-string { color: var(--q-teal-primary); }
-.tok-number { color: var(--q-amber); }
-.tok-property { color: var(--q-sepia); }
-.tok-special { color: var(--q-violet); }
+.tok-comment { color: var(--nib-foreground-muted); font-style: italic; }
+.tok-keyword { color: var(--nib-blue-ink-deep); font-weight: 700; }
+.tok-control { color: var(--nib-burgundy); font-weight: 700; }
+.tok-type { color: var(--nib-moss-primary); font-weight: 700; }
+.tok-function { color: var(--nib-blue-ink-bright); font-weight: 700; }
+.tok-string { color: var(--nib-teal-primary); }
+.tok-number { color: var(--nib-amber); }
+.tok-property { color: var(--nib-sepia); }
+.tok-special { color: var(--nib-violet); }
 .tok-operator,
-.tok-punctuation { color: var(--q-graphite); }
-.tok-search { color: var(--q-search-foreground); background: var(--q-search-background); }
-.tok-selection { color: var(--q-selection-foreground); background: var(--q-selection-background); }
+.tok-punctuation { color: var(--nib-graphite); }
+.tok-search { color: var(--nib-search-foreground); background: var(--nib-search-background); }
+.tok-selection { color: var(--nib-selection-foreground); background: var(--nib-selection-background); }
 .tok-error {
   text-decoration-line: underline;
-  text-decoration-color: var(--q-diagnostic-error);
+  text-decoration-color: var(--nib-diagnostic-error);
   text-decoration-style: wavy;
   text-underline-offset: 0.18em;
 }
@@ -517,18 +517,18 @@ code {
 .ansi-section,
 .shader-section {
   padding: 2rem;
-  border: 1px solid var(--q-border-default);
+  border: 1px solid var(--nib-border-default);
   border-radius: 0.45rem;
-  background: var(--q-surface-floating);
+  background: var(--nib-surface-floating);
 }
 
 .ansi-columns article {
   padding: 1rem;
-  background: var(--q-background);
+  background: var(--nib-background);
 }
 
 .ansi-columns h3 {
-  color: var(--q-blue-ink-deep);
+  color: var(--nib-blue-ink-deep);
   font-family: Georgia, serif;
   font-weight: 500;
 }
@@ -541,7 +541,7 @@ code {
 
 .ansi-cell {
   min-width: 0;
-  color: var(--q-foreground-primary);
+  color: var(--nib-foreground-primary);
   font-family: ui-monospace, monospace;
   font-size: 0.58rem;
 }
@@ -549,7 +549,7 @@ code {
 .ansi-chip {
   height: 2.5rem;
   margin-bottom: 0.28rem;
-  border: 1px solid var(--q-border-default);
+  border: 1px solid var(--nib-border-default);
   border-radius: 0.15rem;
 }
 
@@ -569,24 +569,24 @@ code {
   min-height: 13rem;
   margin: 0;
   padding: 1.1rem;
-  border: 1px solid var(--q-border-default);
+  border: 1px solid var(--nib-border-default);
   border-radius: 0.3rem;
-  color: var(--q-foreground-primary);
-  background: var(--q-background);
+  color: var(--nib-foreground-primary);
+  background: var(--nib-background);
   font-size: 0.72rem;
   line-height: 1.65;
   white-space: pre-wrap;
 }
 
-.ansi-1 { color: var(--q-ansi-1); }
-.ansi-2 { color: var(--q-ansi-2); }
-.ansi-3 { color: var(--q-ansi-3); }
-.ansi-4 { color: var(--q-ansi-4); }
-.ansi-5 { color: var(--q-ansi-5); }
-.ansi-6 { color: var(--q-ansi-6); }
-.ansi-8 { color: var(--q-ansi-8); }
-.ansi-9 { color: var(--q-ansi-9); }
-.ansi-10 { color: var(--q-ansi-10); }
+.ansi-1 { color: var(--nib-ansi-1); }
+.ansi-2 { color: var(--nib-ansi-2); }
+.ansi-3 { color: var(--nib-ansi-3); }
+.ansi-4 { color: var(--nib-ansi-4); }
+.ansi-5 { color: var(--nib-ansi-5); }
+.ansi-6 { color: var(--nib-ansi-6); }
+.ansi-8 { color: var(--nib-ansi-8); }
+.ansi-9 { color: var(--nib-ansi-9); }
+.ansi-10 { color: var(--nib-ansi-10); }
 
 .state-grid {
   display: grid;
@@ -596,12 +596,12 @@ code {
 
 .state-grid article {
   padding: 1.3rem;
-  background: var(--q-background);
+  background: var(--nib-background);
 }
 
 .state-grid h3,
 .notes-grid h3 {
-  color: var(--q-blue-ink-deep);
+  color: var(--nib-blue-ink-deep);
   font-family: Georgia, serif;
   font-size: 1.35rem;
   font-weight: 500;
@@ -621,7 +621,7 @@ code {
   width: 1.35rem;
   height: 1.35rem;
   place-items: center;
-  color: var(--q-background);
+  color: var(--nib-background);
 }
 
 .diag span {
@@ -630,14 +630,14 @@ code {
   text-underline-offset: 0.2em;
 }
 
-.diag.error b { background: var(--q-diagnostic-error); }
-.diag.error span { color: var(--q-diagnostic-error); text-decoration-color: var(--q-diagnostic-error); }
-.diag.warning b { background: var(--q-diagnostic-warning); }
-.diag.warning span { color: var(--q-diagnostic-warning); text-decoration-color: var(--q-diagnostic-warning); }
-.diag.information b { background: var(--q-diagnostic-information); }
-.diag.information span { color: var(--q-diagnostic-information); text-decoration-color: var(--q-diagnostic-information); }
-.diag.hint b { background: var(--q-diagnostic-hint); }
-.diag.hint span { color: var(--q-diagnostic-hint); text-decoration-color: var(--q-diagnostic-hint); }
+.diag.error b { background: var(--nib-diagnostic-error); }
+.diag.error span { color: var(--nib-diagnostic-error); text-decoration-color: var(--nib-diagnostic-error); }
+.diag.warning b { background: var(--nib-diagnostic-warning); }
+.diag.warning span { color: var(--nib-diagnostic-warning); text-decoration-color: var(--nib-diagnostic-warning); }
+.diag.information b { background: var(--nib-diagnostic-information); }
+.diag.information span { color: var(--nib-diagnostic-information); text-decoration-color: var(--nib-diagnostic-information); }
+.diag.hint b { background: var(--nib-diagnostic-hint); }
+.diag.hint span { color: var(--nib-diagnostic-hint); text-decoration-color: var(--nib-diagnostic-hint); }
 
 .diff {
   margin: 0;
@@ -651,40 +651,40 @@ code {
   padding: 0 0.5rem;
 }
 
-.diff .add { color: var(--q-diff-foreground); background: var(--q-diff-add); }
-.diff .change { color: var(--q-diff-foreground); background: var(--q-diff-change); }
-.diff .delete { color: var(--q-diff-foreground); background: var(--q-diff-delete); }
+.diff .add { color: var(--nib-diff-foreground); background: var(--nib-diff-add); }
+.diff .change { color: var(--nib-diff-foreground); background: var(--nib-diff-change); }
+.diff .delete { color: var(--nib-diff-foreground); background: var(--nib-diff-delete); }
 
 .markdown {
-  color: var(--q-foreground-secondary);
+  color: var(--nib-foreground-secondary);
   font-family: Georgia, serif;
   line-height: 1.55;
 }
 
 .markdown h4 {
-  color: var(--q-blue-ink-deep);
+  color: var(--nib-blue-ink-deep);
   font-size: 1.35rem;
 }
 
 .markdown blockquote {
   margin-left: 0;
   padding-left: 0.85rem;
-  border-left: 3px solid var(--q-moss-primary);
-  color: var(--q-foreground-muted);
+  border-left: 3px solid var(--nib-moss-primary);
+  color: var(--nib-foreground-muted);
 }
 
 .markdown code {
-  color: var(--q-teal-primary);
+  color: var(--nib-teal-primary);
 }
 
 .shader-section {
-  color: var(--q-foreground-primary);
-  background: var(--q-background);
+  color: var(--nib-foreground-primary);
+  background: var(--nib-background);
 }
 
 .render-label {
   max-width: none;
-  color: var(--q-rust) !important;
+  color: var(--nib-rust) !important;
 }
 
 .paper-sample {
@@ -692,7 +692,7 @@ code {
   overflow: hidden;
   min-height: 12rem;
   padding: 1.4rem;
-  background: var(--q-background);
+  background: var(--nib-background);
 }
 
 .paper-sample > * {
@@ -701,7 +701,7 @@ code {
 }
 
 .paper-sample > span {
-  color: var(--q-moss-primary);
+  color: var(--nib-moss-primary);
   font-size: 0.72rem;
   font-weight: 750;
   letter-spacing: 0.1em;
@@ -710,13 +710,13 @@ code {
 
 .paper-sample p {
   margin: 2.5rem 0 1rem;
-  color: var(--q-blue-ink-deep);
+  color: var(--nib-blue-ink-deep);
   font-size: clamp(0.78rem, 1.4vw, 1rem);
   font-weight: 700;
 }
 
 .paper-sample small {
-  color: var(--q-foreground-muted);
+  color: var(--nib-foreground-muted);
 }
 
 .shader-sim::after {
@@ -724,8 +724,8 @@ code {
   inset: 0;
   content: "";
   background:
-    repeating-radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--q-sepia) 9%, transparent) 0 0.7px, transparent 0.8px 3px),
-    repeating-linear-gradient(91deg, transparent 0 4px, color-mix(in srgb, var(--q-blue-ink-deep) 6%, transparent) 5px);
+    repeating-radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--nib-sepia) 9%, transparent) 0 0.7px, transparent 0.8px 3px),
+    repeating-linear-gradient(91deg, transparent 0 4px, color-mix(in srgb, var(--nib-blue-ink-deep) 6%, transparent) 5px);
   mix-blend-mode: multiply;
   opacity: 0.55;
   pointer-events: none;
@@ -733,40 +733,40 @@ code {
 
 .shader-section > p {
   margin: 1.3rem 0 0;
-  color: var(--q-foreground-muted);
+  color: var(--nib-foreground-muted);
   line-height: 1.55;
 }
 
 .table-wrap {
   overflow-x: auto;
-  border: 1px solid var(--q-border-default);
+  border: 1px solid var(--nib-border-default);
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  color: var(--q-foreground-secondary);
-  background: var(--q-surface-floating);
+  color: var(--nib-foreground-secondary);
+  background: var(--nib-surface-floating);
   font-size: 0.8rem;
 }
 
 th,
 td {
   padding: 0.8rem 1rem;
-  border-bottom: 1px solid var(--q-border-subtle);
+  border-bottom: 1px solid var(--nib-border-subtle);
   text-align: left;
 }
 
 th {
-  color: var(--q-blue-ink-deep);
-  background: var(--q-surface-subtle);
+  color: var(--nib-blue-ink-deep);
+  background: var(--nib-surface-subtle);
 }
 
 .color-pair {
   display: inline-flex;
   overflow: hidden;
   margin-right: 0.5rem;
-  border: 1px solid var(--q-border-default);
+  border: 1px solid var(--nib-border-default);
   border-radius: 50%;
   vertical-align: middle;
 }
@@ -777,7 +777,7 @@ th {
 }
 
 .pass {
-  color: var(--q-diagnostic-success);
+  color: var(--nib-diagnostic-success);
   font-weight: 700;
 }
 
@@ -789,14 +789,14 @@ th {
 }
 
 .notes-grid p {
-  color: var(--q-foreground-muted);
+  color: var(--nib-foreground-muted);
   line-height: 1.6;
 }
 
 .site-footer {
   padding: 2rem 0 3rem;
-  border-top: 1px solid var(--q-border-default);
-  color: var(--q-foreground-muted);
+  border-top: 1px solid var(--nib-border-default);
+  color: var(--nib-foreground-muted);
   font-size: 0.75rem;
 }
 

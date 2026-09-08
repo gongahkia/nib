@@ -1,6 +1,6 @@
 # Third-party references
 
-Access date for every entry: **2026-09-09**. Quireveil contains only original
+Access date for every entry: **2026-09-09**. Nib contains only original
 code, prose, generated diagrams/renders, and original sRGB values. Links below
 document research; linked assets are not bundled or hotlinked.
 
@@ -132,7 +132,7 @@ document research; linked assets are not bundled or hotlinked.
 ## CC0 palette references
 
 The following source pages name **Paleto** as author, state **CC0** with no
-attribution required, and identify the work as **AI Assisted**. Quireveil gives
+attribution required, and identify the work as **AI Assisted**. Nib gives
 credit voluntarily. Every palette was inspiration only: no download, asset,
 or exact value was copied, so there is no required attribution.
 
@@ -150,7 +150,7 @@ or exact value was copied, so there is no required attribution.
 
 ## Non-affiliation
 
-Quireveil is an independent software theme. It is not affiliated with,
+Nib is an independent software theme. It is not affiliated with,
 sponsored by, endorsed by, or licensed by Pilot Corporation, C. Josef Lamy
 GmbH, The Sailor Pen Co., Diamine Inks, Pelikan, Paleto, itch.io, Ghostty,
 Neovim, or the plugin projects listed above. Manufacturer and product names

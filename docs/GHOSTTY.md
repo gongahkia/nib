@@ -1,6 +1,6 @@
 # Ghostty guide
 
-Quireveil ships two opaque, shader-free core themes. Ghostty 1.3.0 is the
+Nib ships two opaque, shader-free core themes. Ghostty 1.3.0 is the
 minimum supported version because that release introduced paired theme
 selection. The generated theme files use only audited color settings.
 
@@ -32,7 +32,7 @@ Ghostty uses the same user theme location on macOS:
 
 ```bash
 mkdir -p "$HOME/.config/ghostty/themes"
-cp "ghostty/themes/Quireveil Light" "ghostty/themes/Quireveil Dark" \
+cp "ghostty/themes/nib-light" "ghostty/themes/nib-dark" \
   "$HOME/.config/ghostty/themes/"
 ```
 
@@ -45,13 +45,13 @@ target; application updates may replace it.
 Use automatic OS appearance selection in `~/.config/ghostty/config`:
 
 ```ini
-theme = light:Quireveil Light,dark:Quireveil Dark
+theme = light:nib-light,dark:nib-dark
 window-theme = system
 background-opacity = 1
 ```
 
 Both `light:` and `dark:` are required by the current paired syntax. To pin a
-mode, use `theme = Quireveil Light` or `theme = Quireveil Dark`. Reload the
+mode, use `theme = nib-light` or `theme = nib-dark`. Reload the
 configuration from Ghostty after changing it.
 
 The core install has no shader, animation, transparency, font, or shell
@@ -62,15 +62,15 @@ Medium, 15 pt when available; it is neither bundled nor required.
 
 The installer is a dry-run unless `--apply` is present. It refuses to replace
 any path unless `--force` is also present. Forced replacement first renames the
-existing path to `Quireveil Light.bak-YYYYMMDD-HHMMSS` (likewise for dark),
+existing path to `nib-light.bak-YYYYMMDD-HHMMSS` (likewise for dark),
 adding a numeric suffix if needed.
 
 To uninstall, remove only the two installed files or symlinks and delete or
 replace the `theme` line in your Ghostty config:
 
 ```bash
-rm "$HOME/.config/ghostty/themes/Quireveil Light" \
-  "$HOME/.config/ghostty/themes/Quireveil Dark"
+rm "$HOME/.config/ghostty/themes/nib-light" \
+  "$HOME/.config/ghostty/themes/nib-dark"
 ```
 
 Review any `.bak-*` file before restoring or removing it.

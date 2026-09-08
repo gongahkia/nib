@@ -1,6 +1,6 @@
 # Accessibility and comfort report
 
-Quireveil is designed for long, opaque coding sessions and tests a defined set of color relationships. These results are scoped engineering checks, not blanket accessibility certification and not a guarantee for every plugin, font, display, transparency composition, shader, or user condition.
+Nib is designed for long, opaque coding sessions and tests a defined set of color relationships. These results are scoped engineering checks, not blanket accessibility certification and not a guarantee for every plugin, font, display, transparency composition, shader, or user condition.
 
 ## Contrast targets
 
@@ -16,7 +16,7 @@ ANSI index 0 is intentionally a dark building/background color and is not treate
 
 The generator applies deterministic full-severity protanopia, deuteranopia, and tritanopia matrices in linear sRGB, then measures selected semantic pairs in OKLab. The [color-vision report](generated/COLOR_VISION.md) records the results. Distance is used as a regression signal, not a perceptual guarantee or medical model.
 
-Some red/green relationships converge under simulation, especially error/success and diff add/delete. Quireveil therefore does not rely on hue alone:
+Some red/green relationships converge under simulation, especially error/success and diff add/delete. Nib therefore does not rely on hue alone:
 
 - diagnostics use `E`, `W`, `I`, and `H` gutter signs, severity-specific undercurls, and bold signs;
 - deprecated content uses strikethrough;

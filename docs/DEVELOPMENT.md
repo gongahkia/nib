@@ -20,11 +20,11 @@ The release-candidate environment was Fedora Linux 43 with Python 3.14.7, Node.j
 
 Edit `palette/palette.json`, never its consumers. `scripts/generate.py` owns:
 
-- `colors/quireveil*.lua`
-- `lua/quireveil/palette/*.lua`
-- `ghostty/themes/Quireveil Light` and `Quireveil Dark`
+- `colors/nib*.lua`
+- `lua/nib/palette/*.lua`
+- `ghostty/themes/nib-light` and `nib-dark`
 - `preview/generated/palette.css` and `palette.js`
-- `dist/quireveil-palette.json`
+- `dist/nib-palette.json`
 - `docs/generated/CONTRAST.md`, `ANSI.md`, and `COLOR_VISION.md`
 
 The generator writes stable ordering and a marker into every output. Check mode computes the expected content in memory and fails without modifying files. Review all generated differences because a single canonical change intentionally reaches several applications.

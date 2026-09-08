@@ -24,7 +24,7 @@ In another shell, set the path to a `playwright-cli` executable or wrapper, then
 
 ```sh
 cd output/playwright/preview
-export PLAYWRIGHT_CLI_SESSION=quireveil-preview
+export PLAYWRIGHT_CLI_SESSION=nib-preview
 playwright-cli open http://127.0.0.1:8765/preview/ --config playwright-cli.json
 playwright-cli screenshot '#light-overview' --filename light-overview-render.png
 playwright-cli screenshot '#dark-overview' --filename dark-overview-render.png

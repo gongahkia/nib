@@ -1,6 +1,6 @@
 # Neovim guide
 
-Quireveil is a dependency-free Lua colorscheme for Neovim 0.10 and newer. The release suite passes under Neovim 0.10.4 and 0.11.6 with `nvim --headless -u NONE`.
+Nib is a dependency-free Lua colorscheme for Neovim 0.10 and newer. The release suite passes under Neovim 0.10.4 and 0.11.6 with `nvim --headless -u NONE`.
 
 ## Entry points
 
@@ -8,14 +8,14 @@ The default colorscheme follows the existing `background` option:
 
 ```lua
 vim.o.background = "light"
-vim.cmd.colorscheme("quireveil")
+vim.cmd.colorscheme("nib")
 ```
 
 The explicit siblings set `background` themselves:
 
 ```vim
-:colorscheme quireveil-light
-:colorscheme quireveil-dark
+:colorscheme nib-light
+:colorscheme nib-dark
 ```
 
 Every load clears old highlights, resets syntax when active, reapplies the complete group table with `vim.api.nvim_set_hl()`, and sets `vim.g.colors_name`. This makes switching and reloading deterministic rather than additive.
@@ -25,7 +25,7 @@ Every load clears old highlights, resets syntax when active, reapplies the compl
 Call `setup()` only when changing defaults:
 
 ```lua
-require("quireveil").setup({
+require("nib").setup({
   style = "auto",
   transparent = false,
   italics = true,
@@ -55,7 +55,7 @@ LSP semantic groups map standard token types to that baseline. Functions and met
 - `documentation` follows the italics preference.
 - `defaultLibrary` uses underline or a builtin link.
 
-Neovim applies Tree-sitter captures at its normal capture priority and layers LSP type, modifier, and type/modifier groups above that baseline. Servers can publish inconsistent legends, so Quireveil deliberately avoids broad modifier-specific recoloring.
+Neovim applies Tree-sitter captures at its normal capture priority and layers LSP type, modifier, and type/modifier groups above that baseline. Servers can publish inconsistent legends, so Nib deliberately avoids broad modifier-specific recoloring.
 
 ## UI and diagnostics
 
@@ -68,7 +68,7 @@ Diagnostics use text, virtual text, floating text, signs, and severity-specific 
 Definitions for Telescope, nvim-cmp, Gitsigns, WhichKey, Trouble, Noice, and Snacks are enabled by default. They are only highlight declarations and do not `require()` plugin modules. A lualine theme is available as:
 
 ```lua
-require("lualine").setup({ options = { theme = "quireveil" } })
+require("lualine").setup({ options = { theme = "nib" } })
 ```
 
 Plugin group names were checked against upstream source on the access date in the [research ledger](../THIRD_PARTY_REFERENCES.md). Plugins may add groups later without breaking the base theme.
@@ -79,7 +79,7 @@ On Linux, one package-style symlink is sufficient:
 
 ```sh
 mkdir -p ~/.local/share/nvim/site/pack/themes/start
-ln -s /absolute/path/to/quireveil ~/.local/share/nvim/site/pack/themes/start/quireveil
+ln -s /absolute/path/to/nib ~/.local/share/nvim/site/pack/themes/start/nib
 ```
 
-Use the corresponding `stdpath('data')/site/pack/themes/start` location on other systems. Remove only that symlink or copied directory to uninstall. Quireveil never writes to Neovim configuration or data directories itself.
+Use the corresponding `stdpath('data')/site/pack/themes/start` location on other systems. Remove only that symlink or copied directory to uninstall. Nib never writes to Neovim configuration or data directories itself.

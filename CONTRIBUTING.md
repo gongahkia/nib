@@ -1,6 +1,6 @@
 # Contributing
 
-Keep changes small, semantic, and verifiable. Quireveil's purpose is a coordinated daily-driver theme, so legibility and conventional terminal meaning outrank novelty.
+Keep changes small, semantic, and verifiable. Nib's purpose is a coordinated daily-driver theme, so legibility and conventional terminal meaning outrank novelty.
 
 1. Read [docs/PALETTE.md](docs/PALETTE.md) and the relevant upstream research in [THIRD_PARTY_REFERENCES.md](THIRD_PARTY_REFERENCES.md).
 2. Edit `palette/palette.json` for color changes. Do not hand-edit generated files.
