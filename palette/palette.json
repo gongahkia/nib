@@ -92,7 +92,7 @@
         { "index": 4, "name": "blue", "hex": "#285D7C" },
         { "index": 5, "name": "magenta", "hex": "#70446F" },
         { "index": 6, "name": "cyan", "hex": "#17666A" },
-        { "index": 7, "name": "white", "hex": "#59656A" },
+        { "index": 7, "name": "white", "hex": "#4F5960" },
         { "index": 8, "name": "bright black", "hex": "#5C686E" },
         { "index": 9, "name": "bright red", "hex": "#A22F42" },
         { "index": 10, "name": "bright green", "hex": "#62721F" },

@@ -12,7 +12,7 @@ Indexes retain conventional terminal identities. On the light background, bright
 | 4 | blue | `#285D7C` | 6.15:1 | `#78A8CA` | 7.05:1 |
 | 5 | magenta | `#70446F` | 6.60:1 | `#B08FB9` | 6.38:1 |
 | 6 | cyan | `#17666A` | 5.76:1 | `#62AAA5` | 6.67:1 |
-| 7 | white | `#59656A` | 5.18:1 | `#C2C5BE` | 10.27:1 |
+| 7 | white | `#4F5960` | 6.18:1 | `#C2C5BE` | 10.27:1 |
 | 8 | bright black | `#5C686E` | 4.95:1 | `#74838A` | 4.57:1 |
 | 9 | bright red | `#A22F42` | 5.99:1 | `#E89095` | 7.56:1 |
 | 10 | bright green | `#62721F` | 4.59:1 | `#B8C97A` | 9.97:1 |

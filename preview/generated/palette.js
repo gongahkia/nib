@@ -207,7 +207,7 @@ window.QUIREVEIL_PALETTE = {
           "name": "cyan"
         },
         {
-          "hex": "#59656A",
+          "hex": "#4F5960",
           "index": 7,
           "name": "white"
         },
