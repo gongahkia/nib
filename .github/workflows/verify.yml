@@ -18,12 +18,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Neovim 0.10.4 and glslc
+      - name: Install Neovim 0.10.4, Emacs, and glslc
         shell: bash
         run: |
           set -euo pipefail
+          python3 -m pip install --disable-pip-version-check ruff==0.15.4
           sudo apt-get update
-          sudo apt-get install --yes glslc
+          sudo apt-get install --yes emacs-nox glslc
           curl --fail --location --silent --show-error \
             --output "$RUNNER_TEMP/nvim.tar.gz" \
             https://github.com/neovim/neovim/releases/download/v0.10.4/nvim-linux-x86_64.tar.gz
@@ -40,10 +41,18 @@ jobs:
           python3 --version
           node --version
           nvim --version | head -n 1
+          emacs --version | head -n 1
           glslc --version | head -n 1
+          ruff --version
 
       - name: Verify release tree
         run: make verify
+
+      - name: Package VS Code and Cursor extension
+        working-directory: vscode
+        run: >-
+          npx --yes @vscode/vsce@3.6.2 package --no-dependencies
+          --out "$RUNNER_TEMP/nib-color-theme.vsix"
 
       - name: Confirm generated tree is unchanged
         run: git diff --exit-code
