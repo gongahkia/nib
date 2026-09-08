@@ -1,0 +1,200 @@
+{
+  "$schema": "./schema.json",
+  "meta": {
+    "name": "Quireveil",
+    "slug": "quireveil",
+    "version": "0.1.0",
+    "color_space": "sRGB",
+    "minimum_neovim": "0.10.0",
+    "minimum_ghostty": "1.3.0",
+    "description": "Fountain-pen ink on warm ivory and near-black navy paper."
+  },
+  "modes": {
+    "light": {
+      "background": "#F4EEDC",
+      "surface": {
+        "elevated": "#ECE4D2",
+        "floating": "#FAF6E9",
+        "subtle": "#E3DAC5"
+      },
+      "border": {
+        "default": "#877F6E",
+        "subtle": "#AAA18D",
+        "focus": "#315D78"
+      },
+      "foreground": {
+        "primary": "#182A38",
+        "secondary": "#394B56",
+        "muted": "#59656A",
+        "disabled": "#767970"
+      },
+      "blue_ink": {
+        "deep": "#173B59",
+        "primary": "#285D7C",
+        "bright": "#1F668E"
+      },
+      "moss": {
+        "primary": "#536126",
+        "muted": "#657038"
+      },
+      "teal": {
+        "primary": "#17666A",
+        "muted": "#367375"
+      },
+      "burgundy": "#7C3448",
+      "rust": "#8A432C",
+      "violet": "#684873",
+      "amber": "#77560F",
+      "sepia": "#705039",
+      "graphite": "#4F5960",
+      "diagnostic": {
+        "error": "#913646",
+        "warning": "#76540B",
+        "information": "#285D7C",
+        "hint": "#17666A",
+        "success": "#526329"
+      },
+      "selection": {
+        "background": "#AFC9C3",
+        "foreground": "#172A38"
+      },
+      "search": {
+        "background": "#DEC06C",
+        "foreground": "#2A2B22",
+        "current_background": "#BD893E",
+        "current_foreground": "#182A38"
+      },
+      "current_line": "#E8E0CD",
+      "match": {
+        "background": "#CAD7B4",
+        "foreground": "#24372E"
+      },
+      "focus": "#315D78",
+      "hyperlink": "#1C5F8B",
+      "diff": {
+        "add": "#D8E2C3",
+        "add_text": "#BED29B",
+        "change": "#D7E1E4",
+        "change_text": "#B8CDD6",
+        "delete": "#ECD5D0",
+        "delete_text": "#DBB6AE",
+        "foreground": "#263640"
+      },
+      "cursor": {
+        "background": "#244D68",
+        "foreground": "#F4EEDC"
+      },
+      "ansi": [
+        { "index": 0, "name": "black", "hex": "#1D2B36" },
+        { "index": 1, "name": "red", "hex": "#8D3342" },
+        { "index": 2, "name": "green", "hex": "#526126" },
+        { "index": 3, "name": "yellow", "hex": "#76540B" },
+        { "index": 4, "name": "blue", "hex": "#285D7C" },
+        { "index": 5, "name": "magenta", "hex": "#70446F" },
+        { "index": 6, "name": "cyan", "hex": "#17666A" },
+        { "index": 7, "name": "white", "hex": "#59656A" },
+        { "index": 8, "name": "bright black", "hex": "#5C686E" },
+        { "index": 9, "name": "bright red", "hex": "#A22F42" },
+        { "index": 10, "name": "bright green", "hex": "#62721F" },
+        { "index": 11, "name": "bright yellow", "hex": "#8A5B00" },
+        { "index": 12, "name": "bright blue", "hex": "#176594" },
+        { "index": 13, "name": "bright magenta", "hex": "#82487B" },
+        { "index": 14, "name": "bright cyan", "hex": "#006E74" },
+        { "index": 15, "name": "bright white", "hex": "#303F49" }
+      ]
+    },
+    "dark": {
+      "background": "#0D1822",
+      "surface": {
+        "elevated": "#13212C",
+        "floating": "#182834",
+        "subtle": "#1E2E39"
+      },
+      "border": {
+        "default": "#55666E",
+        "subtle": "#3B4C55",
+        "focus": "#79A9C8"
+      },
+      "foreground": {
+        "primary": "#E6E1D3",
+        "secondary": "#C4C4BA",
+        "muted": "#9CA7A8",
+        "disabled": "#748085"
+      },
+      "blue_ink": {
+        "deep": "#719CBC",
+        "primary": "#89B6D2",
+        "bright": "#A1C5DE"
+      },
+      "moss": {
+        "primary": "#ACBA72",
+        "muted": "#929F65"
+      },
+      "teal": {
+        "primary": "#70B6AE",
+        "muted": "#679A96"
+      },
+      "burgundy": "#D18A96",
+      "rust": "#D08A6F",
+      "violet": "#BAA0C4",
+      "amber": "#D0AE68",
+      "sepia": "#BBA080",
+      "graphite": "#9DA9AD",
+      "diagnostic": {
+        "error": "#E08B91",
+        "warning": "#D3B066",
+        "information": "#89B6D2",
+        "hint": "#70B6AE",
+        "success": "#ADBD76"
+      },
+      "selection": {
+        "background": "#2E5860",
+        "foreground": "#F0EBDD"
+      },
+      "search": {
+        "background": "#5C522B",
+        "foreground": "#F0EBDD",
+        "current_background": "#C39A45",
+        "current_foreground": "#0D1822"
+      },
+      "current_line": "#142630",
+      "match": {
+        "background": "#364B38",
+        "foreground": "#E6E1D3"
+      },
+      "focus": "#87B4D0",
+      "hyperlink": "#8BC1DF",
+      "diff": {
+        "add": "#1D332D",
+        "add_text": "#28513F",
+        "change": "#1C303D",
+        "change_text": "#27495B",
+        "delete": "#3A282D",
+        "delete_text": "#59323A",
+        "foreground": "#D7D8CF"
+      },
+      "cursor": {
+        "background": "#D7C98B",
+        "foreground": "#0D1822"
+      },
+      "ansi": [
+        { "index": 0, "name": "black", "hex": "#1A2731" },
+        { "index": 1, "name": "red", "hex": "#CE737B" },
+        { "index": 2, "name": "green", "hex": "#9CAF68" },
+        { "index": 3, "name": "yellow", "hex": "#C4A15D" },
+        { "index": 4, "name": "blue", "hex": "#78A8CA" },
+        { "index": 5, "name": "magenta", "hex": "#B08FB9" },
+        { "index": 6, "name": "cyan", "hex": "#62AAA5" },
+        { "index": 7, "name": "white", "hex": "#C2C5BE" },
+        { "index": 8, "name": "bright black", "hex": "#74838A" },
+        { "index": 9, "name": "bright red", "hex": "#E89095" },
+        { "index": 10, "name": "bright green", "hex": "#B8C97A" },
+        { "index": 11, "name": "bright yellow", "hex": "#DDBD74" },
+        { "index": 12, "name": "bright blue", "hex": "#94C2DE" },
+        { "index": 13, "name": "bright magenta", "hex": "#C7A8CF" },
+        { "index": 14, "name": "bright cyan", "hex": "#7AC2BB" },
+        { "index": 15, "name": "bright white", "hex": "#EEE9DC" }
+      ]
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quireveil.local/palette.schema.json",
+  "title": "Quireveil canonical palette",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["meta", "modes"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "slug", "version", "color_space", "minimum_neovim", "minimum_ghostty"],
+      "properties": {
+        "name": { "const": "Quireveil" },
+        "slug": { "const": "quireveil" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "color_space": { "const": "sRGB" },
+        "minimum_neovim": { "type": "string" },
+        "minimum_ghostty": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "modes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["light", "dark"],
+      "properties": {
+        "light": { "$ref": "#/$defs/mode" },
+        "dark": { "$ref": "#/$defs/mode" }
+      }
+    }
+  },
+  "$defs": {
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9A-F]{6}$"
+    },
+    "colorMap": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/color" }
+    },
+    "ansiEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["index", "name", "hex"],
+      "properties": {
+        "index": { "type": "integer", "minimum": 0, "maximum": 15 },
+        "name": { "type": "string" },
+        "hex": { "$ref": "#/$defs/color" }
+      }
+    },
+    "mode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "background", "surface", "border", "foreground", "blue_ink",
+        "moss", "teal", "burgundy", "rust", "violet", "amber",
+        "sepia", "graphite", "diagnostic", "selection", "search",
+        "current_line", "match", "focus", "hyperlink", "diff", "cursor", "ansi"
+      ],
+      "properties": {
+        "background": { "$ref": "#/$defs/color" },
+        "surface": { "$ref": "#/$defs/colorMap" },
+        "border": { "$ref": "#/$defs/colorMap" },
+        "foreground": { "$ref": "#/$defs/colorMap" },
+        "blue_ink": { "$ref": "#/$defs/colorMap" },
+        "moss": { "$ref": "#/$defs/colorMap" },
+        "teal": { "$ref": "#/$defs/colorMap" },
+        "burgundy": { "$ref": "#/$defs/color" },
+        "rust": { "$ref": "#/$defs/color" },
+        "violet": { "$ref": "#/$defs/color" },
+        "amber": { "$ref": "#/$defs/color" },
+        "sepia": { "$ref": "#/$defs/color" },
+        "graphite": { "$ref": "#/$defs/color" },
+        "diagnostic": { "$ref": "#/$defs/colorMap" },
+        "selection": { "$ref": "#/$defs/colorMap" },
+        "search": { "$ref": "#/$defs/colorMap" },
+        "current_line": { "$ref": "#/$defs/color" },
+        "match": { "$ref": "#/$defs/colorMap" },
+        "focus": { "$ref": "#/$defs/color" },
+        "hyperlink": { "$ref": "#/$defs/color" },
+        "diff": { "$ref": "#/$defs/colorMap" },
+        "cursor": { "$ref": "#/$defs/colorMap" },
+        "ansi": {
+          "type": "array",
+          "minItems": 16,
+          "maxItems": 16,
+          "items": { "$ref": "#/$defs/ansiEntry" }
+        }
+      }
+    }
+  }
+}
