@@ -1,6 +1,6 @@
 # Neovim guide
 
-Quireveil is a dependency-free Lua colorscheme for Neovim 0.10 and newer. The release suite currently exercises it under Neovim 0.11.6 with `nvim --headless -u NONE`.
+Quireveil is a dependency-free Lua colorscheme for Neovim 0.10 and newer. The release suite passes under Neovim 0.10.4 and 0.11.6 with `nvim --headless -u NONE`.
 
 ## Entry points
 

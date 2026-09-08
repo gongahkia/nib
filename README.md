@@ -136,7 +136,7 @@ Read the [palette rationale](docs/PALETTE.md), [accessibility report](docs/ACCES
 
 ## Supported versions
 
-- Neovim 0.10 or newer. The release suite passes under Neovim 0.11.6.
+- Neovim 0.10 or newer. The release suite passes under Neovim 0.10.4 and 0.11.6.
 - Ghostty 1.3.0 or newer for automatic paired light/dark selection. Theme validation passes under Ghostty 1.3.1.
 - A truecolor terminal is recommended for Neovim. The 16-color Ghostty palette remains intentionally conventional for remote and degraded sessions.
 
