@@ -44,7 +44,7 @@ def generated_lua_palette(style: str, mode: dict[str, Any]) -> str:
 def generated_entry(style: str) -> str:
     return (
         f"-- {MARKER}\n"
-        f"require(\"quireveil\").load(\"{style}\")\n"
+        f"require(\"quireveil\").load(\"{style}\", \"quireveil{'' if style == 'auto' else '-' + style}\")\n"
     )
 
 
