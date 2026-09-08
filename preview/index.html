@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" href="data:,">
+    <title>Quireveil preview laboratory</title>
+    <link rel="stylesheet" href="generated/palette.css">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="generated/palette.js"></script>
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#laboratory">Skip to laboratory</a>
+    <header class="hero">
+      <div class="eyebrow">Fountain ink · paper · terminal</div>
+      <h1>Quireveil</h1>
+      <p class="lede">A professional notebook palette for Ghostty and Neovim. Warm ivory by day; near-black navy by night.</p>
+      <div class="controls" aria-label="Preview controls">
+        <fieldset>
+          <legend>Visible modes</legend>
+          <button type="button" class="mode-button is-active" data-mode="both" aria-pressed="true">Both</button>
+          <button type="button" class="mode-button" data-mode="light" aria-pressed="false">Light</button>
+          <button type="button" class="mode-button" data-mode="dark" aria-pressed="false">Dark</button>
+        </fieldset>
+        <label for="sample-select">Code sample
+          <select id="sample-select">
+            <option value="typescript">TypeScript</option>
+            <option value="rust">Rust</option>
+            <option value="python">Python</option>
+            <option value="lua">Lua</option>
+            <option value="diff">Git diff</option>
+            <option value="markdown">Markdown</option>
+          </select>
+        </label>
+      </div>
+      <p id="control-status" class="sr-only" aria-live="polite">Both modes visible. TypeScript sample selected.</p>
+    </header>
+
+    <main id="laboratory">
+      <section class="section-heading" aria-labelledby="siblings-title">
+        <div>
+          <p class="kicker">01 / related siblings</p>
+          <h2 id="siblings-title">Two kinds of paper</h2>
+        </div>
+        <p>Opaque by default. No pure black, no pure white, and no shader needed.</p>
+      </section>
+
+      <div class="mode-grid" id="mode-grid">
+        <article class="mode-card" id="light-overview" data-theme="light" data-mode-card="light">
+          <header class="mode-header">
+            <div>
+              <span class="mode-index">A</span>
+              <h3>Ivory leaf</h3>
+            </div>
+            <span class="mode-meta">light · warm paper</span>
+          </header>
+          <div class="notebook-rule"></div>
+          <p class="mode-intro">Deep blue-black marks hold the page. Moss and peacock teal carry structure without turning the syntax into a blue wash.</p>
+          <div class="mini-editor" aria-label="Light editor sample"></div>
+          <div class="swatches" data-swatches></div>
+          <div class="mini-terminal" aria-label="Light terminal transcript"></div>
+        </article>
+
+        <article class="mode-card" id="dark-overview" data-theme="dark" data-mode-card="dark">
+          <header class="mode-header">
+            <div>
+              <span class="mode-index">B</span>
+              <h3>Navy leaf</h3>
+            </div>
+            <span class="mode-meta">dark · midnight paper</span>
+          </header>
+          <div class="notebook-rule"></div>
+          <p class="mode-intro">Cool ivory rests on near-black navy. Ink families keep their identities while gaining enough light to read for a long session.</p>
+          <div class="mini-editor" aria-label="Dark editor sample"></div>
+          <div class="swatches" data-swatches></div>
+          <div class="mini-terminal" aria-label="Dark terminal transcript"></div>
+        </article>
+      </div>
+
+      <section class="artifact-section" id="syntax-detail" aria-labelledby="syntax-title">
+        <div class="section-heading compact">
+          <div>
+            <p class="kicker">02 / editor detail</p>
+            <h2 id="syntax-title">Hierarchy before decoration</h2>
+          </div>
+          <p>Functions and types lead. Strings stay teal; operators and punctuation recede.</p>
+        </div>
+        <div class="editor-grid">
+          <article class="editor-window" data-theme="light" aria-label="Quireveil light Neovim reference render">
+            <div class="window-bar"><span>fixture.ts</span><span>quireveil-light</span></div>
+            <div class="editor-body">
+              <div class="gutter" aria-hidden="true">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12</div>
+              <pre class="code-sample" data-code></pre>
+              <aside class="completion" aria-label="Completion menu">
+                <strong>parseEntry</strong><span>Function</span>
+                <b>parseEntries</b><span>Method</span>
+                <span>parseInt</span><i>Function</i>
+              </aside>
+              <aside class="diagnostic-float"><b>E</b> Type ‘void’ is not assignable<br><small>typescript · 7:12</small></aside>
+            </div>
+            <footer class="statusline"><b>NORMAL</b><span>fixture.ts</span><span>utf-8 · 12:1</span></footer>
+          </article>
+          <article class="editor-window" data-theme="dark" aria-label="Quireveil dark Neovim reference render">
+            <div class="window-bar"><span>fixture.ts</span><span>quireveil-dark</span></div>
+            <div class="editor-body">
+              <div class="gutter" aria-hidden="true">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12</div>
+              <pre class="code-sample" data-code></pre>
+              <aside class="completion" aria-label="Completion menu">
+                <strong>parseEntry</strong><span>Function</span>
+                <b>parseEntries</b><span>Method</span>
+                <span>parseInt</span><i>Function</i>
+              </aside>
+              <aside class="diagnostic-float"><b>E</b> Type ‘void’ is not assignable<br><small>typescript · 7:12</small></aside>
+            </div>
+            <footer class="statusline"><b>NORMAL</b><span>fixture.ts</span><span>utf-8 · 12:1</span></footer>
+          </article>
+        </div>
+      </section>
+
+      <section class="artifact-section ansi-section" id="ansi-comparison" aria-labelledby="ansi-title">
+        <div class="section-heading compact">
+          <div>
+            <p class="kicker">03 / terminal semantics</p>
+            <h2 id="ansi-title">Sixteen clear signals</h2>
+          </div>
+          <p>Conventional identities survive shells, tests, Git, tmux, SSH, and man pages.</p>
+        </div>
+        <div class="ansi-columns">
+          <article data-theme="light"><h3>Light</h3><div class="ansi-grid" data-ansi></div></article>
+          <article data-theme="dark"><h3>Dark</h3><div class="ansi-grid" data-ansi></div></article>
+        </div>
+        <div class="transcript-grid">
+          <pre data-theme="light" data-transcript></pre>
+          <pre data-theme="dark" data-transcript></pre>
+        </div>
+      </section>
+
+      <section class="state-lab" aria-labelledby="states-title">
+        <div class="section-heading compact">
+          <div>
+            <p class="kicker">04 / state language</p>
+            <h2 id="states-title">Hue never works alone</h2>
+          </div>
+          <p>Letters, undercurls, weight, and surface tints make critical state redundant.</p>
+        </div>
+        <div class="state-grid">
+          <article data-theme="light">
+            <h3>Diagnostics</h3>
+            <p class="diag error"><b>E</b><span>undefined field <code>ledger</code></span></p>
+            <p class="diag warning"><b>W</b><span>unused binding <code>margin</code></span></p>
+            <p class="diag information"><b>I</b><span>implementation available</span></p>
+            <p class="diag hint"><b>H</b><span>consider an immutable value</span></p>
+          </article>
+          <article data-theme="dark">
+            <h3>Diff</h3>
+            <pre class="diff"><span class="delete">− const tone = "electric";</span>
+<span class="change">~ // retain semantics across modes</span>
+<span class="add">+ const tone = "restrained";</span></pre>
+          </article>
+          <article data-theme="light">
+            <h3>Markdown</h3>
+            <div class="markdown"><h4>Field notes</h4><blockquote>Paper is part of the interface.</blockquote><p>Keep <strong>meaning</strong> ahead of ornament and read the <a href="../docs/RESEARCH.md">research notes</a>.</p><code>make verify</code></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="artifact-section shader-section" id="shader-comparison" data-theme="light" aria-labelledby="shader-title">
+        <div class="section-heading compact">
+          <div>
+            <p class="kicker">05 / optional texture</p>
+            <h2 id="shader-title">Display-space impression</h2>
+          </div>
+          <p class="render-label">Reference simulation — not a Ghostty capture</p>
+        </div>
+        <div class="shader-grid">
+          <article class="paper-sample"><span>Shader off</span><p>function write(note) { return note.trim(); }</p><small>Authoritative core palette</small></article>
+          <article class="paper-sample shader-sim"><span>Showcase simulation</span><p>function write(note) { return note.trim(); }</p><small>Exaggerated here so the comparison reads</small></article>
+        </div>
+        <p>Real Ghostty shaders affect the whole terminal, including Neovim chrome. The daily preset is subtler than this visual explanation and is always opt-in.</p>
+      </section>
+
+      <section class="audit" aria-labelledby="audit-title">
+        <div class="section-heading compact">
+          <div>
+            <p class="kicker">06 / measured checks</p>
+            <h2 id="audit-title">Contrast, with boundaries</h2>
+          </div>
+          <p>Targets are scoped checks, not blanket accessibility certification.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Mode</th><th>Role</th><th>Colors</th><th>Ratio</th><th>Target</th></tr></thead>
+            <tbody id="contrast-body"></tbody>
+          </table>
+        </div>
+        <div class="notes-grid">
+          <article><h3>Colour vision</h3><p>Protanopia, deuteranopia, and tritanopia simulations are regression-tested. Error/success and add/delete may converge under some simulations, so the runtime also uses diagnostic letters, undercurls, gutter signs, and distinct diff surfaces.</p></article>
+          <article><h3>Font neutral</h3><p>These renders prefer <code>AtkynsonMono Nerd Font Mono</code>, Medium, 15 pt when installed, then fall back to the platform monospace. The font is not bundled or required.</p></article>
+          <article><h3>Provenance</h3><p>Physical ink and CC0 Paleto palettes informed relationships, never exact screen values. Read <a href="../THIRD_PARTY_REFERENCES.md">third-party references</a> and the <a href="../docs/generated/CONTRAST.md">full contrast report</a>.</p></article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer"><span>Quireveil 0.1.0</span><span>Original palette · MIT code · local-first preview</span></footer>
+  </body>
+</html>
