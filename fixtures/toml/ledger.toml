@@ -1,0 +1,13 @@
+notebook = "Field notes"
+archived = false
+page = 17
+
+[[entries]]
+title = "Test the quiet palette"
+tags = ["terminal", "ink"]
+settled = true
+
+[[entries]]
+title = "Inspect the midnight paper"
+tags = ["contrast", "dark-mode"]
+settled = false
