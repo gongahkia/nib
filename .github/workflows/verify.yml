@@ -1,0 +1,49 @@
+name: Verify
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Neovim 0.10.4 and glslc
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes glslc
+          curl --fail --location --silent --show-error \
+            --output "$RUNNER_TEMP/nvim.tar.gz" \
+            https://github.com/neovim/neovim/releases/download/v0.10.4/nvim-linux-x86_64.tar.gz
+          curl --fail --location --silent --show-error \
+            --output "$RUNNER_TEMP/nvim.sha256sum" \
+            https://github.com/neovim/neovim/releases/download/v0.10.4/nvim-linux-x86_64.tar.gz.sha256sum
+          cd "$RUNNER_TEMP"
+          sed 's#nvim-linux-x86_64.tar.gz#nvim.tar.gz#' nvim.sha256sum | sha256sum --check
+          tar --extract --gzip --file nvim.tar.gz
+          echo "$RUNNER_TEMP/nvim-linux-x86_64/bin" >> "$GITHUB_PATH"
+
+      - name: Report tool versions
+        run: |
+          python3 --version
+          node --version
+          nvim --version | head -n 1
+          glslc --version | head -n 1
+
+      - name: Verify release tree
+        run: make verify
+
+      - name: Confirm generated tree is unchanged
+        run: git diff --exit-code

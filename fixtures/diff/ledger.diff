@@ -1,0 +1,10 @@
+diff --git a/fixtures/typescript/ledger.ts b/fixtures/typescript/ledger.ts
+index 0a14d7b..bc94b36 100644
+--- a/fixtures/typescript/ledger.ts
++++ b/fixtures/typescript/ledger.ts
+@@ -7,4 +7,5 @@ export function parseEntry(raw: string): Entry {
+-  if (!title) throw new Error("missing title");
++  if (!title) throw new Error("title is required");
++  // Preserve semantic state when remote terminals lose truecolor.
+   return { title, tags: tags.filter(Boolean), settled: false };
+ }
