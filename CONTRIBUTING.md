@@ -4,7 +4,7 @@ Keep changes small, semantic, and verifiable. Nib's purpose is a coordinated dai
 
 1. Read [docs/PALETTE.md](docs/PALETTE.md) and the relevant upstream research in [THIRD_PARTY_REFERENCES.md](THIRD_PARTY_REFERENCES.md).
 2. Edit `palette/palette.json` for color changes. Do not hand-edit generated files.
-3. Add or update fixtures when changing syntax, Tree-sitter, LSP, diagnostic, diff, or integration behavior.
+3. Add or update fixtures when changing syntax, Tree-sitter, LSP, semantic-token, diagnostic, diff, or integration behavior across any supported editor.
 4. Run `make generate`, inspect the full generated diff and both preview modes, then run `make verify`.
 5. Run `git diff --check` and keep unrelated changes out of the commit.
 

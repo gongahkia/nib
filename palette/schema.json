@@ -10,7 +10,11 @@
     "meta": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "slug", "version", "color_space", "minimum_neovim", "minimum_ghostty"],
+      "required": [
+        "name", "slug", "version", "color_space", "minimum_neovim",
+        "minimum_ghostty", "minimum_emacs", "minimum_vscode",
+        "zed_theme_schema"
+      ],
       "properties": {
         "name": { "const": "Nib" },
         "slug": { "const": "nib" },
@@ -18,6 +22,9 @@
         "color_space": { "const": "sRGB" },
         "minimum_neovim": { "type": "string" },
         "minimum_ghostty": { "type": "string" },
+        "minimum_emacs": { "type": "string" },
+        "minimum_vscode": { "type": "string" },
+        "zed_theme_schema": { "const": "0.2.0" },
         "description": { "type": "string" }
       }
     },

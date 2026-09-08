@@ -8,6 +8,19 @@ All notable changes to Nib are documented here. The format follows [Keep a Chang
 
 - Renamed the public theme and Lua namespace to `nib`; the explicit Neovim and Ghostty variants are now exactly `nib-light` and `nib-dark`.
 
+### Added
+
+- Generated `nib-light` and `nib-dark` GNU Emacs custom themes with core,
+  font-lock, diff, diagnostic, Org, Markdown, completion, Git, and ANSI faces.
+- A single generated VS Code color-theme extension for VS Code and Cursor,
+  including workbench colors, TextMate scopes, semantic tokens, and ANSI 0–15.
+- A generated theme-only Zed extension using theme schema v0.2.0, with paired
+  appearances, UI/editor coverage, syntax, diagnostics, version control, and
+  terminal colors.
+- Offline structural verification, optional Emacs batch loading, packaging and
+  installation documentation, and current upstream format provenance for the
+  additional editors.
+
 ## 0.1.0 - 2026-09-09
 
 ### Added
