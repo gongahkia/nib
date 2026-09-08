@@ -137,15 +137,20 @@
     });
   }
 
-  const transcript = `<span class="ansi-6">quireveil</span> <span class="ansi-8">main</span> <span class="ansi-4">~/notes</span> $ git status --short
+  const transcript = `<span class="ansi-6">quireveil</span> <span class="ansi-8">main</span> <span class="ansi-4">~/notes</span> $ ls -F
+<span class="ansi-4">docs/</span>  <span class="ansi-4">ghostty/</span>  <span class="ansi-4">lua/</span>  palette/
+
+$ git status --short
 <span class="ansi-3"> M</span> palette/palette.json
 <span class="ansi-2">??</span> fixtures/ledger.rs
 
 $ make verify
 <span class="ansi-2">PASS</span> palette schema and generated drift
-<span class="ansi-2">PASS</span> Neovim light/dark loading
 <span class="ansi-3">WARN</span> remote host has no truecolor terminfo
 <span class="ansi-1">FAIL</span> fixture: expected 4, received 3
+
+$ man quireveil
+<span class="ansi-5">QUIREVEIL(7)</span>  User themes  <span class="ansi-8">QUIREVEIL(7)</span>
 <span class="ansi-5">hint</span>: inspect <span class="ansi-6">https://example.test/report</span>`;
 
   function renderTranscripts() {

@@ -294,7 +294,7 @@ def verify_preview() -> None:
     expected = {
         "light-overview-render.png": (742, 833),
         "dark-overview-render.png": (742, 833),
-        "ansi-comparison-render.png": (1504, 638),
+        "ansi-comparison-render.png": (1504, 733),
         "syntax-detail-render.png": (1504, 686),
         "shader-comparison-render.png": (1504, 406),
     }
@@ -315,6 +315,7 @@ def verify_fixtures() -> None:
         "lua/ledger.lua", "python/ledger.py", "go/ledger.go", "rust/ledger.rs",
         "typescript/ledger.ts", "javascript/ledger.js", "shell/ledger.sh", "json/ledger.json",
         "yaml/ledger.yaml", "toml/ledger.toml", "markdown/ledger.md", "diff/ledger.diff",
+        "terminal/transcript.txt",
     }
     actual = {str(path.relative_to(ROOT / "fixtures")) for path in (ROOT / "fixtures").glob("*/*") if path.is_file()}
     require(actual == expected, f"fixture set mismatch: expected {sorted(expected)}, found {sorted(actual)}")
@@ -329,6 +330,9 @@ def verify_fixtures() -> None:
     if gofmt:
         result = command([gofmt, "-d", "fixtures/go/ledger.go"])
         require(not result.stdout, "Go fixture is not gofmt-clean")
+    transcript = (ROOT / "fixtures" / "terminal" / "transcript.txt").read_text(encoding="utf-8")
+    for evidence in ("$ ls -F", "$ git status --short", "PASS", "WARN", "FAIL", "$ man quireveil", "https://", "remote host"):
+        require(evidence in transcript, f"terminal fixture lacks representative output: {evidence}")
 
 
 def verify_neovim() -> None:
