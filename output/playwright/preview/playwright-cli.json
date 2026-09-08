@@ -1,0 +1,14 @@
+{
+  "browser": {
+    "launchOptions": {
+      "executablePath": "/usr/bin/chromium-browser",
+      "headless": true
+    },
+    "contextOptions": {
+      "viewport": {
+        "width": 1600,
+        "height": 1100
+      }
+    }
+  }
+}

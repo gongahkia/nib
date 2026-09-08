@@ -12,4 +12,5 @@ venv/
 jomon-save.json
 .jomon-save.json.tmp
 test-results/
+output/playwright/**/.playwright-cli/
 AGENTS.md
