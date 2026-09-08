@@ -1,6 +1,6 @@
 # Optional ink and paper shaders
 
-Shaders are optional post-processing. Quireveil's colors, hierarchy, ANSI
+Shaders are optional post-processing. Nib's colors, hierarchy, ANSI
 semantics, and measured contrast are designed for the shader-free core.
 
 Ghostty post-processing affects the entire rendered terminal surface,
@@ -28,8 +28,8 @@ Copy the matching lines from `ghostty/examples/shaders-daily.conf` or
 the placeholder with the checkout's absolute path. Declaration order matters:
 
 ```ini
-custom-shader = /absolute/path/to/quireveil/ghostty/shaders/paper-grain-daily.glsl
-custom-shader = /absolute/path/to/quireveil/ghostty/shaders/ink-feather-daily.glsl
+custom-shader = /absolute/path/to/nib/ghostty/shaders/paper-grain-daily.glsl
+custom-shader = /absolute/path/to/nib/ghostty/shaders/ink-feather-daily.glsl
 custom-shader-animation = false
 ```
 

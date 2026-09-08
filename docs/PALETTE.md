@@ -1,6 +1,6 @@
 # Palette system
 
-`palette/palette.json` is Quireveil's sole color source. `palette/schema.json` validates its shape, semantic role inventory, color encoding, and 16 ANSI entries. Generated consumers carry a warning and must not be edited directly.
+`palette/palette.json` is Nib's sole color source. `palette/schema.json` validates its shape, semantic role inventory, color encoding, and 16 ANSI entries. Generated consumers carry a warning and must not be edited directly.
 
 ## Visual model
 
@@ -16,7 +16,7 @@ The accent order is intentional:
 6. Amber, ochre, and sepia support numbers, search, and properties.
 7. Graphite quiets operators, punctuation, and secondary structure.
 
-Modes preserve those identities while independently tuning lightness and chroma. The generated [contrast table](generated/CONTRAST.md) is the authoritative readable-value view; the generated [machine export](../dist/quireveil-palette.json) provides flattened roles for tooling.
+Modes preserve those identities while independently tuning lightness and chroma. The generated [contrast table](generated/CONTRAST.md) is the authoritative readable-value view; the generated [machine export](../dist/nib-palette.json) provides flattened roles for tooling.
 
 ## Role families
 

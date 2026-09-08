@@ -1,4 +1,4 @@
-local palette = require("quireveil").get_palette("auto")
+local palette = require("nib").get_palette("auto")
 
 local normal = {
   a = { fg = palette.cursor.foreground, bg = palette.blue_ink.primary, gui = "bold" },

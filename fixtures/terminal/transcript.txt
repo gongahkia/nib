@@ -1,4 +1,4 @@
-quireveil main ~/notes $ ls -F
+nib main ~/notes $ ls -F
 docs/  ghostty/  lua/  palette/
 
 $ git status --short
@@ -10,6 +10,6 @@ PASS palette schema and generated drift
 WARN remote host has no truecolor terminfo
 FAIL fixture: expected 4, received 3
 
-$ man quireveil
-QUIREVEIL(7)  User themes  QUIREVEIL(7)
+$ man nib
+NIB(7)  User themes  NIB(7)
 hint: inspect https://example.test/report

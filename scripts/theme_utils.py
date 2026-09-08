@@ -1,4 +1,4 @@
-"""Shared deterministic color and palette helpers for Quireveil."""
+"""Shared deterministic color and palette helpers for Nib."""
 
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const palette = window.QUIREVEIL_PALETTE;
+  const palette = window.NIB_PALETTE;
   if (!palette) {
     throw new Error("Generated palette data did not load");
   }
@@ -137,7 +137,7 @@
     });
   }
 
-  const transcript = `<span class="ansi-6">quireveil</span> <span class="ansi-8">main</span> <span class="ansi-4">~/notes</span> $ ls -F
+  const transcript = `<span class="ansi-6">nib</span> <span class="ansi-8">main</span> <span class="ansi-4">~/notes</span> $ ls -F
 <span class="ansi-4">docs/</span>  <span class="ansi-4">ghostty/</span>  <span class="ansi-4">lua/</span>  palette/
 
 $ git status --short
@@ -149,8 +149,8 @@ $ make verify
 <span class="ansi-3">WARN</span> remote host has no truecolor terminfo
 <span class="ansi-1">FAIL</span> fixture: expected 4, received 3
 
-$ man quireveil
-<span class="ansi-5">QUIREVEIL(7)</span>  User themes  <span class="ansi-8">QUIREVEIL(7)</span>
+$ man nib
+<span class="ansi-5">NIB(7)</span>  User themes  <span class="ansi-8">NIB(7)</span>
 <span class="ansi-5">hint</span>: inspect <span class="ansi-6">https://example.test/report</span>`;
 
   function renderTranscripts() {

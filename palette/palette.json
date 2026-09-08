@@ -1,8 +1,8 @@
 {
   "$schema": "./schema.json",
   "meta": {
-    "name": "Quireveil",
-    "slug": "quireveil",
+    "name": "Nib",
+    "slug": "nib",
     "version": "0.1.0",
     "color_space": "sRGB",
     "minimum_neovim": "0.10.0",

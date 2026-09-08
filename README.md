@@ -1,12 +1,12 @@
-# Quireveil
+# Nib
 
-Quireveil is a coordinated light/dark theme family for [Ghostty](https://ghostty.org/) and [Neovim](https://neovim.io/). Its light mode places deep blue-black fountain-pen ink on warm ivory; its dark sibling uses cool ivory ink on near-black navy. Moss leads the non-blue syntax colors, followed by peacock teal, restrained burgundy, rust, violet, amber, sepia, and graphite.
+Nib is a coordinated light/dark theme family for [Ghostty](https://ghostty.org/) and [Neovim](https://neovim.io/). Its light mode places deep blue-black fountain-pen ink on warm ivory; its dark sibling uses cool ivory ink on near-black navy. Moss leads the non-blue syntax colors, followed by peacock teal, restrained burgundy, rust, violet, amber, sepia, and graphite.
 
 The core themes are opaque, dependency-free, and complete without shaders. No normal foreground or background is pure black or pure white.
 
-![Quireveil light reference render](output/playwright/preview/light-overview-render.png)
+![Nib light reference render](output/playwright/preview/light-overview-render.png)
 
-![Quireveil dark reference render](output/playwright/preview/dark-overview-render.png)
+![Nib dark reference render](output/playwright/preview/dark-overview-render.png)
 
 These are deterministic browser reference renders, not terminal captures. See the [artifact record](docs/ARTIFACTS.md) for exact tools, dimensions, and reproduction commands.
 
@@ -18,25 +18,25 @@ Put the repository on Neovim's runtime path, then use the automatic entry point:
 
 ```lua
 vim.o.background = "dark" -- or "light"
-vim.cmd.colorscheme("quireveil")
+vim.cmd.colorscheme("nib")
 ```
 
 No `setup()` call is required. Explicit entry points are also available:
 
 ```vim
-:colorscheme quireveil-light
-:colorscheme quireveil-dark
+:colorscheme nib-light
+:colorscheme nib-dark
 ```
 
-A local Lazy.nvim specification is useful before the repository has a remote:
+A local-checkout Lazy.nvim specification is:
 
 ```lua
 {
-  dir = vim.fn.expand("~/src/quireveil"),
+  dir = vim.fn.expand("~/src/nib"),
   lazy = false,
   priority = 1000,
   config = function()
-    require("quireveil").setup({
+    require("nib").setup({
       style = "auto",
       transparent = false,
       italics = true,
@@ -49,7 +49,7 @@ A local Lazy.nvim specification is useful before the repository has a remote:
 }
 ```
 
-For a manual package install, copy or symlink the checkout into a `start` directory under Neovim's data path, for example `~/.local/share/nvim/site/pack/themes/start/quireveil` on Linux. The [Neovim guide](docs/NEOVIM.md) documents loading, options, integrations, semantics, and troubleshooting.
+For a manual package install, copy or symlink the checkout into a `start` directory under Neovim's data path, for example `~/.local/share/nvim/site/pack/themes/start/nib` on Linux. The [Neovim guide](docs/NEOVIM.md) documents loading, options, integrations, semantics, and troubleshooting.
 
 ### Ghostty
 
@@ -68,7 +68,7 @@ python3 scripts/install_ghostty.py --apply
 Then add this verified Ghostty 1.3 paired-theme syntax to your own configuration:
 
 ```ini
-theme = light:Quireveil Light,dark:Quireveil Dark
+theme = light:nib-light,dark:nib-dark
 window-theme = system
 background-opacity = 1
 ```
@@ -80,7 +80,7 @@ The installer does not edit `~/.config/ghostty/config`, load a shader, or overwr
 The API intentionally stays small:
 
 ```lua
-require("quireveil").setup({
+require("nib").setup({
   style = "auto", -- "auto", "light", or "dark"
   transparent = false,
   italics = true,
@@ -93,15 +93,15 @@ require("quireveil").setup({
 
 `style = "auto"` follows `vim.o.background`. The runtime clears prior highlights before every load, defines terminal colors 0–15 unless disabled, and sets `vim.g.colors_name` to the entry point in use. Transparency affects editor backgrounds; measured contrast applies only to the default opaque surfaces.
 
-Quireveil defines harmless groups for nvim-treesitter, Telescope, nvim-cmp, Gitsigns, WhichKey, Trouble, Noice, Snacks, and lualine without importing those plugins. Tree-sitter is the dependable syntax baseline. LSP semantic types refine it conservatively, while modifiers emphasize state through weight, underline, italics, or strikethrough rather than server-dependent recoloring.
+Nib defines harmless groups for nvim-treesitter, Telescope, nvim-cmp, Gitsigns, WhichKey, Trouble, Noice, Snacks, and lualine without importing those plugins. Tree-sitter is the dependable syntax baseline. LSP semantic types refine it conservatively, while modifiers emphasize state through weight, underline, italics, or strikethrough rather than server-dependent recoloring.
 
 ## Optional static shaders
 
 Two opt-in Ghostty shader chains add procedural paper grain followed by restrained ink feathering. The daily preset is nearly imperceptible; the showcase preset is deliberately stronger. Neither animates, uses external textures, or participates in the default install.
 
 ```ini
-custom-shader = /absolute/path/to/quireveil/ghostty/shaders/paper-grain-daily.glsl
-custom-shader = /absolute/path/to/quireveil/ghostty/shaders/ink-feather-daily.glsl
+custom-shader = /absolute/path/to/nib/ghostty/shaders/paper-grain-daily.glsl
+custom-shader = /absolute/path/to/nib/ghostty/shaders/ink-feather-daily.glsl
 custom-shader-animation = false
 ```
 
@@ -154,12 +154,12 @@ It checks the schema, required roles, color format, generation drift, contrast, 
 
 ## Troubleshooting
 
-- If `:colorscheme quireveil` is not found, confirm the repository root—not its `lua/` directory—is on `runtimepath`.
+- If `:colorscheme nib` is not found, confirm the repository root—not its `lua/` directory—is on `runtimepath`.
 - If automatic Neovim mode looks wrong, set `vim.o.background` before invoking the colorscheme or use an explicit entry point.
-- If Ghostty cannot find a theme, confirm the filenames retain their spaces and are under `$XDG_CONFIG_HOME/ghostty/themes` or `~/.config/ghostty/themes`.
+- If Ghostty cannot find a theme, confirm the files are named exactly `nib-light` and `nib-dark` under `$XDG_CONFIG_HOME/ghostty/themes` or `~/.config/ghostty/themes`.
 - If remote colors differ, verify truecolor and terminfo on the remote host; fixed RGB output bypasses the ANSI palette.
 - If generated files differ, edit only `palette/palette.json`, then run `make generate` and review every generated change.
 
 ## Provenance and licence
 
-Research sources, licences, AI disclosures, reuse status, and non-affiliation are recorded in [THIRD_PARTY_REFERENCES.md](THIRD_PARTY_REFERENCES.md). Quireveil does not bundle third-party photographs, palette assets, logos, fonts, or brand artwork. Original code and documentation are available under the [MIT License](LICENSE).
+Research sources, licences, AI disclosures, reuse status, and non-affiliation are recorded in [THIRD_PARTY_REFERENCES.md](THIRD_PARTY_REFERENCES.md). Nib does not bundle third-party photographs, palette assets, logos, fonts, or brand artwork. Original code and documentation are available under the [MIT License](LICENSE).
