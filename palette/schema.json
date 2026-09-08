@@ -6,6 +6,7 @@
   "additionalProperties": false,
   "required": ["meta", "modes"],
   "properties": {
+    "$schema": { "const": "./schema.json" },
     "meta": {
       "type": "object",
       "additionalProperties": false,
