@@ -525,10 +525,16 @@ def png_size(path: Path) -> tuple[int, int]:
     return struct.unpack(">II", data[16:24])
 
 
+def png_has_alpha(path: Path) -> bool:
+    data = path.read_bytes()[:26]
+    require(data[:8] == b"\x89PNG\r\n\x1a\n", f"{path}: not a PNG")
+    return data[25] in {4, 6}
+
+
 def verify_preview() -> None:
     parser = PreviewParser()
     parser.feed((ROOT / "preview" / "index.html").read_text(encoding="utf-8"))
-    required_ids = {"mode-grid", "sample-select", "light-overview", "dark-overview", "syntax-detail", "ansi-comparison", "shader-comparison", "contrast-body"}
+    required_ids = {"mode-grid", "sample-select", "light-overview", "dark-overview", "pen-collection", "ink-collection", "syntax-detail", "ansi-comparison", "shader-comparison", "contrast-body"}
     require(required_ids <= parser.ids, "preview laboratory is missing required sections or controls")
     require(parser.resources[:2] == ["data:,", "generated/palette.css"], "preview resource order changed unexpectedly")
     for resource in parser.resources:
@@ -547,6 +553,22 @@ def verify_preview() -> None:
         path = ROOT / "output" / "playwright" / "preview" / name
         require(path.exists(), f"preview artifact is missing: {name}")
         require(png_size(path) == dimensions, f"preview artifact dimensions changed: {name}")
+    references = {
+        "pens/lamy-al-star-pine.png": (900, 173),
+        "pens/lamy-abc-black.png": (900, 230),
+        "pens/parker-vector-xl-lilac.png": (605, 134),
+        "pens/lamy-nexx-m.png": (533, 223),
+        "pens/jinhao-10-click.png": (900, 107),
+        "inks/pilot-iroshizuku-shin-kai.png": (650, 639),
+        "inks/pelikan-edelstein-olivine.png": (650, 621),
+        "inks/diamine-oxblood.png": (447, 650),
+        "inks/sailor-manyo-yomogi.png": (579, 650),
+    }
+    for name, dimensions in references.items():
+        path = ROOT / "preview" / "assets" / name
+        require(path.exists(), f"preview reference photograph is missing: {name}")
+        require(png_size(path) == dimensions, f"preview reference photograph dimensions changed: {name}")
+        require(png_has_alpha(path), f"preview reference photograph lost its transparent background: {name}")
     require("Reference simulation — not a Ghostty capture" in (ROOT / "preview" / "index.html").read_text(encoding="utf-8"), "shader render is not truthfully labelled")
     node = shutil.which("node")
     if node:
