@@ -1,38 +1,8 @@
 # Third-party references
 
 Access date for every entry: **2026-09-09**. Nib contains original code, prose,
-generated diagrams/renders, and original sRGB values, plus the credited product
-photographs listed below. Other links document research only; their assets are
-not bundled or hotlinked.
-
-## Bundled preview product photographs
-
-| Preview file | Subject | Source |
-| --- | --- | --- |
-| `preview/assets/pens/lamy-al-star-pine.png` | LAMY AL-star Pine | [Cityluxe image](https://cityluxe.sg/cdn/shop/files/lamy-al-star-pine-fountain-pen-02.jpg?v=1773725485) |
-| `preview/assets/pens/lamy-abc-black.png` | LAMY abc, black | [MakeWebEasy-hosted image](https://image.makewebeasy.net/makeweb/m_1920x0/OYM2EVvzZ/DefaultData/9110057916_2.jpg?v=202405291424) |
-| `preview/assets/pens/parker-vector-xl-lilac.png` | Parker Vector XL, lilac | [Beste Singapore image](https://www.beste.com.sg/wp-content/uploads/2022/02/Vector-XL-FP-eAssets-Lilac-FP-3-700x700.jpg) |
-| `preview/assets/pens/lamy-nexx-m.png` | LAMY nexx M | [Google-hosted thumbnail supplied by the user](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQetmnTBOAur49SZP6fWrYGH5dennIUXmmlkxUrFuxLlZ5XKcoF0hi0Brog&s=10) |
-| `preview/assets/pens/jinhao-10-click.png` | Jinhao 10 Click | [Amazon media image supplied by the user](https://m.media-amazon.com/images/I/4190IgKw59L.jpg) |
-| `preview/assets/inks/pilot-iroshizuku-shin-kai.png` | Pilot Iroshizuku shin-kai | [Missing Pen product image](https://missing-pen.com/cdn/shop/files/pilot_iroshizuku_ink_bottle_50ml_shin-kai_missing_pen18.jpg?v=1772533886) · [page](https://missing-pen.com/en/products/pilot-iroshizuku-shin-kai-deep-sea-50ml-ink-bottle) |
-| `preview/assets/inks/pelikan-edelstein-olivine.png` | Pelikan Edelstein Olivine | [Online Mantra product image](https://www.onlinemantra.in/cdn/shop/products/PE_EDL_INKBTL_OLVN_50ML_300674_14283e71-8de2-4d93-91ce-444d8dfa3b3b_1200x1200.jpg?v=1751521574) · [page](https://www.onlinemantra.in/en-eu/products/pelikan-edelstein-ink-bottle-olivine-50-ml-300674) |
-| `preview/assets/inks/diamine-oxblood.png` | Diamine Oxblood | [Marka Kalem product image](https://www.markakalem.com/productimages/144942/big/700987828641_1.jpg) · [page](https://www.markakalem.com/diamine-sise-murekkep-30ml-oxblood) |
-| `preview/assets/inks/sailor-manyo-yomogi.png` | Sailor Manyo Yomogi | [Ticimax-hosted product image](https://static.ticimax.cloud/cdn-cgi/image/width%3D-%2Cquality%3D85/54336/uploads/urunresimleri/buyuk/sailor-manyo-ink-colours-dolma-kalem-m-80-4e7.jpg) · [page](https://www.unmeiprojects.com.tr/sailor-manyo-ink-colours-dolma-kalem-murekkebi-yomogi-50-ml-) |
-
-- **Creators/publishers:** the retailers and hosts named above; individual
-  photographers are not stated.
-- **Licence and reuse status:** no separate reuse licences were identified.
-  The photographs were supplied by the user or selected at the user’s direction
-  for this layout. They are not covered by Nib’s MIT licence; confirm permission
-  from the relevant rights holders before publishing or redistributing them.
-- **Changes:** connected light backgrounds were removed, pen sources were
-  rotated and/or mirrored into a consistent edge-facing orientation, transparent
-  bounds were cropped, and the results were resized and converted to PNG. No
-  generative imagery is present in the final assets.
-- **Use:** decorative, keyboard-accessible edge references. The preview contains
-  no product-listing links. The named brands and image publishers are not
-  affiliated with or endorsing Nib.
-- **AI disclosure:** none stated by the image publishers.
+generated diagrams/renders, and original sRGB values. The links below document
+research only; their assets are not bundled or hotlinked.
 
 ## Technical primary sources
 

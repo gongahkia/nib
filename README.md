@@ -201,4 +201,4 @@ It checks the schema, required roles, color format, generation drift, contrast, 
 
 ## Provenance and licence
 
-Research sources, licences, AI disclosures, reuse status, and non-affiliation are recorded in [THIRD_PARTY_REFERENCES.md](THIRD_PARTY_REFERENCES.md). The preview includes credited pen and ink product photographs supplied or selected for this layout; they are not covered by Nib’s MIT licence. Nib does not bundle fonts. Original code and documentation are available under the [MIT License](LICENSE).
+Research sources, licences, AI disclosures, reuse status, and non-affiliation are recorded in [THIRD_PARTY_REFERENCES.md](THIRD_PARTY_REFERENCES.md). Nib does not bundle palette assets or fonts. Original code and documentation are available under the [MIT License](LICENSE).
