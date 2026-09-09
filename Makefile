@@ -1,30 +1,18 @@
-DOTNET ?= ./tools/dotnet.sh
-PROJECT := src/Summing/Summing.csproj
+PYTHON ?= python3
 
-.PHONY: restore build run publish-fedora format test verify clean
+.PHONY: generate check-generated shaders preview verify
 
-restore:
-	$(DOTNET) restore $(PROJECT)
+generate:
+	$(PYTHON) scripts/generate.py
 
-build:
-	$(DOTNET) build $(PROJECT) --no-restore
+check-generated:
+	$(PYTHON) scripts/generate.py --check
 
-run:
-	$(DOTNET) run --project $(PROJECT)
+shaders:
+	$(PYTHON) scripts/validate_shaders.py
 
-publish-fedora:
-	$(DOTNET) publish $(PROJECT) -c Release -r linux-x64 --self-contained true -o artifacts/linux-x64
+preview: check-generated
+	$(PYTHON) -m http.server 8765 --bind 127.0.0.1
 
-format:
-	$(DOTNET) format $(PROJECT) --no-restore
-
-test:
-	$(DOTNET) test Summing.slnx --no-restore
-
-verify: build
-	$(DOTNET) src/Summing/bin/Debug/net9.0/Summing.dll --verify-generation
-	$(DOTNET) src/Summing/bin/Debug/net9.0/Summing.dll --verify-serialization
-	$(DOTNET) src/Summing/bin/Debug/net9.0/Summing.dll --verify-systems
-
-clean:
-	$(DOTNET) clean $(PROJECT)
+verify:
+	$(PYTHON) tests/verify.py
