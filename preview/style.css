@@ -16,7 +16,6 @@ html {
 body {
   margin: 0;
   min-width: 20rem;
-  overflow-x: clip;
   background:
     radial-gradient(circle at 8% 5%, color-mix(in srgb, var(--nib-search-background) 18%, transparent), transparent 28rem),
     var(--nib-background);
@@ -58,152 +57,6 @@ main,
 .hero {
   padding: 6rem 0 3.5rem;
   border-bottom: 1px solid var(--nib-border-default);
-}
-
-.edge-collection {
-  position: fixed;
-  top: 52%;
-  z-index: 6;
-  transform: translateY(-50%);
-  pointer-events: none;
-}
-
-.edge-collection ol {
-  display: grid;
-  gap: 0.6rem;
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
-
-.edge-item {
-  position: relative;
-  margin: 0;
-  pointer-events: auto;
-  transition: transform 320ms cubic-bezier(0.2, 0.75, 0.25, 1);
-}
-
-.edge-item img {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transition: filter 180ms ease;
-  filter: drop-shadow(0 0.45rem 0.45rem color-mix(in srgb, var(--nib-blue-ink-deep) 20%, transparent));
-}
-
-.edge-item:focus-visible {
-  outline: none;
-}
-
-.edge-item:focus-visible img {
-  filter:
-    drop-shadow(0 0 0.12rem var(--nib-focus-border))
-    drop-shadow(0 0.45rem 0.45rem color-mix(in srgb, var(--nib-blue-ink-deep) 20%, transparent));
-}
-
-.edge-name {
-  position: absolute;
-  display: grid;
-  width: max-content;
-  max-width: 16rem;
-  padding: 0.52rem 0.68rem;
-  border: 1px solid var(--nib-border-default);
-  border-radius: 0.28rem;
-  opacity: 0;
-  color: var(--nib-foreground-primary);
-  background: color-mix(in srgb, var(--nib-surface-floating) 94%, transparent);
-  box-shadow: 0 0.7rem 1.4rem color-mix(in srgb, var(--nib-ansi-0) 15%, transparent);
-  transition: opacity 160ms ease 70ms, transform 220ms ease 70ms;
-  backdrop-filter: blur(8px);
-  pointer-events: none;
-}
-
-.edge-name small {
-  color: var(--nib-moss-primary);
-  font-size: 0.56rem;
-  font-weight: 750;
-  letter-spacing: 0.11em;
-  line-height: 1.4;
-  text-transform: uppercase;
-}
-
-.edge-name strong {
-  color: var(--nib-blue-ink-deep);
-  font-family: Georgia, ui-serif, serif;
-  font-size: 0.86rem;
-  font-weight: 500;
-  line-height: 1.3;
-}
-
-.edge-item:hover .edge-name,
-.edge-item:focus-visible .edge-name {
-  opacity: 1;
-}
-
-.edge-pens {
-  left: 0;
-}
-
-.edge-pen {
-  width: 14.5rem;
-  height: 3.15rem;
-  transform: translateX(-84%);
-}
-
-.edge-pen img {
-  object-position: right center;
-}
-
-.edge-pen .edge-name {
-  top: 50%;
-  left: calc(100% + 0.5rem);
-  transform: translate(0.7rem, -50%);
-}
-
-.edge-pen:hover,
-.edge-pen:focus-visible {
-  z-index: 2;
-  transform: translateX(-0.45rem) scale(1.02);
-}
-
-.edge-pen:hover .edge-name,
-.edge-pen:focus-visible .edge-name {
-  transform: translate(0, -50%);
-}
-
-.edge-inks {
-  right: 0;
-}
-
-.edge-ink {
-  width: 4.7rem;
-  height: 4.7rem;
-  transform: translateX(64%);
-}
-
-.edge-ink img {
-  object-position: left center;
-}
-
-.edge-ink .edge-name {
-  top: 50%;
-  right: calc(100% + 0.5rem);
-  text-align: right;
-  transform: translate(-0.7rem, -50%);
-}
-
-.edge-ink:hover,
-.edge-ink:focus-visible {
-  z-index: 2;
-  transform: translateX(0.45rem) scale(1.06);
-}
-
-.edge-ink:hover .edge-name,
-.edge-ink:focus-visible .edge-name {
-  transform: translate(0, -50%);
 }
 
 .eyebrow,
@@ -970,12 +823,6 @@ th {
   }
 }
 
-@media (max-width: 62rem) {
-  .edge-collection {
-    display: none;
-  }
-}
-
 @media (max-width: 54rem) {
   .hero,
   main,
@@ -1018,9 +865,4 @@ th {
     scroll-behavior: auto;
   }
 
-  .edge-item,
-  .edge-item img,
-  .edge-name {
-    transition: none;
-  }
 }
