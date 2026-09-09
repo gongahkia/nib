@@ -1,25 +1,16 @@
-__pycache__
-.local/
-build/
-artifacts/
-*.love
-*.zip
-*.log
+__pycache__/
+*.py[cod]
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+.jomon-data/
+jomon-save.json
+.jomon-save.json.tmp
+test-results/
+output/playwright/**/.playwright-cli/
 AGENTS.md
-
-# .NET / MonoGame
-**/bin/
-**/obj/
-.vs/
-.idea/
-
-# local runtime state and play evidence
-archive/
-playtests/
-saves/
-screenshots/
-exports/
-
-# third-party art with redistribution restrictions or unresolved provenance
-third_party/art/source-archives/
-third_party/art/local-only/
