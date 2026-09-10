@@ -8,7 +8,6 @@ import math
 import os
 import re
 import shutil
-import struct
 import subprocess
 import sys
 import tempfile
@@ -519,35 +518,34 @@ class PreviewParser(HTMLParser):
                 self.resources.append(attributes[key] or "")
 
 
-def png_size(path: Path) -> tuple[int, int]:
-    data = path.read_bytes()[:24]
-    require(data[:8] == b"\x89PNG\r\n\x1a\n", f"{path}: not a PNG")
-    return struct.unpack(">II", data[16:24])
-
-
 def verify_preview() -> None:
     parser = PreviewParser()
     parser.feed((ROOT / "preview" / "index.html").read_text(encoding="utf-8"))
-    required_ids = {"mode-grid", "sample-select", "light-overview", "dark-overview", "syntax-detail", "ansi-comparison", "shader-comparison", "contrast-body"}
-    require(required_ids <= parser.ids, "preview laboratory is missing required sections or controls")
+    required_ids = {"comparison-grid", "sample-select", "control-status"}
+    require(required_ids <= parser.ids, "comparison preview is missing required structure or controls")
     require(parser.resources[:2] == ["data:,", "generated/palette.css"], "preview resource order changed unexpectedly")
     for resource in parser.resources:
         if resource.startswith(("data:", "#", "http://", "https://")):
             continue
         target = (ROOT / "preview" / resource.split("#", 1)[0]).resolve()
         require(target.exists(), f"preview resource is missing: {resource}")
-    expected = {
-        "light-overview-render.png": (742, 833),
-        "dark-overview-render.png": (742, 833),
-        "ansi-comparison-render.png": (1504, 733),
-        "syntax-detail-render.png": (1504, 686),
-        "shader-comparison-render.png": (1504, 406),
-    }
-    for name, dimensions in expected.items():
-        path = ROOT / "output" / "playwright" / "preview" / name
-        require(path.exists(), f"preview artifact is missing: {name}")
-        require(png_size(path) == dimensions, f"preview artifact dimensions changed: {name}")
-    require("Reference simulation — not a Ghostty capture" in (ROOT / "preview" / "index.html").read_text(encoding="utf-8"), "shader render is not truthfully labelled")
+    comparison_data = json.loads((ROOT / "palette" / "comparisons.json").read_text(encoding="utf-8"))
+    themes = comparison_data.get("themes", [])
+    require(
+        [theme.get("slug") for theme in themes] == ["flexoki", "solarized", "everforest", "rose-pine", "kanagawa", "gruvbox"],
+        "comparison palette set or order changed unexpectedly",
+    )
+    required_mode_keys = {"variant", "background", "surface", "foreground", "muted", "accents"}
+    required_accents = {"red", "orange", "yellow", "green", "cyan", "blue", "purple", "magenta"}
+    for theme in themes:
+        require(str(theme.get("source", "")).startswith("https://"), f"{theme.get('slug')}: source URL is missing")
+        require(set(theme.get("modes", {})) == {"light", "dark"}, f"{theme.get('slug')}: paired modes are required")
+        for style, mode in theme["modes"].items():
+            require(required_mode_keys <= set(mode), f"{theme['slug']} {style}: required comparison roles are missing")
+            require(set(mode["accents"]) == required_accents, f"{theme['slug']} {style}: accent set is incomplete")
+            colors = [mode[key] for key in ("background", "surface", "foreground", "muted")]
+            colors.extend(mode["accents"].values())
+            require(all(HEX_RE.fullmatch(color) for color in colors), f"{theme['slug']} {style}: invalid color value")
     node = shutil.which("node")
     if node:
         command([node, "--check", "preview/app.js"])
@@ -593,7 +591,7 @@ def verify_neovim() -> None:
 def verify_documentation() -> None:
     required = [
         "README.md", "CHANGELOG.md", "CONTRIBUTING.md", "LICENSE", "THIRD_PARTY_REFERENCES.md",
-        "docs/ACCESSIBILITY.md", "docs/ARTIFACTS.md", "docs/GHOSTTY.md", "docs/NEOVIM.md",
+        "docs/ACCESSIBILITY.md", "docs/GHOSTTY.md", "docs/NEOVIM.md",
         "docs/PALETTE.md", "docs/RESEARCH.md", "docs/SHADERS.md", "docs/DEVELOPMENT.md",
         "docs/EMACS.md", "docs/VSCODE.md", "docs/ZED.md",
     ]
@@ -633,7 +631,7 @@ CHECKS: tuple[tuple[str, Callable[[], None]], ...] = (
     ("Ghostty themes and paired configuration", verify_ghostty),
     ("dry-run installer, backups, and symlinks", verify_installer),
     ("static shader structure and compilation", verify_shaders),
-    ("preview laboratory and committed renders", verify_preview),
+    ("comparison preview and reference palettes", verify_preview),
     ("language and terminal fixtures", verify_fixtures),
     ("Neovim runtime, switching, and setup API", verify_neovim),
     ("documentation presence and local links", verify_documentation),

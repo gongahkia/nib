@@ -787,6 +787,16 @@ def generated_javascript(palette: dict[str, Any]) -> str:
     return f"/* {MARKER} */\nwindow.NIB_PALETTE = {data};\n"
 
 
+def generated_comparison_javascript() -> str:
+    comparisons = json.loads((ROOT / "palette" / "comparisons.json").read_text(encoding="utf-8"))
+    data = json.dumps(comparisons, indent=2, sort_keys=True)
+    return (
+        f"/* {MARKER} */\n"
+        "/* Reference values are maintained in palette/comparisons.json. */\n"
+        f"window.NIB_COMPARISONS = {data};\n"
+    )
+
+
 def generated_export(palette: dict[str, Any]) -> str:
     export = {
         "generated": MARKER,
@@ -946,6 +956,7 @@ def render_files(palette: dict[str, Any]) -> dict[Path, str]:
         Path("zed/themes/nib.json"): generated_zed_theme(palette),
         Path("preview/generated/palette.css"): generated_css(palette),
         Path("preview/generated/palette.js"): generated_javascript(palette),
+        Path("preview/generated/comparisons.js"): generated_comparison_javascript(),
         Path("dist/nib-palette.json"): generated_export(palette),
         Path("docs/generated/CONTRAST.md"): generated_contrast(palette),
         Path("docs/generated/ANSI.md"): generated_ansi(palette),

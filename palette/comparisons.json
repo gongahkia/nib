@@ -1,0 +1,250 @@
+{
+  "themes": [
+    {
+      "slug": "flexoki",
+      "name": "Flexoki",
+      "source": "https://stephango.com/flexoki",
+      "modes": {
+        "light": {
+          "variant": "Light",
+          "background": "#FFFCF0",
+          "surface": "#F2F0E5",
+          "foreground": "#100F0F",
+          "muted": "#6F6E69",
+          "accents": {
+            "red": "#AF3029",
+            "orange": "#BC5215",
+            "yellow": "#AD8301",
+            "green": "#66800B",
+            "cyan": "#24837B",
+            "blue": "#205EA6",
+            "purple": "#5E409D",
+            "magenta": "#A02F6F"
+          }
+        },
+        "dark": {
+          "variant": "Dark",
+          "background": "#100F0F",
+          "surface": "#1C1B1A",
+          "foreground": "#CECDC3",
+          "muted": "#878580",
+          "accents": {
+            "red": "#D14D41",
+            "orange": "#DA702C",
+            "yellow": "#D0A215",
+            "green": "#879A39",
+            "cyan": "#3AA99F",
+            "blue": "#4385BE",
+            "purple": "#8B7EC8",
+            "magenta": "#CE5D97"
+          }
+        }
+      }
+    },
+    {
+      "slug": "solarized",
+      "name": "Solarized",
+      "source": "https://github.com/altercation/solarized",
+      "modes": {
+        "light": {
+          "variant": "Light",
+          "background": "#FDF6E3",
+          "surface": "#EEE8D5",
+          "foreground": "#586E75",
+          "muted": "#839496",
+          "accents": {
+            "red": "#DC322F",
+            "orange": "#CB4B16",
+            "yellow": "#B58900",
+            "green": "#859900",
+            "cyan": "#2AA198",
+            "blue": "#268BD2",
+            "purple": "#6C71C4",
+            "magenta": "#D33682"
+          }
+        },
+        "dark": {
+          "variant": "Dark",
+          "background": "#002B36",
+          "surface": "#073642",
+          "foreground": "#839496",
+          "muted": "#586E75",
+          "accents": {
+            "red": "#DC322F",
+            "orange": "#CB4B16",
+            "yellow": "#B58900",
+            "green": "#859900",
+            "cyan": "#2AA198",
+            "blue": "#268BD2",
+            "purple": "#6C71C4",
+            "magenta": "#D33682"
+          }
+        }
+      }
+    },
+    {
+      "slug": "everforest",
+      "name": "Everforest",
+      "source": "https://github.com/sainnhe/everforest/blob/master/palette.md",
+      "modes": {
+        "light": {
+          "variant": "Light medium",
+          "background": "#FDF6E3",
+          "surface": "#F4F0D9",
+          "foreground": "#5C6A72",
+          "muted": "#939F91",
+          "accents": {
+            "red": "#F85552",
+            "orange": "#F57D26",
+            "yellow": "#DFA000",
+            "green": "#8DA101",
+            "cyan": "#35A77C",
+            "blue": "#3A94C5",
+            "purple": "#DF69BA",
+            "magenta": "#DF69BA"
+          }
+        },
+        "dark": {
+          "variant": "Dark medium",
+          "background": "#2D353B",
+          "surface": "#343F44",
+          "foreground": "#D3C6AA",
+          "muted": "#859289",
+          "accents": {
+            "red": "#E67E80",
+            "orange": "#E69875",
+            "yellow": "#DBBC7F",
+            "green": "#A7C080",
+            "cyan": "#83C092",
+            "blue": "#7FBBB3",
+            "purple": "#D699B6",
+            "magenta": "#D699B6"
+          }
+        }
+      }
+    },
+    {
+      "slug": "rose-pine",
+      "name": "Rosé Pine",
+      "source": "https://github.com/rose-pine/neovim/blob/main/lua/rose-pine/palette.lua",
+      "modes": {
+        "light": {
+          "variant": "Dawn",
+          "background": "#FAF4ED",
+          "surface": "#FFFAF3",
+          "foreground": "#464261",
+          "muted": "#797593",
+          "accents": {
+            "red": "#B4637A",
+            "orange": "#D7827E",
+            "yellow": "#EA9D34",
+            "green": "#6D8F89",
+            "cyan": "#56949F",
+            "blue": "#286983",
+            "purple": "#907AA9",
+            "magenta": "#B4637A"
+          }
+        },
+        "dark": {
+          "variant": "Main",
+          "background": "#191724",
+          "surface": "#1F1D2E",
+          "foreground": "#E0DEF4",
+          "muted": "#908CAA",
+          "accents": {
+            "red": "#EB6F92",
+            "orange": "#EBBCBA",
+            "yellow": "#F6C177",
+            "green": "#95B1AC",
+            "cyan": "#9CCFD8",
+            "blue": "#31748F",
+            "purple": "#C4A7E7",
+            "magenta": "#EB6F92"
+          }
+        }
+      }
+    },
+    {
+      "slug": "kanagawa",
+      "name": "Kanagawa",
+      "source": "https://github.com/rebelot/kanagawa.nvim/blob/master/lua/kanagawa/colors.lua",
+      "modes": {
+        "light": {
+          "variant": "Lotus",
+          "background": "#F2ECBC",
+          "surface": "#DCD5AC",
+          "foreground": "#545464",
+          "muted": "#716E61",
+          "accents": {
+            "red": "#C84053",
+            "orange": "#CC6D00",
+            "yellow": "#77713F",
+            "green": "#6F894E",
+            "cyan": "#597B75",
+            "blue": "#4D699B",
+            "purple": "#624C83",
+            "magenta": "#B35B79"
+          }
+        },
+        "dark": {
+          "variant": "Wave",
+          "background": "#1F1F28",
+          "surface": "#2A2A37",
+          "foreground": "#DCD7BA",
+          "muted": "#727169",
+          "accents": {
+            "red": "#E46876",
+            "orange": "#FFA066",
+            "yellow": "#E6C384",
+            "green": "#98BB6C",
+            "cyan": "#7AA89F",
+            "blue": "#7E9CD8",
+            "purple": "#957FB8",
+            "magenta": "#D27E99"
+          }
+        }
+      }
+    },
+    {
+      "slug": "gruvbox",
+      "name": "Gruvbox",
+      "source": "https://github.com/morhetz/gruvbox/blob/master/colors/gruvbox.vim",
+      "modes": {
+        "light": {
+          "variant": "Light medium",
+          "background": "#FBF1C7",
+          "surface": "#EBDBB2",
+          "foreground": "#3C3836",
+          "muted": "#7C6F64",
+          "accents": {
+            "red": "#CC241D",
+            "orange": "#D65D0E",
+            "yellow": "#D79921",
+            "green": "#98971A",
+            "cyan": "#689D6A",
+            "blue": "#458588",
+            "purple": "#B16286",
+            "magenta": "#B16286"
+          }
+        },
+        "dark": {
+          "variant": "Dark medium",
+          "background": "#282828",
+          "surface": "#3C3836",
+          "foreground": "#EBDBB2",
+          "muted": "#928374",
+          "accents": {
+            "red": "#FB4934",
+            "orange": "#FE8019",
+            "yellow": "#FABD2F",
+            "green": "#B8BB26",
+            "cyan": "#8EC07C",
+            "blue": "#83A598",
+            "purple": "#D3869B",
+            "magenta": "#D3869B"
+          }
+        }
+      }
+    }
+  ]
+}
