@@ -4,12 +4,6 @@ Nib is a coordinated light/dark theme family for [Ghostty](https://ghostty.org/)
 
 The core themes are opaque, dependency-free, and complete without shaders. No normal foreground or background is pure black or pure white.
 
-![Nib light reference render](output/playwright/preview/light-overview-render.png)
-
-![Nib dark reference render](output/playwright/preview/dark-overview-render.png)
-
-These are deterministic browser reference renders, not terminal captures. See the [artifact record](docs/ARTIFACTS.md) for exact tools, dimensions, and reproduction commands.
-
 ## Quick start
 
 ### Neovim
@@ -143,9 +137,7 @@ custom-shader-animation = false
 
 Ghostty post-processing affects the whole rendered surface, including Neovim chrome. If a shader causes a black surface, remove every `custom-shader = ...` line from another terminal or editor and restart Ghostty. Read the complete [shader guide](docs/SHADERS.md) before opting in.
 
-![Shader-off and truthfully labelled reference simulation](output/playwright/preview/shader-comparison-render.png)
-
-## Preview laboratory
+## Comparison preview
 
 The static site consumes generated palette CSS and JSON-shaped JavaScript. It has no framework, telemetry, account, CDN, or runtime network dependency:
 
@@ -154,17 +146,11 @@ make preview
 # open http://127.0.0.1:8765/preview/
 ```
 
-It includes side-by-side modes, six language/specialized samples, semantic swatches, ANSI output, completion and diagnostic UI, diffs, Markdown, selection, search, statuslines, contrast measurements, and color-vision notes. Mode buttons and sample controls are keyboard accessible.
-
-Additional committed renders:
-
-- [ANSI comparison](output/playwright/preview/ansi-comparison-render.png)
-- [Syntax detail](output/playwright/preview/syntax-detail-render.png)
-- [Shader comparison](output/playwright/preview/shader-comparison-render.png)
+It renders Nib beside Flexoki, Solarized, Everforest, Rosé Pine, Kanagawa, and Gruvbox using identical code samples and normalized token roles. Light/dark filters and the sample selector are keyboard accessible. Reference values and upstream links live in [`palette/comparisons.json`](palette/comparisons.json).
 
 ## Design and accessibility
 
-One canonical [palette](palette/palette.json), validated by its [schema](palette/schema.json), generates the Neovim palettes and entry points, Ghostty themes, Emacs custom themes, VS Code/Cursor extension themes, Zed extension theme, preview data, machine export, contrast table, ANSI table, and color-vision report. Physical inks and external palettes informed relationships only; none supplied an “exact” screen color.
+One canonical [palette](palette/palette.json), validated by its [schema](palette/schema.json), generates the Neovim palettes and entry points, Ghostty themes, Emacs custom themes, VS Code/Cursor extension themes, Zed extension theme, Nib preview data, machine export, contrast table, ANSI table, and color-vision report. The separate comparison data does not feed any Nib theme implementation. Physical inks and external palettes informed relationships only; none supplied an “exact” Nib screen color.
 
 Principal text targets 7:1 contrast where aesthetically reasonable. Meaningful text requires 4.5:1, and relevant boundaries/non-text indicators require 3:1. Comments pass the ordinary-text target in both modes. Protanopia, deuteranopia, and tritanopia simulations are regression-tested, while critical states also use letters, signs, undercurls, weight, strikethrough, or distinct surface tints. These scoped checks are not blanket accessibility certification.
 
@@ -189,7 +175,7 @@ Run the complete local suite:
 make verify
 ```
 
-It checks the schema, required roles, color format, generation drift, contrast, semantic and ANSI distinguishability, color-vision regressions, Neovim and Emacs loading behavior, VS Code/Cursor and Zed extension structure, Ghostty structure and runtime validation when installed, shader structure and compilation when `glslc` is installed, preview data and artifacts, fixtures, documentation links, syntax, and `git diff --check`. Optional editor runtimes are reported as skipped when unavailable.
+It checks the schema, required roles, color format, generation drift, contrast, semantic and ANSI distinguishability, color-vision regressions, Neovim and Emacs loading behavior, VS Code/Cursor and Zed extension structure, Ghostty structure and runtime validation when installed, shader structure and compilation when `glslc` is installed, comparison preview data, fixtures, documentation links, syntax, and `git diff --check`. Optional editor runtimes are reported as skipped when unavailable.
 
 ## Troubleshooting
 

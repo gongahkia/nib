@@ -1,8 +1,9 @@
 # Third-party references
 
 Access date for every entry: **2026-09-09**. Nib contains original code, prose,
-generated diagrams/renders, and original sRGB values. The links below document
-research only; their assets are not bundled or hotlinked.
+generated diagrams/renders, and original sRGB values. The comparison preview
+uses the attributed palette values listed below; no external image, font, or
+runtime resource is bundled or hotlinked.
 
 ## Technical primary sources
 
@@ -131,6 +132,32 @@ research only; their assets are not bundled or hotlinked.
 - **Exact reusable values:** group names only; no source code or theme colors.
 - **Required attribution:** none for independently authored group definitions;
   links identify the verification sources.
+
+## Preview comparison palettes
+
+The comparison-only preview displays upstream palette values under a normalized
+set of token roles. It does not reproduce or claim to reproduce each theme’s
+native highlight assignments. The locked values, variant names, and source URLs
+are maintained in `palette/comparisons.json`; none feeds Nib’s generated themes.
+
+| Theme | Canonical source | Stated licence |
+| --- | --- | --- |
+| Flexoki | <https://stephango.com/flexoki> and <https://github.com/kepano/flexoki> | MIT |
+| Solarized | <https://github.com/altercation/solarized> | MIT |
+| Everforest | <https://github.com/sainnhe/everforest/blob/master/palette.md> | MIT |
+| Rosé Pine | <https://github.com/rose-pine/neovim/blob/main/lua/rose-pine/palette.lua> | MIT |
+| Kanagawa | <https://github.com/rebelot/kanagawa.nvim/blob/master/lua/kanagawa/colors.lua> | MIT |
+| Gruvbox | <https://github.com/morhetz/gruvbox/blob/master/colors/gruvbox.vim> | MIT |
+
+- **Exact reusable values:** background, surface, foreground, muted, and eight
+  representative accent values for each displayed variant, recorded verbatim
+  in `palette/comparisons.json`.
+- **Changes:** colors are mapped into a consistent comparison grammar and shown
+  beside identical code. Repeated accent families remain repeated where an
+  upstream palette does not define eight distinct comparison hues.
+- **Required attribution:** upstream names and source links are shown on every
+  comparison card and retained in this ledger.
+- **AI disclosure:** none stated by the upstream projects.
 
 ## Fountain-ink references
 
