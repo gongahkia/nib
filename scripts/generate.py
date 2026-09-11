@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import plistlib
 import sys
 from pathlib import Path
 from typing import Any
@@ -218,7 +219,9 @@ def generated_xresources(style: str, mode: dict[str, Any]) -> str:
 
 
 def generated_fish(style: str, mode: dict[str, Any]) -> str:
-    color = lambda value: value.removeprefix("#")  # noqa: E731
+    def color(value: str) -> str:
+        return value.removeprefix("#")
+
     entries = {
         "fish_color_normal": color(mode["foreground"]["primary"]),
         "fish_color_command": color(mode["blue_ink"]["bright"]),
@@ -378,6 +381,189 @@ def generated_zellij(palette: dict[str, Any]) -> str:
         player_colors = [mode["burgundy"], mode["blue_ink"]["bright"], mode["teal"]["primary"], mode["rust"], mode["moss"]["primary"], mode["violet"], mode["amber"], mode["graphite"]]
         lines.extend(f"            player_{index + 1} {channels(color)}" for index, color in enumerate(player_colors))
         lines.extend(["        }", "    }"])
+    lines.extend(["}", ""])
+    return "\n".join(lines)
+
+
+def generated_iterm2(mode: dict[str, Any]) -> str:
+    def color(value: str) -> dict[str, float | str]:
+        red, green, blue = rgb(value)
+        return {
+            "Alpha Component": 1.0,
+            "Blue Component": blue / 255,
+            "Color Space": "sRGB",
+            "Green Component": green / 255,
+            "Red Component": red / 255,
+        }
+
+    ansi = ansi_colors(mode)
+    document: dict[str, Any] = {
+        "Background Color": color(mode["background"]),
+        "Bold Color": color(ansi[15]),
+        "Cursor Color": color(mode["cursor"]["background"]),
+        "Cursor Text Color": color(mode["cursor"]["foreground"]),
+        "Foreground Color": color(mode["foreground"]["primary"]),
+        "Link Color": color(mode["hyperlink"]),
+        "Selected Text Color": color(mode["selection"]["foreground"]),
+        "Selection Color": color(mode["selection"]["background"]),
+    }
+    document.update({f"Ansi {index} Color": color(value) for index, value in enumerate(ansi)})
+    return plistlib.dumps(document, fmt=plistlib.FMT_XML, sort_keys=True).decode("utf-8")
+
+
+def generated_lite_xl(style: str, mode: dict[str, Any]) -> str:
+    def color(value: str) -> str:
+        return f'{{ common.color "{value}" }}'
+
+    styles = {
+        "background": mode["background"],
+        "background2": mode["surface"]["elevated"],
+        "background3": mode["surface"]["floating"],
+        "text": mode["foreground"]["primary"],
+        "caret": mode["cursor"]["background"],
+        "accent": mode["focus"],
+        "dim": mode["foreground"]["muted"],
+        "divider": mode["border"]["default"],
+        "selection": mode["selection"]["background"],
+        "line_number": mode["foreground"]["disabled"],
+        "line_number2": mode["blue_ink"]["bright"],
+        "line_highlight": mode["current_line"],
+        "scrollbar": mode["border"]["default"],
+        "scrollbar2": mode["surface"]["subtle"],
+    }
+    syntax = {
+        "normal": mode["foreground"]["primary"],
+        "symbol": mode["violet"],
+        "comment": mode["foreground"]["muted"],
+        "keyword": mode["blue_ink"]["deep"],
+        "keyword2": mode["burgundy"],
+        "number": mode["amber"],
+        "literal": mode["moss"]["primary"],
+        "string": mode["teal"]["primary"],
+        "operator": mode["graphite"],
+        "function": mode["blue_ink"]["bright"],
+    }
+    lines = [
+        f"-- {MARKER}",
+        f"-- Nib {style.title()} for Lite XL",
+        'local style = require "core.style"',
+        'local common = require "core.common"',
+        "",
+    ]
+    lines.extend(f"style.{name} = {color(value)}" for name, value in styles.items())
+    lines.append("")
+    lines.extend(f'style.syntax["{name}"] = {color(value)}' for name, value in syntax.items())
+    return "\n".join(lines) + "\n"
+
+
+def generated_intellij(style: str, mode: dict[str, Any]) -> str:
+    def strip(value: str) -> str:
+        return value.removeprefix("#")
+
+    def attribute(
+        name: str,
+        *,
+        foreground: str | None = None,
+        background: str | None = None,
+        effect: str | None = None,
+        effect_type: str | None = None,
+        font_type: int | None = None,
+    ) -> list[str]:
+        values: list[tuple[str, str]] = []
+        if foreground:
+            values.append(("FOREGROUND", strip(foreground)))
+        if background:
+            values.append(("BACKGROUND", strip(background)))
+        if effect:
+            values.append(("EFFECT_COLOR", strip(effect)))
+        if effect_type:
+            values.append(("EFFECT_TYPE", effect_type))
+        if font_type is not None:
+            values.append(("FONT_TYPE", str(font_type)))
+        lines = [f'    <option name="{name}">', "      <value>"]
+        lines.extend(f'        <option name="{key}" value="{value}" />' for key, value in values)
+        lines.extend(["      </value>", "    </option>"])
+        return lines
+
+    colors = {
+        "CARET_COLOR": mode["cursor"]["background"],
+        "CARET_ROW_COLOR": mode["current_line"],
+        "GUTTER_BACKGROUND": mode["background"],
+        "INDENT_GUIDE": mode["border"]["subtle"],
+        "LINE_NUMBERS_COLOR": mode["foreground"]["disabled"],
+        "RIGHT_MARGIN_COLOR": mode["border"]["subtle"],
+        "SELECTED_INDENT_GUIDE": mode["border"]["default"],
+        "SELECTION_BACKGROUND": mode["selection"]["background"],
+        "SELECTION_FOREGROUND": mode["selection"]["foreground"],
+        "WHITESPACES": mode["foreground"]["disabled"],
+    }
+    attributes = [
+        ("TEXT", {"foreground": mode["foreground"]["primary"], "background": mode["background"]}),
+        ("DEFAULT_KEYWORD", {"foreground": mode["blue_ink"]["deep"], "font_type": 1}),
+        ("DEFAULT_STRING", {"foreground": mode["teal"]["primary"]}),
+        ("DEFAULT_NUMBER", {"foreground": mode["amber"]}),
+        ("DEFAULT_CONSTANT", {"foreground": mode["amber"]}),
+        ("DEFAULT_FUNCTION_DECLARATION", {"foreground": mode["blue_ink"]["bright"], "font_type": 1}),
+        ("DEFAULT_FUNCTION_CALL", {"foreground": mode["blue_ink"]["bright"]}),
+        ("DEFAULT_CLASS_NAME", {"foreground": mode["moss"]["primary"], "font_type": 1}),
+        ("DEFAULT_INTERFACE_NAME", {"foreground": mode["moss"]["primary"], "font_type": 1}),
+        ("DEFAULT_INSTANCE_FIELD", {"foreground": mode["sepia"]}),
+        ("DEFAULT_PARAMETER", {"foreground": mode["foreground"]["secondary"]}),
+        ("DEFAULT_LINE_COMMENT", {"foreground": mode["foreground"]["muted"], "font_type": 2}),
+        ("DEFAULT_BLOCK_COMMENT", {"foreground": mode["foreground"]["muted"], "font_type": 2}),
+        ("DEFAULT_DOC_COMMENT", {"foreground": mode["foreground"]["muted"]}),
+        ("DEFAULT_BRACES", {"foreground": mode["graphite"]}),
+        ("DEFAULT_OPERATION_SIGN", {"foreground": mode["graphite"]}),
+        ("DEFAULT_METADATA", {"foreground": mode["violet"]}),
+        ("HYPERLINK_ATTRIBUTES", {"foreground": mode["hyperlink"], "effect": mode["hyperlink"], "effect_type": "1"}),
+        ("ERRORS_ATTRIBUTES", {"effect": mode["diagnostic"]["error"], "effect_type": "2"}),
+        ("WARNING_ATTRIBUTES", {"effect": mode["diagnostic"]["warning"], "effect_type": "2"}),
+        ("WEAK_WARNING_ATTRIBUTES", {"effect": mode["diagnostic"]["hint"], "effect_type": "2"}),
+        ("INFO_ATTRIBUTES", {"effect": mode["diagnostic"]["information"], "effect_type": "2"}),
+        ("DIFF_INSERTED", {"foreground": mode["diff"]["foreground"], "background": mode["diff"]["add"]}),
+        ("DIFF_MODIFIED", {"foreground": mode["diff"]["foreground"], "background": mode["diff"]["change"]}),
+        ("DIFF_DELETED", {"foreground": mode["diff"]["foreground"], "background": mode["diff"]["delete"]}),
+    ]
+    parent = "Default" if style == "light" else "Darcula"
+    lines = [
+        f'<!-- {MARKER} -->',
+        f'<scheme name="Nib {style.title()}" version="142" parent_scheme="{parent}">',
+        "  <metaInfo>",
+        "    <property name=\"ide\">idea</property>",
+        "    <property name=\"name\">Nib</property>",
+        "  </metaInfo>",
+        "  <colors>",
+    ]
+    lines.extend(f'    <option name="{name}" value="{strip(value)}" />' for name, value in colors.items())
+    lines.extend(["  </colors>", "  <attributes>"])
+    for name, values in attributes:
+        lines.extend(attribute(name, **values))
+    lines.extend(["  </attributes>", "</scheme>", ""])
+    return "\n".join(lines)
+
+
+def generated_tailwind() -> str:
+    mappings = {
+        "background": "background",
+        "surface": "surface-elevated",
+        "surface-floating": "surface-floating",
+        "foreground": "foreground-primary",
+        "muted": "foreground-muted",
+        "border": "border-default",
+        "focus": "focus",
+        "blue-ink": "blue-ink-primary",
+        "moss": "moss-primary",
+        "teal": "teal-primary",
+        "burgundy": "burgundy",
+        "rust": "rust",
+        "violet": "violet",
+        "amber": "amber",
+        "error": "diagnostic-error",
+        "warning": "diagnostic-warning",
+        "success": "diagnostic-success",
+    }
+    lines = [f"/* {MARKER} */", '@import "../css/nib.css";', "", "@theme inline {"]
+    lines.extend(f"  --color-nib-{name}: var(--nib-{role});" for name, role in mappings.items())
     lines.extend(["}", ""])
     return "\n".join(lines)
 
@@ -1742,6 +1928,8 @@ def render_files(palette: dict[str, Any]) -> dict[Path, str]:
         Path("kitty/nib-dark.conf"): generated_kitty("dark", palette["modes"]["dark"]),
         Path("wezterm/Nib Light.toml"): generated_wezterm("light", palette["modes"]["light"]),
         Path("wezterm/Nib Dark.toml"): generated_wezterm("dark", palette["modes"]["dark"]),
+        Path("iterm2/Nib Light.itermcolors"): generated_iterm2(palette["modes"]["light"]),
+        Path("iterm2/Nib Dark.itermcolors"): generated_iterm2(palette["modes"]["dark"]),
         Path("windows-terminal/nib-light.json"): generated_windows_terminal("light", palette["modes"]["light"]),
         Path("windows-terminal/nib-dark.json"): generated_windows_terminal("dark", palette["modes"]["dark"]),
         Path("warp-terminal/nib-light.yaml"): generated_warp("light", palette["modes"]["light"]),
@@ -1759,6 +1947,7 @@ def render_files(palette: dict[str, Any]) -> dict[Path, str]:
         Path("pywal/nib-light.json"): generated_pywal(palette["modes"]["light"]),
         Path("pywal/nib-dark.json"): generated_pywal(palette["modes"]["dark"]),
         Path("css/nib.css"): generated_css(palette),
+        Path("tailwind/nib.css"): generated_tailwind(),
         Path("zellij/nib.kdl"): generated_zellij(palette),
         Path("emacs/nib-light-theme.el"): generated_emacs_theme("light", palette["modes"]["light"]),
         Path("emacs/nib-dark-theme.el"): generated_emacs_theme("dark", palette["modes"]["dark"]),
@@ -1779,6 +1968,10 @@ def render_files(palette: dict[str, Any]) -> dict[Path, str]:
         Path("helix/nib-dark.toml"): generated_helix_theme("dark", palette["modes"]["dark"]),
         Path("sublime/Nib Light.sublime-color-scheme"): generated_sublime_scheme("light", palette["modes"]["light"]),
         Path("sublime/Nib Dark.sublime-color-scheme"): generated_sublime_scheme("dark", palette["modes"]["dark"]),
+        Path("lite-xl/nib-light.lua"): generated_lite_xl("light", palette["modes"]["light"]),
+        Path("lite-xl/nib-dark.lua"): generated_lite_xl("dark", palette["modes"]["dark"]),
+        Path("intellij/Nib Light.icls"): generated_intellij("light", palette["modes"]["light"]),
+        Path("intellij/Nib Dark.icls"): generated_intellij("dark", palette["modes"]["dark"]),
         Path("dist/nib-palette.json"): generated_export(palette),
         Path("docs/generated/CONTRAST.md"): generated_contrast(palette),
         Path("docs/generated/ANSI.md"): generated_ansi(palette),

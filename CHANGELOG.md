@@ -25,6 +25,12 @@ All notable changes to Nib are documented here. The format follows [Keep a Chang
   Chromium theme loaders.
 - Generated light/dark themes for Vim, Helix, and Sublime Text, including
   native UI, syntax, diagnostic, search, selection, and diff roles.
+- Generated IntelliJ and Lite XL editor schemes; Alacritty, Black Box, iTerm2,
+  Kitty, WezTerm, Windows Terminal, Warp, and Xresources terminal schemes;
+  fish, fzf, tmux, Zellij, and Pywal integrations; reusable CSS and Tailwind v4
+  tokens; and generic Chrome/Chromium packages.
+- A Flexoki support audit, consolidated port-installation guide, and a compact
+  port-led README patterned after Flexoki's information architecture.
 - Offline structural verification, optional Emacs batch loading, packaging and
   installation documentation, and current upstream format provenance for the
   additional editors.

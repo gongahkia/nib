@@ -7,12 +7,14 @@ import hashlib
 import json
 import math
 import os
+import plistlib
 import re
 import shutil
 import subprocess
 import sys
 import tempfile
 import tomllib
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Callable
 
@@ -151,6 +153,8 @@ def verify_generation() -> None:
         Path("windows-terminal/nib-dark.json"),
         Path("pywal/nib-light.json"),
         Path("pywal/nib-dark.json"),
+        Path("iterm2/Nib Light.itermcolors"),
+        Path("iterm2/Nib Dark.itermcolors"),
         Path("sublime/Nib Light.sublime-color-scheme"),
         Path("sublime/Nib Dark.sublime-color-scheme"),
     }
@@ -632,6 +636,18 @@ def verify_portability_formats() -> None:
         require(wezterm["colors"]["brights"] == ansi[8:], f"WezTerm {style}: bright ANSI palette drifted")
         require(wezterm["metadata"]["name"] == f"Nib {style.title()}", f"WezTerm {style}: name drifted")
 
+        iterm_path = ROOT / "iterm2" / f"Nib {style.title()}.itermcolors"
+        iterm = plistlib.loads(iterm_path.read_bytes())
+        iterm_ansi: list[str] = []
+        for index in range(16):
+            value = iterm[f"Ansi {index} Color"]
+            reconstructed = "#" + "".join(
+                f"{round(value[f'{channel} Component'] * 255):02X}"
+                for channel in ("Red", "Green", "Blue")
+            )
+            iterm_ansi.append(reconstructed)
+        require(iterm_ansi == ansi, f"iTerm2 {style}: ANSI palette drifted")
+
         windows_path = ROOT / "windows-terminal" / f"nib-{style}.json"
         windows = json.loads(windows_path.read_text(encoding="utf-8"))
         require(windows["name"] == f"Nib {style.title()}", f"Windows Terminal {style}: name drifted")
@@ -708,6 +724,35 @@ def verify_portability_formats() -> None:
     }
     triplets = {tuple(map(int, match)) for match in re.findall(r"\b(\d{1,3}) (\d{1,3}) (\d{1,3})$", zellij_source, re.MULTILINE)}
     require(triplets <= palette_rgb, "Zellij contains a non-canonical RGB triplet")
+
+    tailwind_source = (ROOT / "tailwind" / "nib.css").read_text(encoding="utf-8")
+    require('@import "../css/nib.css";' in tailwind_source, "Tailwind port does not consume Nib CSS tokens")
+    require("@theme inline {" in tailwind_source, "Tailwind port lacks a v4 theme block")
+    require(tailwind_source.count("--color-nib-") >= 12, "Tailwind color utility coverage is incomplete")
+
+    for style in ("light", "dark"):
+        canonical = canonical_colors(PALETTE["modes"][style])
+        lite_path = ROOT / "lite-xl" / f"nib-{style}.lua"
+        lite_source = lite_path.read_text(encoding="utf-8")
+        require(all(f'style.syntax["{name}"]' in lite_source for name in ("normal", "comment", "keyword", "string", "function")), f"Lite XL {style}: syntax coverage is incomplete")
+        require(set(re.findall(r"#[0-9A-Fa-f]{6}\b", lite_source)) <= canonical, f"Lite XL {style}: non-canonical color")
+
+        intellij_path = ROOT / "intellij" / f"Nib {style.title()}.icls"
+        scheme = ET.parse(intellij_path).getroot()
+        require(scheme.tag == "scheme" and scheme.attrib["name"] == f"Nib {style.title()}", f"IntelliJ {style}: scheme metadata drifted")
+        require(scheme.attrib["parent_scheme"] == ("Default" if style == "light" else "Darcula"), f"IntelliJ {style}: parent scheme drifted")
+        attribute_names = {element.attrib["name"] for element in scheme.findall("./attributes/option")}
+        require({"TEXT", "DEFAULT_KEYWORD", "DEFAULT_STRING", "DEFAULT_FUNCTION_DECLARATION", "ERRORS_ATTRIBUTES", "DIFF_INSERTED", "DIFF_DELETED"} <= attribute_names, f"IntelliJ {style}: editor coverage is incomplete")
+        xml_colors = {
+            f"#{value.upper()}"
+            for value in re.findall(r'value="([A-Fa-f0-9]{6})"', intellij_path.read_text(encoding="utf-8"))
+        }
+        require(xml_colors <= canonical, f"IntelliJ {style}: non-canonical color")
+
+    plutil = shutil.which("plutil")
+    if plutil:
+        for style in ("Light", "Dark"):
+            command([plutil, "-lint", str(ROOT / "iterm2" / f"Nib {style}.itermcolors")])
 
 
 def parse_ghostty_theme(path: Path) -> dict[str, Any]:
@@ -853,7 +898,8 @@ def verify_documentation() -> None:
         "README.md", "CHANGELOG.md", "CONTRIBUTING.md", "LICENSE", "THIRD_PARTY_REFERENCES.md",
         "docs/ACCESSIBILITY.md", "docs/BLIND_AUDIT.md", "docs/FIREFOX.md", "docs/GHOSTTY.md",
         "docs/HELIUM.md", "docs/NEOVIM.md",
-        "docs/PALETTE.md", "docs/RESEARCH.md", "docs/SHADERS.md", "docs/DEVELOPMENT.md",
+        "docs/PALETTE.md", "docs/PORTS.md", "docs/PORT_AUDIT.md", "docs/RESEARCH.md",
+        "docs/SHADERS.md", "docs/DEVELOPMENT.md",
         "docs/EMACS.md", "docs/HELIX.md", "docs/SUBLIME.md", "docs/VIM.md",
         "docs/VSCODE.md", "docs/ZED.md",
     ]
@@ -891,7 +937,7 @@ CHECKS: tuple[tuple[str, Callable[[], None]], ...] = (
     ("VS Code and Cursor extension structure", verify_vscode),
     ("Zed extension and theme structure", verify_zed),
     ("Vim, Helix, and Sublime Text themes", verify_vim_helix_sublime),
-    ("Firefox and Helium browser themes", verify_browser_themes),
+    ("Firefox, Chromium, and Helium browser themes", verify_browser_themes),
     ("terminal, shell, multiplexer, and CSS ports", verify_portability_formats),
     ("Ghostty themes and paired configuration", verify_ghostty),
     ("dry-run installer, backups, and symlinks", verify_installer),
