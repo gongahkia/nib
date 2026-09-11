@@ -26,6 +26,7 @@ from theme_utils import (  # noqa: E402
     CVD_MATRICES,
     HEX_RE,
     REQUIRED_MODE_PATHS,
+    ansi_colors,
     contrast,
     get_path,
     iter_colors,
@@ -764,6 +765,131 @@ def verify_portability_formats() -> None:
             command([plutil, "-lint", str(ROOT / "iterm2" / f"Nib {style}.itermcolors")])
 
 
+def decode_terminal_color(blob: bytes) -> str:
+    archive = plistlib.loads(blob)
+    require(archive["$archiver"] == "NSKeyedArchiver", "Terminal color is not an NSColor archive")
+    color = archive["$objects"][1]
+    require(color["NSColorSpace"] == 2, "Terminal color is not encoded as RGB")
+    components = color["NSRGB"].rstrip(b"\0").decode("ascii").split()
+    require(len(components) == 3, "Terminal RGB archive has the wrong component count")
+    channels = [round(float(component) * 255) for component in components]
+    require(all(0 <= channel <= 255 for channel in channels), "Terminal RGB channel is out of range")
+    return "#" + "".join(f"{channel:02X}" for channel in channels)
+
+
+def verify_application_ports() -> None:
+    ansi_names = ("Black", "Red", "Green", "Yellow", "Blue", "Magenta", "Cyan", "White")
+    all_canonical = canonical_colors(PALETTE["modes"]["light"]) | canonical_colors(PALETTE["modes"]["dark"])
+
+    for style in ("light", "dark"):
+        mode = PALETTE["modes"][style]
+        canonical = canonical_colors(mode)
+        ansi = ansi_colors(mode)
+
+        terminal_path = ROOT / "macos-terminal" / f"Nib {style.title()}.terminal"
+        terminal = plistlib.loads(terminal_path.read_bytes())
+        require(terminal["name"] == f"Nib {style.title()}", f"Terminal {style}: profile name drifted")
+        require(terminal["type"] == "Window Settings", f"Terminal {style}: profile type drifted")
+        require(terminal["UseBrightBold"] is False, f"Terminal {style}: bold unexpectedly changes ANSI colors")
+        require(decode_terminal_color(terminal["BackgroundColor"]) == mode["background"], f"Terminal {style}: background drifted")
+        require(decode_terminal_color(terminal["TextColor"]) == mode["foreground"]["primary"], f"Terminal {style}: foreground drifted")
+        require(decode_terminal_color(terminal["CursorColor"]) == mode["cursor"]["background"], f"Terminal {style}: cursor drifted")
+        require(decode_terminal_color(terminal["SelectionColor"]) == mode["selection"]["background"], f"Terminal {style}: selection drifted")
+        terminal_ansi: list[str] = []
+        for index, name in enumerate(ansi_names):
+            terminal_ansi.append(decode_terminal_color(terminal[f"ANSI{name}Color"]))
+        for index, name in enumerate(ansi_names):
+            terminal_ansi.append(decode_terminal_color(terminal[f"ANSIBright{name}Color"]))
+        require(terminal_ansi == ansi, f"Terminal {style}: ANSI palette drifted")
+
+        konsole_path = ROOT / "konsole" / f"Nib {style.title()}.colorscheme"
+        konsole_source = konsole_path.read_text(encoding="utf-8")
+        konsole_colors = dict(
+            re.findall(r"^\[([^]]+)]\nColor=(\d{1,3},\d{1,3},\d{1,3})$", konsole_source, re.MULTILINE)
+        )
+        expected_sections = {"Background", "BackgroundFaint", "BackgroundIntense", "Foreground", "ForegroundFaint", "ForegroundIntense"}
+        expected_sections |= {f"Color{index}{suffix}" for index in range(8) for suffix in ("", "Faint", "Intense")}
+        require(expected_sections <= konsole_colors.keys(), f"Konsole {style}: color sections are incomplete")
+
+        def from_channels(value: str) -> str:
+            return "#" + "".join(f"{int(channel):02X}" for channel in value.split(","))
+
+        require(from_channels(konsole_colors["Background"]) == mode["background"], f"Konsole {style}: background drifted")
+        require(from_channels(konsole_colors["Foreground"]) == mode["foreground"]["primary"], f"Konsole {style}: foreground drifted")
+        require([from_channels(konsole_colors[f"Color{index}"]) for index in range(8)] == ansi[:8], f"Konsole {style}: normal ANSI palette drifted")
+        require([from_channels(konsole_colors[f"Color{index}Intense"]) for index in range(8)] == ansi[8:], f"Konsole {style}: bright ANSI palette drifted")
+        require(set(map(from_channels, konsole_colors.values())) <= canonical, f"Konsole {style}: non-canonical color")
+
+        yazi_path = ROOT / "yazi" / f"nib-{style}.toml"
+        yazi = tomllib.loads(yazi_path.read_text(encoding="utf-8"))
+        required_yazi = {"app", "mgr", "indicator", "tabs", "mode", "status", "which", "confirm", "spot", "notify", "pick", "input", "cmp", "tasks", "help", "filetype"}
+        require(required_yazi <= yazi.keys(), f"Yazi {style}: UI section coverage is incomplete")
+        require(yazi["app"]["overall"]["bg"] == mode["background"], f"Yazi {style}: app background drifted")
+        require(len(yazi["filetype"]["rules"]) >= 7, f"Yazi {style}: file-type rules are incomplete")
+        yazi_colors = set(re.findall(r"#[0-9A-Fa-f]{6}\b", yazi_path.read_text(encoding="utf-8")))
+        require(yazi_colors <= canonical, f"Yazi {style}: non-canonical color")
+
+        slack_path = ROOT / "slack" / f"nib-{style}.json"
+        slack = json.loads(slack_path.read_text(encoding="utf-8"))
+        require(slack["name"] == f"Nib {style.title()}", f"Slack/Slick {style}: name drifted")
+        require({"nav-bg", "text-color", "badge", "badge-text-color"} == slack["sidebar"].keys(), f"Slack/Slick {style}: sidebar coverage drifted")
+        require(all(name.startswith(("--dt_color-", "--sk_")) for name in slack["vars"]), f"Slack/Slick {style}: unsupported variable namespace")
+        slack_hex = {value for value in (*slack["vars"].values(), *slack["sidebar"].values()) if value.startswith("#")}
+        require(slack_hex <= canonical, f"Slack/Slick {style}: non-canonical hex color")
+        for value in (item for item in slack["vars"].values() if not item.startswith("#")):
+            require(re.fullmatch(r"\d{1,3},\d{1,3},\d{1,3}", value) is not None, f"Slack/Slick {style}: malformed RGB value")
+            require(from_channels(value) in canonical, f"Slack/Slick {style}: non-canonical RGB color")
+
+        legacy = (ROOT / "slack" / f"nib-{style}.txt").read_text(encoding="utf-8").strip().split(",")
+        require(len(legacy) == 10, f"Slack {style}: legacy import string must contain ten colors")
+        require(set(legacy) <= canonical, f"Slack {style}: legacy import contains a non-canonical color")
+
+        telegram_path = ROOT / "telegram" / f"Nib {style.title()}.tdesktop-theme"
+        telegram_source = telegram_path.read_text(encoding="utf-8")
+        definitions = dict(re.findall(r"^(\w+):\s+(#[0-9A-F]{6}|\w+);$", telegram_source, re.MULTILINE))
+        required_telegram = {
+            "windowBg", "windowFg", "windowBgActive", "dialogsBg", "dialogsBgActive",
+            "dialogsNameFg", "historyComposeAreaBg", "historyComposeAreaFg", "msgInBg",
+            "msgOutBg", "historyTextInFg", "historyTextOutFg", "notificationBg",
+        }
+        require(required_telegram <= definitions.keys(), f"Telegram {style}: core application roles are incomplete")
+        require(len(definitions) >= 175, f"Telegram {style}: theme coverage is unexpectedly small")
+        for name, value in definitions.items():
+            if value.startswith("#"):
+                require(value in canonical, f"Telegram {style}: {name} has a non-canonical color")
+            else:
+                require(value in definitions, f"Telegram {style}: {name} references undefined {value}")
+
+    obsidian = ROOT / "obsidian" / "Nib"
+    manifest = json.loads((obsidian / "manifest.json").read_text(encoding="utf-8"))
+    versions = json.loads((obsidian / "versions.json").read_text(encoding="utf-8"))
+    require(manifest["name"] == "Nib", "Obsidian: theme name drifted")
+    require(manifest["version"] == PALETTE["meta"]["version"], "Obsidian: version drifted")
+    require(versions == {manifest["version"]: manifest["minAppVersion"]}, "Obsidian: versions manifest drifted")
+    obsidian_css = (obsidian / "theme.css").read_text(encoding="utf-8")
+    required_obsidian = {
+        "--background-primary", "--background-secondary", "--text-normal", "--text-muted",
+        "--interactive-accent", "--code-background", "--code-comment", "--code-function",
+        "--code-keyword", "--code-string", "--nav-item-background-active", "--graph-node",
+    }
+    require(all(variable in obsidian_css for variable in required_obsidian), "Obsidian: semantic coverage is incomplete")
+    require(".theme-light" in obsidian_css and ".theme-dark" in obsidian_css, "Obsidian: paired modes are missing")
+    require("@import" not in obsidian_css and "url(" not in obsidian_css, "Obsidian: remote assets are forbidden")
+    require(set(re.findall(r"#[0-9A-Fa-f]{6}\b", obsidian_css)) <= all_canonical, "Obsidian: non-canonical color")
+
+    discord_css = (ROOT / "discord" / "Nib.theme.css").read_text(encoding="utf-8")
+    require(discord_css.startswith("/**\n * @name Nib"), "Discord: BetterDiscord metadata header is missing")
+    require(".theme-light" in discord_css and ".theme-dark" in discord_css, "Discord: paired modes are missing")
+    require(all(variable in discord_css for variable in ("--background-base-lowest", "--background-primary", "--text-default", "--text-muted", "--border-focus")), "Discord: semantic variable coverage is incomplete")
+    require("@import" not in discord_css and "url(" not in discord_css, "Discord: remote imports are forbidden")
+    require(set(re.findall(r"#[0-9A-Fa-f]{6}\b", discord_css)) <= all_canonical, "Discord: non-canonical color")
+
+    plutil = shutil.which("plutil")
+    if plutil:
+        for style in ("Light", "Dark"):
+            command([plutil, "-lint", str(ROOT / "macos-terminal" / f"Nib {style}.terminal")])
+
+
 def parse_ghostty_theme(path: Path) -> dict[str, Any]:
     values: dict[str, Any] = {"palette": []}
     for raw in path.read_text(encoding="utf-8").splitlines():
@@ -948,6 +1074,7 @@ CHECKS: tuple[tuple[str, Callable[[], None]], ...] = (
     ("Vim, Helix, and Sublime Text themes", verify_vim_helix_sublime),
     ("Firefox, Chromium, and Helium browser themes", verify_browser_themes),
     ("terminal, shell, multiplexer, and CSS ports", verify_portability_formats),
+    ("application, file-manager, and messaging ports", verify_application_ports),
     ("Ghostty themes and paired configuration", verify_ghostty),
     ("dry-run installer, backups, and symlinks", verify_installer),
     ("static shader structure and compilation", verify_shaders),
