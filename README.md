@@ -1,6 +1,6 @@
 # Nib
 
-Nib is a coordinated light/dark theme family for [Ghostty](https://ghostty.org/), [Neovim](https://neovim.io/), [GNU Emacs](https://www.gnu.org/software/emacs/), [VS Code](https://code.visualstudio.com/), [Cursor](https://www.cursor.com/), and [Zed](https://zed.dev/). Its light mode places deep blue-black fountain-pen ink on warm ivory; its dark sibling uses cool ivory ink on near-black navy. Moss leads the non-blue syntax colors, followed by peacock teal, restrained burgundy, rust, violet, amber, sepia, and graphite.
+Nib is a coordinated light/dark theme family for [Ghostty](https://ghostty.org/), [Neovim](https://neovim.io/), [GNU Emacs](https://www.gnu.org/software/emacs/), [VS Code](https://code.visualstudio.com/), [Cursor](https://www.cursor.com/), and [Zed](https://zed.dev/). Its light mode places deep blue-black fountain-pen ink on cool-neutral paper; its dark sibling uses soft ivory ink on near-black chalkboard charcoal. Moss leads the non-blue syntax colors, followed by peacock teal, restrained burgundy, rust, violet, amber, sepia, and graphite.
 
 The core themes are opaque, dependency-free, and complete without shaders. No normal foreground or background is pure black or pure white.
 
@@ -154,7 +154,7 @@ One canonical [palette](palette/palette.json), validated by its [schema](palette
 
 Principal text targets 7:1 contrast where aesthetically reasonable. Meaningful text requires 4.5:1, and relevant boundaries/non-text indicators require 3:1. Comments pass the ordinary-text target in both modes. Protanopia, deuteranopia, and tritanopia simulations are regression-tested, while critical states also use letters, signs, undercurls, weight, strikethrough, or distinct surface tints. These scoped checks are not blanket accessibility certification.
 
-Read the [palette rationale](docs/PALETTE.md), [accessibility report](docs/ACCESSIBILITY.md), and generated [contrast](docs/generated/CONTRAST.md), [ANSI](docs/generated/ANSI.md), and [color-vision](docs/generated/COLOR_VISION.md) tables.
+Read the [palette rationale](docs/PALETTE.md), [blind-audit synthesis](docs/BLIND_AUDIT.md), [accessibility report](docs/ACCESSIBILITY.md), and generated [contrast](docs/generated/CONTRAST.md), [ANSI](docs/generated/ANSI.md), and [color-vision](docs/generated/COLOR_VISION.md) tables.
 
 ## Supported versions
 

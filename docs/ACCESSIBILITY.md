@@ -8,7 +8,7 @@ Nib is designed for long, opaque coding sessions and tests a defined set of colo
 - Ordinary meaningful code, prose, comments, diagnostics, hyperlinks, selected text, search text, diff text, and ANSI text slots 1–15 require at least 4.5:1 against their intended surface.
 - Secondary UI boundaries and focus indicators require at least 3:1 against the primary background.
 
-The exact generated ratios are in [CONTRAST.md](generated/CONTRAST.md). Principal text measures 12.69:1 in light mode and 13.73:1 in dark mode. Comment text measures 5.18:1 and 7.27:1 respectively. The narrowest tested boundary ratios are 3.42:1 and 3.05:1.
+The exact generated ratios are in [CONTRAST.md](generated/CONTRAST.md). Principal text measures 13.01:1 in light mode and 12.70:1 in dark mode. Comment text measures 5.31:1 and 6.25:1 respectively. The narrowest tested boundary ratios are 3.51:1 and 3.14:1.
 
 ANSI index 0 is intentionally a dark building/background color and is not treated as ordinary text in dark mode. Other ANSI slots pass the ordinary-text threshold against their mode background. Normal and bright partners are separately checked for perceptual distance; operational red, green, yellow, blue, magenta, and cyan identities remain distinct.
 
@@ -30,6 +30,6 @@ The colorscheme defines the relevant highlight groups. Applications and user con
 
 Normal text and backgrounds avoid pure black and pure white. Essential text is never assigned the disabled ramp. Large bright-blue surfaces, neon saturation, full-line red diagnostics, and pervasive bold/italic styling are avoided. Comments are secondary but remain above the ordinary-text threshold.
 
-The theme is font-neutral. Documentation renders prefer `AtkynsonMono Nerd Font Mono`, Medium, 15 pt when installed, then fall back to the platform monospace. The font is not bundled or required.
+The editor themes are font-neutral. The blind comparison preview prefers `JetBrainsMono Nerd Font Mono`, then JetBrains Mono and the platform monospace. No font is bundled or required.
 
 Measured results apply to the opaque core themes. Transparency mixes unknown colors beneath the theme, and Ghostty shaders alter the entire rendered surface. Recheck the resulting composition if either option is enabled.

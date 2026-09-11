@@ -88,10 +88,11 @@ Oxblood, Ancient Copper, and Lady Grey and Pelikan Edelstein's Olivine,
 Aquamarine, Smoky Quartz, Amethyst, Garnet, and Amber helped calibrate the
 non-blue families. No sampled photograph or vendor swatch was copied.
 
-Warm ivory and near-black navy are the two “paper” anchors. Cool cotton white
-and neutral cream are calibration references for avoiding yellow cast in the
-light mode and chalkiness in the dark mode. Neither normal foreground nor
-background uses pure black or pure white.
+Cool-neutral paper and near-black chalkboard charcoal are the two current
+“paper” anchors. The original warm-ivory and navy hypothesis was revised after
+a personal [blind preference audit](BLIND_AUDIT.md): the light surface needed
+less yellow, while the dark surface needed less blue. Neither normal foreground
+nor background uses pure black or pure white.
 
 ## Paleto lessons
 

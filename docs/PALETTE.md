@@ -4,7 +4,7 @@
 
 ## Visual model
 
-Light mode is a warm ivory leaf marked with deep blue-black. Dark mode is a separate near-black navy leaf marked with cool ivory; it is not a numerical inversion. Neutral cream and cotton white were used only as calibration concepts so the light page avoids a yellow cast and the dark text avoids a chalk-white glare.
+Light mode is cool-neutral paper with a faint blue-grey cast, marked with deep blue-black. Dark mode is a separate near-black charcoal leaf with a restrained warm-green cast, marked with soft ivory; it is not a numerical inversion. The surfaces were refined after a personal [blind preference audit](BLIND_AUDIT.md): the light page moved away from yellowed ivory, while the dark page moved away from navy toward a chalkboard character.
 
 The accent order is intentional:
 
