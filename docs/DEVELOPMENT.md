@@ -8,11 +8,10 @@ Development requires Python 3.11 or newer and Neovim 0.10 or newer. The generato
 make generate        # regenerate every palette-derived file
 make check-generated # fail if generated files drift
 make shaders         # compile GLSL when glslc is installed
-make preview         # serve http://127.0.0.1:8765/preview/
 make verify          # complete release suite
 ```
 
-`make verify` performs schema and role checks, deterministic generation comparison, contrast and OKLab distinguishability tests, color-vision simulation, ANSI checks, Emacs theme checks, VS Code/Cursor and Zed extension checks, Ghostty structure/runtime validation, shader structure/compilation, comparison-preview validation, fixture parsing, Neovim headless tests, local documentation-link checks, Python compilation, and `git diff --check`.
+`make verify` performs palette-lock, schema, and role checks, deterministic generation comparison, contrast and OKLab distinguishability tests, color-vision simulation, ANSI checks, Emacs theme checks, VS Code/Cursor, Zed, Firefox, and Helium package checks, Ghostty structure/runtime validation, shader structure/compilation, fixture parsing, Neovim headless tests, local documentation-link checks, Python compilation, and `git diff --check`.
 
 The release-candidate environment was Fedora Linux 43 with Python 3.14.7, Node.js 22.22.2, Neovim 0.11.6, Ghostty 1.3.1, Chromium 151.0.7922.173, `playwright-cli` 0.1.19, and `glslc`/shaderc 2026.1.
 
@@ -26,12 +25,14 @@ Edit `palette/palette.json`, never its consumers. `scripts/generate.py` owns:
 - `emacs/nib-light-theme.el` and `nib-dark-theme.el`
 - `vscode/package.json` and `vscode/themes/*.json`
 - `zed/extension.toml` and `zed/themes/nib.json`
-- `preview/generated/palette.css`, `palette.js`, and `comparisons.js`
+- `firefox/manifest.json`
+- `helium/nib-light/manifest.json` and `helium/nib-dark/manifest.json`
 - `dist/nib-palette.json`
 - `docs/generated/CONTRAST.md`, `ANSI.md`, and `COLOR_VISION.md`
 
-`palette/comparisons.json` is manually maintained reference data used only by
-the browser comparison. It never feeds an editor or terminal theme.
+`palette/lock.json` is intentionally authored rather than generated. It records
+the approved palette hash; changing `palette/palette.json` requires an explicit
+decision to update the lock before verification can pass.
 
 The generator writes stable ordering and a marker into every output. Check mode computes the expected content in memory and fails without modifying files. Review all generated differences because a single canonical change intentionally reaches several applications.
 
@@ -78,7 +79,3 @@ XDG_CONFIG_HOME="$temporary" ghostty +validate-config \
 ```
 
 Remove the temporary directory after inspection. Ghostty configuration validation does not compile shader bodies; `scripts/validate_shaders.py` wraps and compiles all four stages with `glslc` when present.
-
-## Comparison preview
-
-The browser comparison has no build step beyond palette generation and makes no runtime network request. It calculates the nearest reference across the complete light and dark palette, then renders that theme beside Nib in both modes. Names, normalized TypeScript token roles, and hexadecimal swatches remain visible for final palette approval. This is a controlled visual comparison, not a claim that the upstream theme assigns every syntax group identically in its native implementation.

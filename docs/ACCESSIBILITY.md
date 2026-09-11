@@ -30,6 +30,6 @@ The colorscheme defines the relevant highlight groups. Applications and user con
 
 Normal text and backgrounds avoid pure black and pure white. Essential text is never assigned the disabled ramp. Large bright-blue surfaces, neon saturation, full-line red diagnostics, and pervasive bold/italic styling are avoided. Comments are secondary but remain above the ordinary-text threshold.
 
-The editor themes are font-neutral. The browser comparison preview prefers `JetBrainsMono Nerd Font Mono`, then JetBrains Mono and the platform monospace. No font is bundled or required.
+The editor and browser themes are font-neutral. No font is bundled or required.
 
 Measured results apply to the opaque core themes. Transparency mixes unknown colors beneath the theme, and Ghostty shaders alter the entire rendered surface. Recheck the resulting composition if either option is enabled.

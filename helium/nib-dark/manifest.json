@@ -1,0 +1,75 @@
+{
+  "manifest_version": 3,
+  "name": "Nib Dark",
+  "version": "0.1.0",
+  "description": "Nib dark: fountain-pen ink on a near-black chalkboard.",
+  "theme": {
+    "colors": {
+      "frame": [
+        32,
+        35,
+        31
+      ],
+      "frame_inactive": [
+        45,
+        48,
+        43
+      ],
+      "frame_incognito": [
+        45,
+        48,
+        43
+      ],
+      "frame_incognito_inactive": [
+        39,
+        42,
+        37
+      ],
+      "toolbar": [
+        24,
+        26,
+        25
+      ],
+      "tab_text": [
+        221,
+        220,
+        210
+      ],
+      "tab_background_text": [
+        186,
+        188,
+        180
+      ],
+      "bookmark_text": [
+        221,
+        220,
+        210
+      ],
+      "ntp_background": [
+        24,
+        26,
+        25
+      ],
+      "ntp_text": [
+        221,
+        220,
+        210
+      ],
+      "ntp_link": [
+        140,
+        178,
+        197
+      ],
+      "ntp_header": [
+        150,
+        156,
+        151
+      ],
+      "button_background": [
+        32,
+        35,
+        31
+      ]
+    }
+  }
+}
