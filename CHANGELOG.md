@@ -23,6 +23,8 @@ All notable changes to Nib are documented here. The format follows [Keep a Chang
   light/dark definitions and explicit no-data declaration.
 - Separate Manifest V3 light and dark themes for Helium and compatible
   Chromium theme loaders.
+- Generated light/dark themes for Vim, Helix, and Sublime Text, including
+  native UI, syntax, diagnostic, search, selection, and diff roles.
 - Offline structural verification, optional Emacs batch loading, packaging and
   installation documentation, and current upstream format provenance for the
   additional editors.

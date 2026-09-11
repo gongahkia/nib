@@ -143,6 +143,8 @@ def verify_generation() -> None:
         Path("firefox/manifest.json"),
         Path("helium/nib-light/manifest.json"),
         Path("helium/nib-dark/manifest.json"),
+        Path("sublime/Nib Light.sublime-color-scheme"),
+        Path("sublime/Nib Dark.sublime-color-scheme"),
     }
     for relative, content in first.items():
         if relative not in marker_exempt:
@@ -410,6 +412,108 @@ def verify_zed() -> None:
         print("  Zed runtime: skipped (zed unavailable; v0.2.0 schema structure passed)")
 
 
+def verify_vim_helix_sublime() -> None:
+    vim_directory = ROOT / "vim" / "colors"
+    require(
+        sorted(path.name for path in vim_directory.glob("*.vim"))
+        == ["nib-dark.vim", "nib-light.vim", "nib.vim"],
+        "Vim variants must be exactly nib, nib-light, and nib-dark",
+    )
+    required_vim_groups = {
+        "Normal", "Cursor", "Visual", "Search", "IncSearch", "Pmenu", "PmenuSel",
+        "StatusLine", "Comment", "String", "Function", "Keyword", "Type", "Error",
+        "SpellBad", "DiffAdd", "DiffChange", "DiffDelete", "DiffText",
+    }
+    for style in ("light", "dark"):
+        path = vim_directory / f"nib-{style}.vim"
+        source = path.read_text(encoding="utf-8")
+        groups = set(re.findall(r"^highlight\s+(\S+)", source, re.MULTILINE))
+        require(required_vim_groups <= groups, f"Vim {style}: highlight coverage is incomplete")
+        require(f"set background={style}" in source, f"Vim {style}: background mode drifted")
+        require(
+            f"let g:colors_name = 'nib-{style}'" in source,
+            f"Vim {style}: public colorscheme name drifted",
+        )
+        require("let g:terminal_ansi_colors = [" in source, f"Vim {style}: ANSI colors are missing")
+        serialized_colors = set(re.findall(r"#[0-9A-Fa-f]{6}\b", source))
+        require(serialized_colors <= canonical_colors(PALETTE["modes"][style]), f"Vim {style}: non-canonical color")
+
+    vim = shutil.which("vim")
+    if vim is None:
+        print("  Vim runtime: skipped (vim unavailable; structural checks passed)")
+    else:
+        with tempfile.TemporaryDirectory(prefix="nib-vim-") as temporary:
+            vimrc = Path(temporary) / "vimrc"
+            runtime = str(ROOT / "vim").replace("'", "''")
+            vimrc.write_text(
+                "set nocompatible\n"
+                f"execute 'set runtimepath^=' . fnameescape('{runtime}')\n"
+                "set background=light\n"
+                "colorscheme nib\n"
+                "if g:colors_name !=# 'nib' | cquit | endif\n"
+                "colorscheme nib-dark\n"
+                "if g:colors_name !=# 'nib-dark' | cquit | endif\n"
+                "qa!\n",
+                encoding="utf-8",
+            )
+            command([vim, "-Nu", str(vimrc), "-n", "-es"])
+        version = command([vim, "--version"]).stdout.splitlines()[0]
+        print(f"  Vim runtime: pass ({version})")
+
+    required_helix_scopes = {
+        "ui.background", "ui.text", "ui.cursor.primary", "ui.selection", "ui.statusline",
+        "ui.popup", "ui.menu", "ui.menu.selected", "comment", "string", "function",
+        "keyword", "type", "diff.plus", "diff.minus", "diff.delta", "diagnostic.error",
+        "diagnostic.warning", "diagnostic.info", "diagnostic.hint",
+    }
+    for style in ("light", "dark"):
+        path = ROOT / "helix" / f"nib-{style}.toml"
+        theme = tomllib.loads(path.read_text(encoding="utf-8"))
+        palette = theme.pop("palette")
+        require(required_helix_scopes <= theme.keys(), f"Helix {style}: theme coverage is incomplete")
+        require(set(palette.values()) <= canonical_colors(PALETTE["modes"][style]), f"Helix {style}: non-canonical color")
+        require(theme["ui.background"] == {"fg": "fg", "bg": "background"}, f"Helix {style}: editor surface drifted")
+        require(theme["diff.plus"]["bg"] == "diff_add", f"Helix {style}: added diff surface drifted")
+        require(theme["diff.minus"]["bg"] == "diff_delete", f"Helix {style}: deleted diff surface drifted")
+        require(theme["diff.delta"]["bg"] == "diff_change", f"Helix {style}: changed diff surface drifted")
+        for severity in ("error", "warning", "info", "hint"):
+            require(
+                theme[f"diagnostic.{severity}"]["underline"]["style"] == "curl",
+                f"Helix {style}: {severity} diagnostic lacks an undercurl",
+            )
+        for foreground, background in (("fg", "background"), ("selection_fg", "selection_bg"), ("search_fg", "search_bg")):
+            ratio = contrast(palette[foreground], palette[background])
+            require(ratio >= 4.5, f"Helix {style}: {foreground}/{background} contrast is {ratio:.2f}:1")
+
+    sublime_directory = ROOT / "sublime"
+    require(
+        sorted(path.name for path in sublime_directory.glob("*.sublime-color-scheme"))
+        == ["Nib Dark.sublime-color-scheme", "Nib Light.sublime-color-scheme"],
+        "Sublime variants must be exactly Nib Light and Nib Dark",
+    )
+    required_sublime_globals = {
+        "background", "foreground", "caret", "line_highlight", "gutter",
+        "gutter_foreground", "selection", "selection_foreground", "find_highlight",
+        "find_highlight_foreground", "line_diff_added", "line_diff_modified", "line_diff_deleted",
+    }
+    required_sublime_scopes = {
+        "comment", "string", "constant.numeric", "entity.name.function, support.function",
+        "entity.name.type, entity.name.class, support.type, storage.type", "keyword",
+        "invalid", "markup.inserted", "markup.changed", "markup.deleted",
+    }
+    for style in ("light", "dark"):
+        path = sublime_directory / f"Nib {style.title()}.sublime-color-scheme"
+        scheme = json.loads(path.read_text(encoding="utf-8"))
+        require(scheme["name"] == f"Nib {style.title()}", f"Sublime {style}: name drifted")
+        require(required_sublime_globals <= scheme["globals"].keys(), f"Sublime {style}: global coverage is incomplete")
+        scopes = {rule["scope"] for rule in scheme["rules"]}
+        require(required_sublime_scopes <= scopes, f"Sublime {style}: syntax/diff coverage is incomplete")
+        require(set(scheme["variables"].values()) <= canonical_colors(PALETTE["modes"][style]), f"Sublime {style}: non-canonical color")
+        for foreground, background in (("fg", "background"), ("selection_fg", "selection_bg"), ("search_fg", "search_bg")):
+            ratio = contrast(scheme["variables"][foreground], scheme["variables"][background])
+            require(ratio >= 4.5, f"Sublime {style}: {foreground}/{background} contrast is {ratio:.2f}:1")
+
+
 def verify_browser_themes() -> None:
     firefox = json.loads((ROOT / "firefox" / "manifest.json").read_text(encoding="utf-8"))
     require(firefox["manifest_version"] == 3, "Firefox theme must use Manifest V3")
@@ -643,7 +747,8 @@ def verify_documentation() -> None:
         "docs/ACCESSIBILITY.md", "docs/BLIND_AUDIT.md", "docs/FIREFOX.md", "docs/GHOSTTY.md",
         "docs/HELIUM.md", "docs/NEOVIM.md",
         "docs/PALETTE.md", "docs/RESEARCH.md", "docs/SHADERS.md", "docs/DEVELOPMENT.md",
-        "docs/EMACS.md", "docs/VSCODE.md", "docs/ZED.md",
+        "docs/EMACS.md", "docs/HELIX.md", "docs/SUBLIME.md", "docs/VIM.md",
+        "docs/VSCODE.md", "docs/ZED.md",
     ]
     for relative in required:
         require((ROOT / relative).is_file(), f"required documentation is missing: {relative}")
@@ -678,6 +783,7 @@ CHECKS: tuple[tuple[str, Callable[[], None]], ...] = (
     ("Emacs theme structure and runtime", verify_emacs),
     ("VS Code and Cursor extension structure", verify_vscode),
     ("Zed extension and theme structure", verify_zed),
+    ("Vim, Helix, and Sublime Text themes", verify_vim_helix_sublime),
     ("Firefox and Helium browser themes", verify_browser_themes),
     ("Ghostty themes and paired configuration", verify_ghostty),
     ("dry-run installer, backups, and symlinks", verify_installer),

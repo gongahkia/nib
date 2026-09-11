@@ -11,7 +11,7 @@ make shaders         # compile GLSL when glslc is installed
 make verify          # complete release suite
 ```
 
-`make verify` performs palette-lock, schema, and role checks, deterministic generation comparison, contrast and OKLab distinguishability tests, color-vision simulation, ANSI checks, Emacs theme checks, VS Code/Cursor, Zed, Firefox, and Helium package checks, Ghostty structure/runtime validation, shader structure/compilation, fixture parsing, Neovim headless tests, local documentation-link checks, Python compilation, and `git diff --check`.
+`make verify` performs palette-lock, schema, and role checks, deterministic generation comparison, contrast and OKLab distinguishability tests, color-vision simulation, ANSI checks, Emacs theme checks, VS Code/Cursor, Zed, Vim, Helix, Sublime Text, Firefox, and Helium package checks, Ghostty structure/runtime validation, shader structure/compilation, fixture parsing, Neovim headless tests, local documentation-link checks, Python compilation, and `git diff --check`.
 
 The release-candidate environment was Fedora Linux 43 with Python 3.14.7, Node.js 22.22.2, Neovim 0.11.6, Ghostty 1.3.1, Chromium 151.0.7922.173, `playwright-cli` 0.1.19, and `glslc`/shaderc 2026.1.
 
@@ -27,6 +27,9 @@ Edit `palette/palette.json`, never its consumers. `scripts/generate.py` owns:
 - `zed/extension.toml` and `zed/themes/nib.json`
 - `firefox/manifest.json`
 - `helium/nib-light/manifest.json` and `helium/nib-dark/manifest.json`
+- `vim/colors/nib*.vim`
+- `helix/nib-light.toml` and `helix/nib-dark.toml`
+- `sublime/Nib Light.sublime-color-scheme` and `Nib Dark.sublime-color-scheme`
 - `dist/nib-palette.json`
 - `docs/generated/CONTRAST.md`, `ANSI.md`, and `COLOR_VISION.md`
 

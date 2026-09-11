@@ -64,6 +64,324 @@ def generated_ghostty(style: str, mode: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+ANSI_NAMES = ("black", "red", "green", "yellow", "blue", "magenta", "cyan", "white")
+
+
+def generated_alacritty(mode: dict[str, Any]) -> str:
+    ansi = ansi_colors(mode)
+    lines = [
+        f"# {MARKER}",
+        "[colors.primary]",
+        f'background = "{mode["background"]}"',
+        f'foreground = "{mode["foreground"]["primary"]}"',
+        f'bright_foreground = "{ansi[15]}"',
+        f'dim_foreground = "{mode["foreground"]["muted"]}"',
+        "",
+        "[colors.cursor]",
+        f'cursor = "{mode["cursor"]["background"]}"',
+        f'text = "{mode["cursor"]["foreground"]}"',
+        "",
+        "[colors.selection]",
+        f'background = "{mode["selection"]["background"]}"',
+        f'text = "{mode["selection"]["foreground"]}"',
+        "",
+        "[colors.normal]",
+    ]
+    lines.extend(f'{name} = "{ansi[index]}"' for index, name in enumerate(ANSI_NAMES))
+    lines.extend(["", "[colors.bright]"])
+    lines.extend(f'{name} = "{ansi[index + 8]}"' for index, name in enumerate(ANSI_NAMES))
+    return "\n".join(lines) + "\n"
+
+
+def generated_kitty(style: str, mode: dict[str, Any]) -> str:
+    ansi = ansi_colors(mode)
+    lines = [
+        f"# {MARKER}",
+        f"## name: Nib {style.title()}",
+        "## license: MIT",
+        "## blurb: Fountain-pen ink on paper and chalkboard charcoal",
+        "",
+        f"foreground {mode['foreground']['primary']}",
+        f"background {mode['background']}",
+        f"selection_foreground {mode['selection']['foreground']}",
+        f"selection_background {mode['selection']['background']}",
+        f"cursor {mode['cursor']['background']}",
+        f"cursor_text_color {mode['cursor']['foreground']}",
+        f"active_border_color {mode['border']['focus']}",
+        f"inactive_border_color {mode['border']['subtle']}",
+        f"active_tab_foreground {mode['foreground']['primary']}",
+        f"active_tab_background {mode['surface']['subtle']}",
+        f"inactive_tab_foreground {mode['foreground']['muted']}",
+        f"inactive_tab_background {mode['surface']['elevated']}",
+        "",
+    ]
+    lines.extend(f"color{index} {color}" for index, color in enumerate(ansi))
+    return "\n".join(lines) + "\n"
+
+
+def generated_wezterm(style: str, mode: dict[str, Any]) -> str:
+    ansi = ansi_colors(mode)
+    lines = [
+        f"# {MARKER}",
+        "[colors]",
+        f'foreground = "{mode["foreground"]["primary"]}"',
+        f'background = "{mode["background"]}"',
+        f'cursor_bg = "{mode["cursor"]["background"]}"',
+        f'cursor_border = "{mode["cursor"]["background"]}"',
+        f'cursor_fg = "{mode["cursor"]["foreground"]}"',
+        f'selection_bg = "{mode["selection"]["background"]}"',
+        f'selection_fg = "{mode["selection"]["foreground"]}"',
+        f'compose_cursor = "{mode["violet"]}"',
+        f'scrollbar_thumb = "{mode["border"]["default"]}"',
+        f'split = "{mode["border"]["default"]}"',
+        "ansi = [" + ", ".join(json.dumps(color) for color in ansi[:8]) + "]",
+        "brights = [" + ", ".join(json.dumps(color) for color in ansi[8:]) + "]",
+        "",
+        "[metadata]",
+        f'name = "Nib {style.title()}"',
+        f'aliases = ["nib-{style}"]',
+        'origin_url = "https://github.com/gongahkia/nib"',
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def generated_windows_terminal(style: str, mode: dict[str, Any]) -> str:
+    ansi = ansi_colors(mode)
+    scheme: dict[str, Any] = {
+        "name": f"Nib {style.title()}",
+        "background": mode["background"],
+        "foreground": mode["foreground"]["primary"],
+        "cursorColor": mode["cursor"]["background"],
+        "selectionBackground": mode["selection"]["background"],
+    }
+    for index, name in enumerate(ANSI_NAMES):
+        key = "purple" if name == "magenta" else name
+        scheme[key] = ansi[index]
+        scheme[f"bright{key.title()}"] = ansi[index + 8]
+    return json.dumps(scheme, indent=2) + "\n"
+
+
+def generated_warp(style: str, mode: dict[str, Any]) -> str:
+    ansi = ansi_colors(mode)
+    lines = [
+        f"# {MARKER}",
+        f'name: "Nib {style.title()}"',
+        f'accent: "{mode["focus"]}"',
+        f'cursor: "{mode["cursor"]["background"]}"',
+        f'background: "{mode["background"]}"',
+        f'foreground: "{mode["foreground"]["primary"]}"',
+        f"details: {'lighter' if style == 'light' else 'darker'}",
+        "terminal_colors:",
+        "  normal:",
+    ]
+    lines.extend(f'    {name}: "{ansi[index]}"' for index, name in enumerate(ANSI_NAMES))
+    lines.append("  bright:")
+    lines.extend(f'    {name}: "{ansi[index + 8]}"' for index, name in enumerate(ANSI_NAMES))
+    return "\n".join(lines) + "\n"
+
+
+def generated_black_box(style: str, mode: dict[str, Any]) -> str:
+    document = {
+        "name": f"Nib-{style.title()}",
+        "comment": "Fountain-pen ink on paper and chalkboard charcoal",
+        "background-color": mode["background"],
+        "foreground-color": mode["foreground"]["primary"],
+        "badge-color": mode["focus"],
+        "bold-color": mode["blue_ink"]["bright"],
+        "cursor-background-color": mode["cursor"]["background"],
+        "cursor-foreground-color": mode["cursor"]["foreground"],
+        "highlight-background-color": mode["selection"]["background"],
+        "highlight-foreground-color": mode["selection"]["foreground"],
+        "palette": ansi_colors(mode),
+        "use-badge-color": False,
+        "use-bold-color": False,
+        "use-cursor-color": True,
+        "use-highlight-color": True,
+        "use-theme-colors": False,
+    }
+    return json.dumps(document, indent=2) + "\n"
+
+
+def generated_xresources(style: str, mode: dict[str, Any]) -> str:
+    ansi = ansi_colors(mode)
+    lines = [
+        f"! {MARKER}",
+        f"! Nib {style.title()} for X resource-compatible terminals",
+        f"*background: {mode['background']}",
+        f"*foreground: {mode['foreground']['primary']}",
+        f"*cursorColor: {mode['cursor']['background']}",
+        f"*pointerColorBackground: {mode['surface']['elevated']}",
+        f"*pointerColorForeground: {mode['foreground']['primary']}",
+    ]
+    lines.extend(f"*color{index}: {color}" for index, color in enumerate(ansi))
+    return "\n".join(lines) + "\n"
+
+
+def generated_fish(style: str, mode: dict[str, Any]) -> str:
+    color = lambda value: value.removeprefix("#")  # noqa: E731
+    entries = {
+        "fish_color_normal": color(mode["foreground"]["primary"]),
+        "fish_color_command": color(mode["blue_ink"]["bright"]),
+        "fish_color_keyword": color(mode["blue_ink"]["deep"]) + " --bold",
+        "fish_color_quote": color(mode["teal"]["primary"]),
+        "fish_color_redirection": color(mode["violet"]),
+        "fish_color_end": color(mode["burgundy"]),
+        "fish_color_error": color(mode["diagnostic"]["error"]) + " --bold",
+        "fish_color_param": color(mode["moss"]["primary"]),
+        "fish_color_option": color(mode["sepia"]),
+        "fish_color_operator": color(mode["graphite"]),
+        "fish_color_escape": color(mode["rust"]),
+        "fish_color_comment": color(mode["foreground"]["muted"]) + " --italics",
+        "fish_color_autosuggestion": color(mode["foreground"]["disabled"]),
+        "fish_color_cwd": color(mode["blue_ink"]["primary"]),
+        "fish_color_cwd_root": color(mode["diagnostic"]["error"]),
+        "fish_color_valid_path": "--underline",
+        "fish_color_selection": color(mode["selection"]["foreground"]) + f" --background={color(mode['selection']['background'])}",
+        "fish_color_search_match": color(mode["search"]["foreground"]) + f" --background={color(mode['search']['background'])}",
+        "fish_color_history_current": "--bold",
+        "fish_pager_color_progress": color(mode["diagnostic"]["information"]),
+        "fish_pager_color_prefix": color(mode["blue_ink"]["bright"]) + " --bold",
+        "fish_pager_color_completion": color(mode["foreground"]["primary"]),
+        "fish_pager_color_description": color(mode["foreground"]["muted"]),
+        "fish_pager_color_selected_background": f"--background={color(mode['selection']['background'])}",
+        "fish_pager_color_selected_completion": color(mode["selection"]["foreground"]),
+        "fish_pager_color_selected_prefix": color(mode["selection"]["foreground"]) + " --bold",
+        "fish_pager_color_selected_description": color(mode["selection"]["foreground"]),
+    }
+    lines = [
+        f"# {MARKER}",
+        f"# name: Nib {style.title()}",
+        f"# preferred_background: {color(mode['background'])}",
+        "",
+    ]
+    lines.extend(f"{name} {value}" for name, value in entries.items())
+    return "\n".join(lines) + "\n"
+
+
+def generated_fzf(mode: dict[str, Any]) -> str:
+    colors = {
+        "fg": mode["foreground"]["primary"],
+        "fg+": mode["selection"]["foreground"],
+        "bg": mode["background"],
+        "bg+": mode["selection"]["background"],
+        "hl": mode["blue_ink"]["bright"],
+        "hl+": mode["teal"]["primary"],
+        "info": mode["foreground"]["muted"],
+        "border": mode["border"]["default"],
+        "label": mode["foreground"]["secondary"],
+        "prompt": mode["blue_ink"]["bright"],
+        "pointer": mode["burgundy"],
+        "marker": mode["diagnostic"]["success"],
+        "spinner": mode["teal"]["primary"],
+        "header": mode["sepia"],
+    }
+    option = "--color=" + ",".join(f"{name}:{color}" for name, color in colors.items())
+    return (
+        f"# {MARKER}\n"
+        f'FZF_DEFAULT_OPTS="${{FZF_DEFAULT_OPTS:+$FZF_DEFAULT_OPTS }}{option}"\n'
+        "export FZF_DEFAULT_OPTS\n"
+    )
+
+
+def generated_tmux(style: str, mode: dict[str, Any]) -> str:
+    return "\n".join(
+        [
+            f"# {MARKER}",
+            f"# Nib {style.title()}; source this file from tmux.conf",
+            f"set -g status-style 'fg={mode['foreground']['secondary']},bg={mode['surface']['elevated']}'",
+            f"set -g message-style 'fg={mode['foreground']['primary']},bg={mode['surface']['subtle']}'",
+            f"set -g message-command-style 'fg={mode['foreground']['primary']},bg={mode['surface']['floating']}'",
+            f"set -g mode-style 'fg={mode['selection']['foreground']},bg={mode['selection']['background']},bold'",
+            f"set -g pane-border-style 'fg={mode['border']['subtle']}'",
+            f"set -g pane-active-border-style 'fg={mode['border']['focus']}'",
+            f"set -g display-panes-colour '{mode['foreground']['muted']}'",
+            f"set -g display-panes-active-colour '{mode['blue_ink']['bright']}'",
+            f"set -g window-status-style 'fg={mode['foreground']['muted']},bg={mode['surface']['elevated']}'",
+            f"set -g window-status-current-style 'fg={mode['foreground']['primary']},bg={mode['surface']['subtle']},bold'",
+            "set -g window-status-separator ' '",
+            f"set -g clock-mode-colour '{mode['blue_ink']['bright']}'",
+            "",
+        ]
+    )
+
+
+def generated_pywal(mode: dict[str, Any]) -> str:
+    return json.dumps(
+        {
+            "wallpaper": "",
+            "alpha": "100",
+            "special": {
+                "background": mode["background"],
+                "foreground": mode["foreground"]["primary"],
+                "cursor": mode["cursor"]["background"],
+            },
+            "colors": {f"color{index}": color for index, color in enumerate(ansi_colors(mode))},
+        },
+        indent=2,
+    ) + "\n"
+
+
+def generated_css(palette: dict[str, Any]) -> str:
+    def declarations(mode: dict[str, Any], indent: str = "  ") -> list[str]:
+        values = [
+            (name.replace("_", "-").replace(".", "-"), color)
+            for name, color in iter_colors(mode)
+            if ".hex" not in name
+        ]
+        values.extend((f"ansi-{index}", color) for index, color in enumerate(ansi_colors(mode)))
+        return [f"{indent}--nib-{name}: {color};" for name, color in values]
+
+    lines = [f"/* {MARKER} */", ":root,", '[data-nib-theme="light"] {']
+    lines.extend(declarations(palette["modes"]["light"]))
+    lines.extend(["}", "", '@media (prefers-color-scheme: dark) {', '  :root:not([data-nib-theme="light"]) {'])
+    lines.extend(declarations(palette["modes"]["dark"], "    "))
+    lines.extend(["  }", "}", "", '[data-nib-theme="dark"] {'])
+    lines.extend(declarations(palette["modes"]["dark"]))
+    lines.extend(["}", ""])
+    return "\n".join(lines)
+
+
+def generated_zellij(palette: dict[str, Any]) -> str:
+    def channels(color: str) -> str:
+        return " ".join(str(value) for value in rgb(color))
+
+    def component(name: str, base: str, background: str, accents: list[str]) -> list[str]:
+        lines = [f"        {name} {{", f"            base {channels(base)}", f"            background {channels(background)}"]
+        lines.extend(f"            emphasis_{index} {channels(color)}" for index, color in enumerate(accents))
+        lines.append("        }")
+        return lines
+
+    lines = [f"// {MARKER}", "themes {"]
+    for style in ("light", "dark"):
+        mode = palette["modes"][style]
+        accents = [mode["rust"], mode["teal"]["primary"], mode["moss"]["primary"], mode["violet"]]
+        selected = [mode["burgundy"], mode["blue_ink"]["bright"], mode["diagnostic"]["success"], mode["amber"]]
+        lines.append(f"    nib-{style} {{")
+        for name, base, background, colors in (
+            ("text_unselected", mode["foreground"]["primary"], mode["background"], accents),
+            ("text_selected", mode["selection"]["foreground"], mode["selection"]["background"], selected),
+            ("ribbon_selected", mode["selection"]["foreground"], mode["selection"]["background"], selected),
+            ("ribbon_unselected", mode["foreground"]["muted"], mode["surface"]["elevated"], accents),
+            ("table_title", mode["blue_ink"]["bright"], mode["surface"]["elevated"], accents),
+            ("table_cell_selected", mode["selection"]["foreground"], mode["selection"]["background"], selected),
+            ("table_cell_unselected", mode["foreground"]["primary"], mode["background"], accents),
+            ("list_selected", mode["selection"]["foreground"], mode["selection"]["background"], selected),
+            ("list_unselected", mode["foreground"]["primary"], mode["background"], accents),
+            ("frame_selected", mode["border"]["focus"], mode["background"], selected),
+            ("frame_highlight", mode["blue_ink"]["bright"], mode["background"], accents),
+            ("frame_unselected", mode["border"]["subtle"], mode["background"], accents),
+            ("exit_code_success", mode["diagnostic"]["success"], mode["background"], accents),
+            ("exit_code_error", mode["diagnostic"]["error"], mode["background"], selected),
+        ):
+            lines.extend(component(name, base, background, colors))
+        lines.extend(["        multiplayer_user_colors {"])
+        player_colors = [mode["burgundy"], mode["blue_ink"]["bright"], mode["teal"]["primary"], mode["rust"], mode["moss"]["primary"], mode["violet"], mode["amber"], mode["graphite"]]
+        lines.extend(f"            player_{index + 1} {channels(color)}" for index, color in enumerate(player_colors))
+        lines.extend(["        }", "    }"])
+    lines.extend(["}", ""])
+    return "\n".join(lines)
+
+
 def firefox_theme(style: str, mode: dict[str, Any]) -> dict[str, Any]:
     return {
         "colors": {
@@ -164,6 +482,408 @@ def generated_helium_manifest(style: str, palette: dict[str, Any]) -> str:
         "theme": chromium_theme(palette["modes"][style]),
     }
     return json.dumps(manifest, indent=2) + "\n"
+
+
+def generated_vim_entry() -> str:
+    return (
+        f'" {MARKER}\n'
+        "if &background ==# 'light'\n"
+        "  runtime colors/nib-light.vim\n"
+        "else\n"
+        "  runtime colors/nib-dark.vim\n"
+        "endif\n"
+        "let g:colors_name = 'nib'\n"
+    )
+
+
+def generated_vim_theme(style: str, mode: dict[str, Any]) -> str:
+    def highlight(
+        name: str,
+        *,
+        foreground: str | None = None,
+        background: str | None = None,
+        special: str | None = None,
+        attributes: str = "NONE",
+    ) -> str:
+        return " ".join(
+            (
+                "highlight",
+                name,
+                f"guifg={foreground or 'NONE'}",
+                f"guibg={background or 'NONE'}",
+                f"guisp={special or 'NONE'}",
+                f"gui={attributes}",
+                f"cterm={attributes}",
+            )
+        )
+
+    groups = [
+        highlight("Normal", foreground=mode["foreground"]["primary"], background=mode["background"]),
+        highlight("NormalNC", foreground=mode["foreground"]["secondary"], background=mode["background"]),
+        highlight("Cursor", foreground=mode["cursor"]["foreground"], background=mode["cursor"]["background"]),
+        highlight("lCursor", foreground=mode["cursor"]["foreground"], background=mode["cursor"]["background"]),
+        highlight("CursorLine", background=mode["current_line"]),
+        highlight("CursorColumn", background=mode["current_line"]),
+        highlight("ColorColumn", background=mode["surface"]["elevated"]),
+        highlight("LineNr", foreground=mode["foreground"]["disabled"], background=mode["background"]),
+        highlight("CursorLineNr", foreground=mode["blue_ink"]["bright"], background=mode["current_line"], attributes="bold"),
+        highlight("SignColumn", foreground=mode["foreground"]["muted"], background=mode["background"]),
+        highlight("FoldColumn", foreground=mode["foreground"]["muted"], background=mode["surface"]["elevated"]),
+        highlight("Folded", foreground=mode["foreground"]["muted"], background=mode["surface"]["elevated"]),
+        highlight("Visual", foreground=mode["selection"]["foreground"], background=mode["selection"]["background"]),
+        highlight("Search", foreground=mode["search"]["foreground"], background=mode["search"]["background"]),
+        highlight("IncSearch", foreground=mode["search"]["current_foreground"], background=mode["search"]["current_background"], attributes="bold"),
+        highlight("CurSearch", foreground=mode["search"]["current_foreground"], background=mode["search"]["current_background"], attributes="bold"),
+        highlight("MatchParen", foreground=mode["match"]["foreground"], background=mode["match"]["background"], attributes="bold"),
+        highlight("Pmenu", foreground=mode["foreground"]["primary"], background=mode["surface"]["floating"]),
+        highlight("PmenuSel", foreground=mode["selection"]["foreground"], background=mode["selection"]["background"], attributes="bold"),
+        highlight("PmenuSbar", background=mode["surface"]["subtle"]),
+        highlight("PmenuThumb", background=mode["border"]["default"]),
+        highlight("StatusLine", foreground=mode["foreground"]["primary"], background=mode["surface"]["subtle"], attributes="bold"),
+        highlight("StatusLineNC", foreground=mode["foreground"]["muted"], background=mode["surface"]["elevated"]),
+        highlight("TabLine", foreground=mode["foreground"]["muted"], background=mode["surface"]["elevated"]),
+        highlight("TabLineFill", foreground=mode["border"]["subtle"], background=mode["surface"]["elevated"]),
+        highlight("TabLineSel", foreground=mode["blue_ink"]["deep"], background=mode["surface"]["subtle"], attributes="bold"),
+        highlight("WinSeparator", foreground=mode["border"]["default"], background=mode["background"]),
+        highlight("VertSplit", foreground=mode["border"]["default"], background=mode["background"]),
+        highlight("WildMenu", foreground=mode["selection"]["foreground"], background=mode["selection"]["background"], attributes="bold"),
+        highlight("Directory", foreground=mode["blue_ink"]["primary"], attributes="bold"),
+        highlight("Title", foreground=mode["blue_ink"]["deep"], attributes="bold"),
+        highlight("Question", foreground=mode["diagnostic"]["success"], attributes="bold"),
+        highlight("MoreMsg", foreground=mode["diagnostic"]["information"], attributes="bold"),
+        highlight("WarningMsg", foreground=mode["diagnostic"]["warning"], attributes="bold"),
+        highlight("ErrorMsg", foreground=mode["diagnostic"]["error"], attributes="bold"),
+        highlight("NonText", foreground=mode["foreground"]["disabled"]),
+        highlight("Whitespace", foreground=mode["foreground"]["disabled"]),
+        highlight("SpecialKey", foreground=mode["foreground"]["disabled"]),
+        highlight("Conceal", foreground=mode["foreground"]["muted"]),
+        highlight("Comment", foreground=mode["foreground"]["muted"], attributes="italic"),
+        highlight("Constant", foreground=mode["amber"]),
+        highlight("String", foreground=mode["teal"]["primary"]),
+        highlight("Character", foreground=mode["rust"]),
+        highlight("Number", foreground=mode["amber"]),
+        highlight("Boolean", foreground=mode["burgundy"], attributes="bold"),
+        highlight("Float", foreground=mode["amber"]),
+        highlight("Identifier", foreground=mode["foreground"]["primary"]),
+        highlight("Function", foreground=mode["blue_ink"]["bright"], attributes="bold"),
+        highlight("Statement", foreground=mode["blue_ink"]["deep"], attributes="bold"),
+        highlight("Conditional", foreground=mode["burgundy"], attributes="bold"),
+        highlight("Repeat", foreground=mode["burgundy"], attributes="bold"),
+        highlight("Label", foreground=mode["amber"]),
+        highlight("Operator", foreground=mode["graphite"]),
+        highlight("Keyword", foreground=mode["blue_ink"]["deep"], attributes="bold"),
+        highlight("Exception", foreground=mode["burgundy"], attributes="bold"),
+        highlight("PreProc", foreground=mode["violet"]),
+        highlight("Include", foreground=mode["blue_ink"]["primary"]),
+        highlight("Define", foreground=mode["violet"]),
+        highlight("Macro", foreground=mode["violet"]),
+        highlight("Type", foreground=mode["moss"]["primary"], attributes="bold"),
+        highlight("StorageClass", foreground=mode["moss"]["primary"]),
+        highlight("Structure", foreground=mode["moss"]["primary"], attributes="bold"),
+        highlight("Typedef", foreground=mode["moss"]["primary"]),
+        highlight("Special", foreground=mode["violet"]),
+        highlight("SpecialChar", foreground=mode["rust"]),
+        highlight("Tag", foreground=mode["moss"]["primary"]),
+        highlight("Delimiter", foreground=mode["graphite"]),
+        highlight("SpecialComment", foreground=mode["sepia"], attributes="italic"),
+        highlight("Debug", foreground=mode["rust"]),
+        highlight("Underlined", foreground=mode["hyperlink"], attributes="underline"),
+        highlight("Ignore", foreground=mode["foreground"]["disabled"]),
+        highlight("Error", foreground=mode["diagnostic"]["error"], special=mode["diagnostic"]["error"], attributes="undercurl"),
+        highlight("Todo", foreground=mode["diagnostic"]["warning"], background=mode["surface"]["elevated"], attributes="bold"),
+        highlight("SpellBad", special=mode["diagnostic"]["error"], attributes="undercurl"),
+        highlight("SpellCap", special=mode["diagnostic"]["information"], attributes="undercurl"),
+        highlight("SpellRare", special=mode["diagnostic"]["hint"], attributes="undercurl"),
+        highlight("SpellLocal", special=mode["diagnostic"]["warning"], attributes="undercurl"),
+        highlight("DiffAdd", foreground=mode["diff"]["foreground"], background=mode["diff"]["add"]),
+        highlight("DiffChange", foreground=mode["diff"]["foreground"], background=mode["diff"]["change"]),
+        highlight("DiffDelete", foreground=mode["diff"]["foreground"], background=mode["diff"]["delete"]),
+        highlight("DiffText", foreground=mode["diff"]["foreground"], background=mode["diff"]["change_text"], attributes="bold"),
+    ]
+    ansi = ", ".join(json.dumps(entry["hex"]) for entry in mode["ansi"])
+    return (
+        f'" {MARKER}\n'
+        'if exists("syntax_on")\n  syntax reset\nendif\n'
+        "highlight clear\n"
+        f"set background={style}\n"
+        f"let g:colors_name = 'nib-{style}'\n\n"
+        + "\n".join(groups)
+        + f"\n\nlet g:terminal_ansi_colors = [{ansi}]\n"
+    )
+
+
+def generated_helix_theme(style: str, mode: dict[str, Any]) -> str:
+    values = {
+        "background": mode["background"],
+        "elevated": mode["surface"]["elevated"],
+        "floating": mode["surface"]["floating"],
+        "subtle": mode["surface"]["subtle"],
+        "border": mode["border"]["default"],
+        "border_subtle": mode["border"]["subtle"],
+        "focus": mode["focus"],
+        "fg": mode["foreground"]["primary"],
+        "fg_secondary": mode["foreground"]["secondary"],
+        "muted": mode["foreground"]["muted"],
+        "disabled": mode["foreground"]["disabled"],
+        "blue_deep": mode["blue_ink"]["deep"],
+        "blue": mode["blue_ink"]["primary"],
+        "blue_bright": mode["blue_ink"]["bright"],
+        "moss": mode["moss"]["primary"],
+        "teal": mode["teal"]["primary"],
+        "burgundy": mode["burgundy"],
+        "rust": mode["rust"],
+        "violet": mode["violet"],
+        "amber": mode["amber"],
+        "sepia": mode["sepia"],
+        "graphite": mode["graphite"],
+        "error": mode["diagnostic"]["error"],
+        "warning": mode["diagnostic"]["warning"],
+        "info": mode["diagnostic"]["information"],
+        "hint": mode["diagnostic"]["hint"],
+        "success": mode["diagnostic"]["success"],
+        "selection_bg": mode["selection"]["background"],
+        "selection_fg": mode["selection"]["foreground"],
+        "search_bg": mode["search"]["background"],
+        "search_fg": mode["search"]["foreground"],
+        "search_current_bg": mode["search"]["current_background"],
+        "search_current_fg": mode["search"]["current_foreground"],
+        "current_line": mode["current_line"],
+        "match_bg": mode["match"]["background"],
+        "match_fg": mode["match"]["foreground"],
+        "hyperlink": mode["hyperlink"],
+        "diff_add": mode["diff"]["add"],
+        "diff_change": mode["diff"]["change"],
+        "diff_delete": mode["diff"]["delete"],
+        "diff_fg": mode["diff"]["foreground"],
+        "cursor_bg": mode["cursor"]["background"],
+        "cursor_fg": mode["cursor"]["foreground"],
+    }
+    lines = [
+        f"# {MARKER}",
+        '"ui.background" = { fg = "fg", bg = "background" }',
+        '"ui.background.separator" = { fg = "border_subtle" }',
+        '"ui.text" = "fg"',
+        '"ui.text.focus" = { fg = "selection_fg", bg = "selection_bg", modifiers = ["bold"] }',
+        '"ui.text.inactive" = "muted"',
+        '"ui.text.info" = "blue_bright"',
+        '"ui.text.directory" = { fg = "blue", modifiers = ["bold"] }',
+        '"ui.cursor" = { fg = "cursor_fg", bg = "cursor_bg" }',
+        '"ui.cursor.primary" = { fg = "cursor_fg", bg = "cursor_bg" }',
+        '"ui.cursor.primary.normal" = { fg = "cursor_fg", bg = "cursor_bg" }',
+        '"ui.cursor.primary.insert" = { fg = "background", bg = "moss" }',
+        '"ui.cursor.primary.select" = { fg = "background", bg = "teal" }',
+        '"ui.cursor.match" = { fg = "match_fg", bg = "match_bg", modifiers = ["bold"] }',
+        '"ui.cursorline.primary" = { bg = "current_line" }',
+        '"ui.cursorcolumn.primary" = { bg = "current_line" }',
+        '"ui.gutter" = { fg = "muted", bg = "background" }',
+        '"ui.gutter.selected" = { fg = "blue_bright", bg = "current_line" }',
+        '"ui.linenr" = "disabled"',
+        '"ui.linenr.selected" = { fg = "blue_bright", modifiers = ["bold"] }',
+        '"ui.selection" = { fg = "selection_fg", bg = "selection_bg" }',
+        '"ui.selection.primary" = { fg = "selection_fg", bg = "selection_bg" }',
+        '"ui.highlight" = { fg = "search_fg", bg = "search_bg" }',
+        '"ui.statusline" = { fg = "fg", bg = "subtle" }',
+        '"ui.statusline.inactive" = { fg = "muted", bg = "elevated" }',
+        '"ui.statusline.normal" = { fg = "selection_fg", bg = "selection_bg", modifiers = ["bold"] }',
+        '"ui.statusline.insert" = { fg = "background", bg = "moss", modifiers = ["bold"] }',
+        '"ui.statusline.select" = { fg = "background", bg = "teal", modifiers = ["bold"] }',
+        '"ui.bufferline" = { fg = "muted", bg = "elevated" }',
+        '"ui.bufferline.active" = { fg = "blue_deep", bg = "subtle", modifiers = ["bold"] }',
+        '"ui.bufferline.background" = { bg = "elevated" }',
+        '"ui.popup" = { fg = "fg", bg = "floating" }',
+        '"ui.popup.info" = { fg = "fg_secondary", bg = "floating" }',
+        '"ui.window" = "border"',
+        '"ui.help" = { fg = "fg", bg = "floating" }',
+        '"ui.menu" = { fg = "fg", bg = "floating" }',
+        '"ui.menu.selected" = { fg = "selection_fg", bg = "selection_bg", modifiers = ["bold"] }',
+        '"ui.menu.scroll" = { fg = "border", bg = "subtle" }',
+        '"ui.virtual.ruler" = { bg = "elevated" }',
+        '"ui.virtual.whitespace" = "disabled"',
+        '"ui.virtual.indent-guide" = "border_subtle"',
+        '"ui.virtual.inlay-hint" = { fg = "muted", bg = "elevated", modifiers = ["italic"] }',
+        '"ui.virtual.wrap" = "disabled"',
+        '"ui.virtual.jump-label" = { fg = "search_current_fg", bg = "search_current_bg", modifiers = ["bold"] }',
+        'attribute = "sepia"',
+        'type = { fg = "moss", modifiers = ["bold"] }',
+        'constructor = "blue_bright"',
+        'constant = "amber"',
+        '"constant.builtin.boolean" = { fg = "burgundy", modifiers = ["bold"] }',
+        '"constant.character" = "rust"',
+        '"constant.numeric" = "amber"',
+        'string = "teal"',
+        '"string.regexp" = "rust"',
+        '"string.special" = "violet"',
+        'comment = { fg = "muted", modifiers = ["italic"] }',
+        '"comment.unused" = { fg = "disabled", modifiers = ["italic"] }',
+        'variable = "fg"',
+        '"variable.builtin" = "violet"',
+        '"variable.parameter" = "fg_secondary"',
+        '"variable.other.member" = "sepia"',
+        'label = "amber"',
+        'punctuation = "graphite"',
+        '"punctuation.special" = "rust"',
+        'keyword = { fg = "blue_deep", modifiers = ["bold"] }',
+        '"keyword.control" = { fg = "burgundy", modifiers = ["bold"] }',
+        '"keyword.directive" = "violet"',
+        '"keyword.storage" = "moss"',
+        'operator = "graphite"',
+        'function = { fg = "blue_bright", modifiers = ["bold"] }',
+        '"function.builtin" = "blue"',
+        '"function.macro" = "violet"',
+        'tag = "moss"',
+        'namespace = "blue"',
+        'special = "violet"',
+        '"markup.heading" = { fg = "blue_deep", modifiers = ["bold"] }',
+        '"markup.list" = "rust"',
+        '"markup.bold" = { fg = "fg", modifiers = ["bold"] }',
+        '"markup.italic" = { fg = "fg", modifiers = ["italic"] }',
+        '"markup.strikethrough" = { fg = "disabled", modifiers = ["crossed_out"] }',
+        '"markup.link.url" = { fg = "hyperlink", underline = { style = "line" } }',
+        '"markup.link.text" = "teal"',
+        '"markup.quote" = "sepia"',
+        '"markup.raw" = "teal"',
+        '"diff.plus" = { fg = "diff_fg", bg = "diff_add" }',
+        '"diff.plus.gutter" = { fg = "success", bg = "diff_add", modifiers = ["bold"] }',
+        '"diff.minus" = { fg = "diff_fg", bg = "diff_delete" }',
+        '"diff.minus.gutter" = { fg = "error", bg = "diff_delete", modifiers = ["bold"] }',
+        '"diff.delta" = { fg = "diff_fg", bg = "diff_change" }',
+        '"diff.delta.gutter" = { fg = "info", bg = "diff_change", modifiers = ["bold"] }',
+        'error = { fg = "error", modifiers = ["bold"] }',
+        'warning = { fg = "warning", modifiers = ["bold"] }',
+        'info = "info"',
+        'hint = "hint"',
+        '"diagnostic.error" = { underline = { color = "error", style = "curl" } }',
+        '"diagnostic.warning" = { underline = { color = "warning", style = "curl" } }',
+        '"diagnostic.info" = { underline = { color = "info", style = "curl" } }',
+        '"diagnostic.hint" = { underline = { color = "hint", style = "curl" } }',
+        '"diagnostic.unnecessary" = { fg = "disabled", modifiers = ["dim"] }',
+        '"diagnostic.deprecated" = { fg = "disabled", modifiers = ["crossed_out"] }',
+        'tabstop = { fg = "match_fg", bg = "match_bg", modifiers = ["bold"] }',
+        "",
+        "[palette]",
+    ]
+    lines.extend(f'{name} = "{color}"' for name, color in values.items())
+    return "\n".join(lines) + "\n"
+
+
+def generated_sublime_scheme(style: str, mode: dict[str, Any]) -> str:
+    variables = {
+        "background": mode["background"],
+        "elevated": mode["surface"]["elevated"],
+        "subtle": mode["surface"]["subtle"],
+        "border": mode["border"]["default"],
+        "border_subtle": mode["border"]["subtle"],
+        "fg": mode["foreground"]["primary"],
+        "fg_secondary": mode["foreground"]["secondary"],
+        "muted": mode["foreground"]["muted"],
+        "disabled": mode["foreground"]["disabled"],
+        "blue_deep": mode["blue_ink"]["deep"],
+        "blue": mode["blue_ink"]["primary"],
+        "blue_bright": mode["blue_ink"]["bright"],
+        "moss": mode["moss"]["primary"],
+        "teal": mode["teal"]["primary"],
+        "burgundy": mode["burgundy"],
+        "rust": mode["rust"],
+        "violet": mode["violet"],
+        "amber": mode["amber"],
+        "sepia": mode["sepia"],
+        "graphite": mode["graphite"],
+        "error": mode["diagnostic"]["error"],
+        "warning": mode["diagnostic"]["warning"],
+        "info": mode["diagnostic"]["information"],
+        "success": mode["diagnostic"]["success"],
+        "selection_bg": mode["selection"]["background"],
+        "selection_fg": mode["selection"]["foreground"],
+        "search_bg": mode["search"]["background"],
+        "search_fg": mode["search"]["foreground"],
+        "current_line": mode["current_line"],
+        "hyperlink": mode["hyperlink"],
+        "diff_add": mode["diff"]["add"],
+        "diff_change": mode["diff"]["change"],
+        "diff_delete": mode["diff"]["delete"],
+        "diff_fg": mode["diff"]["foreground"],
+        "cursor_bg": mode["cursor"]["background"],
+    }
+
+    def rule(name: str, scope: str, foreground: str, **properties: str) -> dict[str, str]:
+        return {"name": name, "scope": scope, "foreground": f"var({foreground})", **properties}
+
+    scheme = {
+        "name": f"Nib {style.title()}",
+        "variables": variables,
+        "globals": {
+            "background": "var(background)",
+            "foreground": "var(fg)",
+            "invisibles": "var(disabled)",
+            "caret": "var(cursor_bg)",
+            "block_caret": "var(cursor_bg)",
+            "block_caret_border": "var(cursor_bg)",
+            "line_highlight": "var(current_line)",
+            "accent": "var(blue)",
+            "misspelling": "var(error)",
+            "fold_marker": "var(muted)",
+            "minimap_border": "var(border)",
+            "gutter": "var(background)",
+            "gutter_foreground": "var(disabled)",
+            "gutter_foreground_highlight": "var(blue_bright)",
+            "line_diff_width": 3,
+            "line_diff_added": "var(success)",
+            "line_diff_modified": "var(info)",
+            "line_diff_deleted": "var(error)",
+            "selection": "var(selection_bg)",
+            "selection_foreground": "var(selection_fg)",
+            "selection_border": "var(border)",
+            "inactive_selection": "var(subtle)",
+            "inactive_selection_foreground": "var(fg_secondary)",
+            "highlight": "var(search_bg)",
+            "find_highlight": "var(search_bg)",
+            "find_highlight_foreground": "var(search_fg)",
+            "scroll_highlight": "var(amber)",
+            "scroll_selected_highlight": "var(rust)",
+            "rulers": "var(border_subtle)",
+            "guide": "var(border_subtle)",
+            "active_guide": "var(border)",
+            "stack_guide": "var(blue)",
+            "brackets_foreground": "var(graphite)",
+            "brackets_options": "underline",
+            "tags_foreground": "var(moss)",
+            "tags_options": "stippled_underline",
+            "shadow": "var(border)",
+        },
+        "rules": [
+            rule("Comment", "comment", "muted", font_style="italic"),
+            rule("String", "string", "teal"),
+            rule("Regular expression", "string.regexp", "rust"),
+            rule("Number", "constant.numeric", "amber"),
+            rule("Language constant", "constant.language", "burgundy", font_style="bold"),
+            rule("Constant", "constant", "amber"),
+            rule("Variable", "variable", "fg"),
+            rule("Parameter", "variable.parameter", "fg_secondary"),
+            rule("Property", "variable.other.member, support.type.property-name", "sepia"),
+            rule("Function", "entity.name.function, support.function", "blue_bright", font_style="bold"),
+            rule("Type", "entity.name.type, entity.name.class, support.type, storage.type", "moss", font_style="bold"),
+            rule("Tag", "entity.name.tag", "moss"),
+            rule("Attribute", "entity.other.attribute-name", "sepia"),
+            rule("Keyword", "keyword", "blue_deep", font_style="bold"),
+            rule("Control keyword", "keyword.control", "burgundy", font_style="bold"),
+            rule("Operator", "keyword.operator", "graphite"),
+            rule("Storage modifier", "storage.modifier", "moss"),
+            rule("Preprocessor", "meta.preprocessor, keyword.control.import", "violet"),
+            rule("Punctuation", "punctuation", "graphite"),
+            rule("Escape", "constant.character.escape", "rust"),
+            rule("Invalid", "invalid", "error", font_style="squiggly_underline"),
+            rule("Deprecated", "invalid.deprecated", "disabled", font_style="stippled_underline"),
+            rule("Heading", "markup.heading", "blue_deep", font_style="bold"),
+            rule("Bold", "markup.bold", "fg", font_style="bold"),
+            rule("Italic", "markup.italic", "fg", font_style="italic"),
+            rule("Link", "markup.underline.link", "hyperlink", font_style="underline"),
+            rule("Code", "markup.raw", "teal"),
+            rule("Inserted", "markup.inserted", "diff_fg", background="var(diff_add)"),
+            rule("Changed", "markup.changed", "diff_fg", background="var(diff_change)"),
+            rule("Deleted", "markup.deleted", "diff_fg", background="var(diff_delete)"),
+        ],
+    }
+    return json.dumps(scheme, indent=2) + "\n"
 
 
 def generated_emacs_theme(style: str, mode: dict[str, Any]) -> str:
@@ -1016,6 +1736,30 @@ def render_files(palette: dict[str, Any]) -> dict[Path, str]:
         Path("colors/nib-dark.lua"): generated_entry("dark"),
         Path("ghostty/themes/nib-light"): generated_ghostty("light", palette["modes"]["light"]),
         Path("ghostty/themes/nib-dark"): generated_ghostty("dark", palette["modes"]["dark"]),
+        Path("alacritty/nib-light.toml"): generated_alacritty(palette["modes"]["light"]),
+        Path("alacritty/nib-dark.toml"): generated_alacritty(palette["modes"]["dark"]),
+        Path("kitty/nib-light.conf"): generated_kitty("light", palette["modes"]["light"]),
+        Path("kitty/nib-dark.conf"): generated_kitty("dark", palette["modes"]["dark"]),
+        Path("wezterm/Nib Light.toml"): generated_wezterm("light", palette["modes"]["light"]),
+        Path("wezterm/Nib Dark.toml"): generated_wezterm("dark", palette["modes"]["dark"]),
+        Path("windows-terminal/nib-light.json"): generated_windows_terminal("light", palette["modes"]["light"]),
+        Path("windows-terminal/nib-dark.json"): generated_windows_terminal("dark", palette["modes"]["dark"]),
+        Path("warp-terminal/nib-light.yaml"): generated_warp("light", palette["modes"]["light"]),
+        Path("warp-terminal/nib-dark.yaml"): generated_warp("dark", palette["modes"]["dark"]),
+        Path("black-box/Nib-Light.json"): generated_black_box("light", palette["modes"]["light"]),
+        Path("black-box/Nib-Dark.json"): generated_black_box("dark", palette["modes"]["dark"]),
+        Path("xresources/nib-light"): generated_xresources("light", palette["modes"]["light"]),
+        Path("xresources/nib-dark"): generated_xresources("dark", palette["modes"]["dark"]),
+        Path("fish/nib-light.theme"): generated_fish("light", palette["modes"]["light"]),
+        Path("fish/nib-dark.theme"): generated_fish("dark", palette["modes"]["dark"]),
+        Path("fzf/nib-light.sh"): generated_fzf(palette["modes"]["light"]),
+        Path("fzf/nib-dark.sh"): generated_fzf(palette["modes"]["dark"]),
+        Path("tmux/nib-light.conf"): generated_tmux("light", palette["modes"]["light"]),
+        Path("tmux/nib-dark.conf"): generated_tmux("dark", palette["modes"]["dark"]),
+        Path("pywal/nib-light.json"): generated_pywal(palette["modes"]["light"]),
+        Path("pywal/nib-dark.json"): generated_pywal(palette["modes"]["dark"]),
+        Path("css/nib.css"): generated_css(palette),
+        Path("zellij/nib.kdl"): generated_zellij(palette),
         Path("emacs/nib-light-theme.el"): generated_emacs_theme("light", palette["modes"]["light"]),
         Path("emacs/nib-dark-theme.el"): generated_emacs_theme("dark", palette["modes"]["dark"]),
         Path("vscode/package.json"): generated_vscode_package(palette["meta"]),
@@ -1026,6 +1770,15 @@ def render_files(palette: dict[str, Any]) -> dict[Path, str]:
         Path("firefox/manifest.json"): generated_firefox_manifest(palette),
         Path("helium/nib-light/manifest.json"): generated_helium_manifest("light", palette),
         Path("helium/nib-dark/manifest.json"): generated_helium_manifest("dark", palette),
+        Path("chromium/nib-light/manifest.json"): generated_helium_manifest("light", palette),
+        Path("chromium/nib-dark/manifest.json"): generated_helium_manifest("dark", palette),
+        Path("vim/colors/nib.vim"): generated_vim_entry(),
+        Path("vim/colors/nib-light.vim"): generated_vim_theme("light", palette["modes"]["light"]),
+        Path("vim/colors/nib-dark.vim"): generated_vim_theme("dark", palette["modes"]["dark"]),
+        Path("helix/nib-light.toml"): generated_helix_theme("light", palette["modes"]["light"]),
+        Path("helix/nib-dark.toml"): generated_helix_theme("dark", palette["modes"]["dark"]),
+        Path("sublime/Nib Light.sublime-color-scheme"): generated_sublime_scheme("light", palette["modes"]["light"]),
+        Path("sublime/Nib Dark.sublime-color-scheme"): generated_sublime_scheme("dark", palette["modes"]["dark"]),
         Path("dist/nib-palette.json"): generated_export(palette),
         Path("docs/generated/CONTRAST.md"): generated_contrast(palette),
         Path("docs/generated/ANSI.md"): generated_ansi(palette),

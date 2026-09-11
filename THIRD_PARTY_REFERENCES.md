@@ -1,7 +1,7 @@
 # Third-party references
 
 Original research entries were accessed on **2026-09-09**; Firefox, Chromium,
-and Helium references were accessed on **2026-09-11**. Nib contains original
+Helium, Vim, Helix, and Sublime Text references were accessed on **2026-09-11**. Nib contains original
 code, prose, generated artifacts, and original sRGB values. No external image,
 font, or runtime resource is bundled or hotlinked.
 
@@ -148,6 +148,26 @@ font, or runtime resource is bundled or hotlinked.
   colors.
 - **Required attribution:** source links are retained as technical provenance;
   no implementation was copied.
+
+### Vim, Helix, and Sublime Text theming
+
+- **Creator/publisher:** Vim project, Helix project, and Sublime HQ
+- **URLs:** <https://github.com/vim/colorschemes>,
+  <https://docs.helix-editor.com/themes.html>,
+  <https://www.sublimetext.com/docs/color_schemes.html>, and
+  <https://www.sublimetext.com/docs/scope_naming.html>
+- **Stated licence:** Vim's maintained colorschemes repository is Vim-licensed;
+  Helix source is MPL-2.0; no separate licence is stated on the Sublime Text
+  documentation pages.
+- **AI disclosure:** none stated.
+- **Visual/technical lesson:** verified Vim highlight and terminal-palette
+  conventions, Helix TOML palettes and current UI/syntax/diff/diagnostic
+  scopes, and Sublime Text color-scheme globals, variables, baseline scopes,
+  and diff markers.
+- **Exact reusable values:** format and scope identifiers only; no upstream
+  theme colors or implementation were copied.
+- **Required attribution:** links are retained as technical provenance for the
+  independently authored generated themes.
 
 ### Plugin highlight definitions
 
