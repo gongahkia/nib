@@ -42,8 +42,7 @@ code --install-extension vscode/nib-color-theme-0.1.0.vsix
 
 For Cursor, run **Extensions: Install from VSIX...** and choose the same file.
 Then select either exact theme name with **Preferences: Color Theme**. Nib does
-not change settings automatically and does not require the canonical preview
-font.
+not change settings or fonts automatically.
 
 ## Remove
 

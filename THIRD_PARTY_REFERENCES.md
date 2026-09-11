@@ -1,9 +1,9 @@
 # Third-party references
 
-Access date for every entry: **2026-09-09**. Nib contains original code, prose,
-generated diagrams/renders, and original sRGB values. The comparison preview
-uses the attributed palette values listed below; no external image, font, or
-runtime resource is bundled or hotlinked.
+Original research entries were accessed on **2026-09-09**; Firefox, Chromium,
+and Helium references were accessed on **2026-09-11**. Nib contains original
+code, prose, generated artifacts, and original sRGB values. No external image,
+font, or runtime resource is bundled or hotlinked.
 
 ## Technical primary sources
 
@@ -113,6 +113,42 @@ runtime resource is bundled or hotlinked.
 - **Required attribution:** none for independently authored theme data; links
   are retained as provenance.
 
+### Firefox static-theme documentation
+
+- **Creator/publisher:** Mozilla
+- **URLs:** <https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/theme>,
+  <https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/dark_theme>,
+  <https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_specific_settings>,
+  and <https://extensionworkshop.com/documentation/themes/static-themes/>
+- **Stated licence:** documentation terms vary by Mozilla property; no prose or
+  example implementation was copied.
+- **AI disclosure:** none stated.
+- **Visual/technical lesson:** verified paired static-theme keys, supported
+  browser UI color roles, Manifest V3 add-on IDs, signing, and the explicit
+  no-data declaration required for new AMO submissions.
+- **Exact reusable values:** manifest and color-role identifiers only; no theme
+  colors.
+- **Required attribution:** none identified for the independently authored
+  manifest; links are retained as provenance.
+
+### Chromium and Helium theming
+
+- **Creator/publisher:** Chromium project and Imput
+- **URLs:** <https://chromium.googlesource.com/chromium/src.git/+/main/docs/theme_creation_guide.md>,
+  <https://chromium.googlesource.com/chromium/src/+/main/chrome/browser/themes/theme_properties.h>,
+  <https://github.com/imputnet/helium>, and
+  <https://github.com/imputnet/helium/issues/106>
+- **Stated licence:** Chromium source is BSD-3-Clause; Helium's original work is
+  GPL-3.0 and imported Chromium work retains its original licence.
+- **AI disclosure:** none stated.
+- **Visual/technical lesson:** verified RGB-array static theme manifests,
+  currently overwritable Chromium UI roles, Helium compatibility, and Helium's
+  known incomplete theming of some privileged internal pages.
+- **Exact reusable values:** manifest and color-role identifiers only; no theme
+  colors.
+- **Required attribution:** source links are retained as technical provenance;
+  no implementation was copied.
+
 ### Plugin highlight definitions
 
 - **Creator/publisher:** the respective upstream projects
@@ -133,12 +169,12 @@ runtime resource is bundled or hotlinked.
 - **Required attribution:** none for independently authored group definitions;
   links identify the verification sources.
 
-## Preview comparison palettes
+## Blind-audit reference themes
 
-The comparison-only preview displays upstream palette values under a normalized
-set of token roles. It does not reproduce or claim to reproduce each theme’s
-native highlight assignments. The locked values, variant names, and source URLs
-are maintained in `palette/comparisons.json`; none feeds Nib’s generated themes.
+The completed personal blind audit compared Nib with the following themes under
+normalized token roles. Its temporary frontend and copied comparison values
+were removed after palette approval; this source list remains as methodological
+provenance.
 
 | Theme | Canonical source | Stated licence |
 | --- | --- | --- |
@@ -155,14 +191,11 @@ are maintained in `palette/comparisons.json`; none feeds Nib’s generated theme
 | Catppuccin | <https://github.com/catppuccin/catppuccin> | MIT |
 | Modus | <https://github.com/protesilaos/modus-themes/blob/main/modus-themes.el> | GPL-3.0 |
 
-- **Exact reusable values:** background, surface, foreground, muted, and eight
-  representative accent values for each displayed variant, recorded verbatim
-  in `palette/comparisons.json`.
-- **Changes:** colors are mapped into a consistent comparison grammar and shown
-  beside identical code. Repeated accent families remain repeated where an
-  upstream palette does not define eight distinct comparison hues.
-- **Required attribution:** upstream names and source links are shown on every
-  comparison card and retained in this ledger.
+- **Exact reusable values:** none remain in the repository.
+- **Changes:** the audit normalized token roles and used identical code solely
+  for the completed comparison.
+- **Required attribution:** upstream names and source links are retained in this
+  ledger.
 - **AI disclosure:** none stated by the upstream projects.
 
 ## Fountain-ink references

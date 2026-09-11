@@ -1,6 +1,6 @@
 # Nib
 
-Nib is a coordinated light/dark theme family for [Ghostty](https://ghostty.org/), [Neovim](https://neovim.io/), [GNU Emacs](https://www.gnu.org/software/emacs/), [VS Code](https://code.visualstudio.com/), [Cursor](https://www.cursor.com/), and [Zed](https://zed.dev/). Its light mode places deep blue-black fountain-pen ink on cool-neutral paper; its dark sibling uses soft ivory ink on near-black chalkboard charcoal. Moss leads the non-blue syntax colors, followed by peacock teal, restrained burgundy, rust, violet, amber, sepia, and graphite.
+Nib is a coordinated light/dark theme family for [Ghostty](https://ghostty.org/), [Neovim](https://neovim.io/), [GNU Emacs](https://www.gnu.org/software/emacs/), [VS Code](https://code.visualstudio.com/), [Cursor](https://www.cursor.com/), [Zed](https://zed.dev/), [Firefox](https://www.mozilla.org/firefox/), and [Helium](https://helium.computer/). Its light mode places deep blue-black fountain-pen ink on cool-neutral paper; its dark sibling uses soft ivory ink on near-black chalkboard charcoal. Moss leads the non-blue syntax colors, followed by peacock teal, restrained burgundy, rust, violet, amber, sepia, and graphite.
 
 The core themes are opaque, dependency-free, and complete without shaders. No normal foreground or background is pure black or pure white.
 
@@ -105,6 +105,22 @@ From Zed's Extensions page, choose **Install Dev Extension** and select the
 repository's `zed/` directory. The [Zed guide](docs/ZED.md) includes exact
 selection, paired system-mode settings, removal, and compatibility notes.
 
+### Firefox
+
+Load [`firefox/manifest.json`](firefox/manifest.json) as a temporary add-on from
+`about:debugging` for local testing. A single permission-free static theme
+contains the paired light and dark definitions and follows Firefox's color
+scheme. Permanent installation requires Mozilla signing. See the
+[Firefox guide](docs/FIREFOX.md).
+
+### Helium
+
+Open `helium://extensions`, enable developer mode, and load either
+`helium/nib-light/` or `helium/nib-dark/` unpacked. Chromium themes cannot pair
+both modes in one package, so the variants remain separate. See the
+[Helium guide](docs/HELIUM.md) for installation, packaging, removal, and the
+current limitation on Chromium internal pages.
+
 ## Setup API
 
 The API intentionally stays small:
@@ -137,20 +153,9 @@ custom-shader-animation = false
 
 Ghostty post-processing affects the whole rendered surface, including Neovim chrome. If a shader causes a black surface, remove every `custom-shader = ...` line from another terminal or editor and restart Ghostty. Read the complete [shader guide](docs/SHADERS.md) before opting in.
 
-## Comparison preview
-
-The static site consumes generated palette CSS and JSON-shaped JavaScript. It has no framework, telemetry, account, CDN, or runtime network dependency:
-
-```sh
-make preview
-# open http://127.0.0.1:8765/preview/
-```
-
-It renders the revised Nib palette beside the reference theme with the smallest normalized full-palette distance. Light and dark modes appear together using the same TypeScript sample and token roles; names and hexadecimal swatches stay visible for final approval. The page has no controls or browser-local state. Reference values and upstream links live in [`palette/comparisons.json`](palette/comparisons.json).
-
 ## Design and accessibility
 
-One canonical [palette](palette/palette.json), validated by its [schema](palette/schema.json), generates the Neovim palettes and entry points, Ghostty themes, Emacs custom themes, VS Code/Cursor extension themes, Zed extension theme, Nib preview data, machine export, contrast table, ANSI table, and color-vision report. The separate comparison data does not feed any Nib theme implementation. Physical inks and external palettes informed relationships only; none supplied an “exact” Nib screen color.
+One canonical [palette](palette/palette.json), validated by its [schema](palette/schema.json) and frozen by an explicit [palette lock](palette/lock.json), generates the Neovim palettes and entry points, Ghostty themes, Emacs custom themes, VS Code/Cursor extension themes, Zed extension theme, Firefox theme, Helium themes, machine export, contrast table, ANSI table, and color-vision report. Physical inks and external palettes informed relationships only; none supplied an “exact” Nib screen color.
 
 Principal text targets 7:1 contrast where aesthetically reasonable. Meaningful text requires 4.5:1, and relevant boundaries/non-text indicators require 3:1. Comments pass the ordinary-text target in both modes. Protanopia, deuteranopia, and tritanopia simulations are regression-tested, while critical states also use letters, signs, undercurls, weight, strikethrough, or distinct surface tints. These scoped checks are not blanket accessibility certification.
 
@@ -163,6 +168,8 @@ Read the [palette rationale](docs/PALETTE.md), [blind-audit synthesis](docs/BLIN
 - GNU Emacs 27.1 or newer. Batch validation runs when Emacs is available.
 - VS Code `^1.85.0`, and Cursor versions compatible with that VS Code theme-extension API.
 - Zed versions supporting the current theme schema v0.2.0; Zed does not publish a stable app-version mapping for that schema.
+- Firefox 140 or newer. The paired static theme declares no data collection and requires no permissions or scripts.
+- Helium 0.16.6.1 was used for local packaging validation. The two variants use the standard Chromium Manifest V3 theme format.
 - A truecolor terminal is recommended for Neovim. The 16-color Ghostty palette remains intentionally conventional for remote and degraded sessions.
 
 The runtime Lua has no dependencies and performs no network requests. Development checks use Python 3.11 or newer; Node.js, Ghostty, and `glslc` add checks when present as documented in the [development guide](docs/DEVELOPMENT.md).
@@ -175,7 +182,7 @@ Run the complete local suite:
 make verify
 ```
 
-It checks the schema, required roles, color format, generation drift, contrast, semantic and ANSI distinguishability, color-vision regressions, Neovim and Emacs loading behavior, VS Code/Cursor and Zed extension structure, Ghostty structure and runtime validation when installed, shader structure and compilation when `glslc` is installed, comparison preview data, fixtures, documentation links, syntax, and `git diff --check`. Optional editor runtimes are reported as skipped when unavailable.
+It checks the palette lock, schema, required roles, color format, generation drift, contrast, semantic and ANSI distinguishability, color-vision regressions, Neovim and Emacs loading behavior, VS Code/Cursor, Zed, Firefox, and Helium package structure, Ghostty structure and runtime validation when installed, shader structure and compilation when `glslc` is installed, fixtures, documentation links, syntax, and `git diff --check`. Optional application runtimes are reported as skipped when unavailable.
 
 ## Troubleshooting
 

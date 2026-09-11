@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
@@ -12,7 +13,6 @@ import subprocess
 import sys
 import tempfile
 import tomllib
-from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Callable
 
@@ -105,6 +105,13 @@ def validate_schema(value: Any, rule: dict[str, Any], path: str = "$") -> None:
 
 def verify_palette() -> None:
     validate_schema(PALETTE, SCHEMA)
+    lock = json.loads((ROOT / "palette" / "lock.json").read_text(encoding="utf-8"))
+    digest = hashlib.sha256((ROOT / "palette" / "palette.json").read_bytes()).hexdigest()
+    require(lock.get("format") == "nib-palette-lock", "palette lock format changed")
+    require(lock.get("version") == 1, "palette lock schema version changed")
+    require(lock.get("locked_at") == "2026-09-11", "palette lock date changed")
+    require(lock.get("palette_version") == PALETTE["meta"]["version"], "palette lock version drifted")
+    require(lock.get("sha256") == digest, "approved palette changed without updating its explicit lock")
     require(PALETTE["meta"]["slug"] == "nib", "unexpected palette slug")
     require(PALETTE["meta"]["minimum_neovim"] == "0.10.0", "unexpected Neovim baseline")
     require(PALETTE["meta"]["minimum_ghostty"] == "1.3.0", "unexpected Ghostty baseline")
@@ -132,17 +139,20 @@ def verify_generation() -> None:
     first = render_files(PALETTE)
     second = render_files(load_palette(ROOT))
     require(first == second, "generator output is not deterministic")
+    marker_exempt = {
+        Path("firefox/manifest.json"),
+        Path("helium/nib-light/manifest.json"),
+        Path("helium/nib-dark/manifest.json"),
+    }
     for relative, content in first.items():
-        require(MARKER in "\n".join(content.splitlines()[:3]), f"generated marker missing: {relative}")
+        if relative not in marker_exempt:
+            require(MARKER in "\n".join(content.splitlines()[:3]), f"generated marker missing: {relative}")
     authored = [
         ROOT / "colors" / "nib.lua",
         ROOT / "lua" / "nib" / "init.lua",
         ROOT / "lua" / "nib" / "highlights.lua",
         ROOT / "lua" / "nib" / "integrations.lua",
         ROOT / "lua" / "lualine" / "themes" / "nib.lua",
-        ROOT / "preview" / "index.html",
-        ROOT / "preview" / "style.css",
-        ROOT / "preview" / "app.js",
     ]
     literal = re.compile(r"#[0-9A-Fa-f]{6}\b")
     for path in authored:
@@ -400,6 +410,95 @@ def verify_zed() -> None:
         print("  Zed runtime: skipped (zed unavailable; v0.2.0 schema structure passed)")
 
 
+def verify_browser_themes() -> None:
+    firefox = json.loads((ROOT / "firefox" / "manifest.json").read_text(encoding="utf-8"))
+    require(firefox["manifest_version"] == 3, "Firefox theme must use Manifest V3")
+    require(firefox["name"] == "Nib", "Firefox theme name changed")
+    require(firefox["version"] == PALETTE["meta"]["version"], "Firefox theme version drifted")
+    gecko = firefox.get("browser_specific_settings", {}).get("gecko", {})
+    require(gecko.get("id") == "nib-theme@gongahkia", "Firefox add-on ID changed")
+    require(gecko.get("strict_min_version") == "140.0", "Firefox minimum version changed")
+    require(
+        gecko.get("data_collection_permissions") == {"required": ["none"]},
+        "Firefox theme must explicitly declare that it collects no data",
+    )
+    required_firefox_colors = {
+        "frame", "frame_inactive", "tab_background_text", "tab_selected", "tab_text", "tab_line",
+        "tab_loading", "toolbar", "toolbar_text", "bookmark_text", "icons", "icons_attention",
+        "toolbar_field", "toolbar_field_text", "toolbar_field_border", "toolbar_field_focus",
+        "toolbar_field_text_focus", "toolbar_field_border_focus", "toolbar_field_highlight",
+        "toolbar_field_highlight_text", "button_background_hover", "button_background_active",
+        "popup", "popup_text", "popup_border", "popup_highlight", "popup_highlight_text",
+        "sidebar", "sidebar_text", "sidebar_border", "sidebar_highlight", "sidebar_highlight_text",
+        "ntp_background", "ntp_card_background", "ntp_text",
+    }
+    firefox_pairs = (
+        ("tab_background_text", "frame"),
+        ("tab_text", "tab_selected"),
+        ("toolbar_text", "toolbar"),
+        ("icons", "toolbar"),
+        ("toolbar_field_text", "toolbar_field"),
+        ("toolbar_field_text_focus", "toolbar_field_focus"),
+        ("toolbar_field_highlight_text", "toolbar_field_highlight"),
+        ("popup_text", "popup"),
+        ("popup_highlight_text", "popup_highlight"),
+        ("sidebar_text", "sidebar"),
+        ("sidebar_highlight_text", "sidebar_highlight"),
+        ("ntp_text", "ntp_background"),
+        ("ntp_text", "ntp_card_background"),
+    )
+    for style, key in (("light", "theme"), ("dark", "dark_theme")):
+        theme = firefox[key]
+        colors = theme["colors"]
+        require(required_firefox_colors <= colors.keys(), f"Firefox {style}: browser UI coverage is incomplete")
+        require(
+            theme["properties"] == {"color_scheme": style, "content_color_scheme": style},
+            f"Firefox {style}: color-scheme properties drifted",
+        )
+        require(set(colors.values()) <= canonical_colors(PALETTE["modes"][style]), f"Firefox {style}: non-canonical color")
+        for foreground, background in firefox_pairs:
+            ratio = contrast(colors[foreground], colors[background])
+            require(ratio >= 4.5, f"Firefox {style}: {foreground}/{background} contrast is {ratio:.2f}:1")
+
+    required_chromium_colors = {
+        "frame", "frame_inactive", "frame_incognito", "frame_incognito_inactive", "toolbar",
+        "tab_text", "tab_background_text", "bookmark_text", "ntp_background", "ntp_text",
+        "ntp_link", "ntp_header", "button_background",
+    }
+    chromium_pairs = (
+        ("tab_background_text", "frame"),
+        ("tab_text", "toolbar"),
+        ("bookmark_text", "toolbar"),
+        ("ntp_text", "ntp_background"),
+        ("ntp_link", "ntp_background"),
+    )
+    for style in ("light", "dark"):
+        path = ROOT / "helium" / f"nib-{style}" / "manifest.json"
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        require(manifest["manifest_version"] == 3, f"Helium {style}: Manifest V3 is required")
+        require(manifest["name"] == f"Nib {style.title()}", f"Helium {style}: theme name changed")
+        require(manifest["version"] == PALETTE["meta"]["version"], f"Helium {style}: version drifted")
+        require("permissions" not in manifest, f"Helium {style}: a static theme must not request permissions")
+        colors = manifest["theme"]["colors"]
+        require(set(colors) == required_chromium_colors, f"Helium {style}: Chromium UI coverage changed")
+        converted: dict[str, str] = {}
+        for name, channels in colors.items():
+            require(
+                isinstance(channels, list)
+                and len(channels) == 3
+                and all(isinstance(channel, int) and 0 <= channel <= 255 for channel in channels),
+                f"Helium {style}: {name} must be an RGB triplet",
+            )
+            converted[name] = "#" + "".join(f"{channel:02X}" for channel in channels)
+        require(
+            set(converted.values()) <= canonical_colors(PALETTE["modes"][style]),
+            f"Helium {style}: non-canonical color",
+        )
+        for foreground, background in chromium_pairs:
+            ratio = contrast(converted[foreground], converted[background])
+            require(ratio >= 4.5, f"Helium {style}: {foreground}/{background} contrast is {ratio:.2f}:1")
+
+
 def parse_ghostty_theme(path: Path) -> dict[str, Any]:
     values: dict[str, Any] = {"palette": []}
     for raw in path.read_text(encoding="utf-8").splitlines():
@@ -503,90 +602,6 @@ def verify_shaders() -> None:
     print("  " + result.stdout.strip().replace("\n", "\n  "))
 
 
-class PreviewParser(HTMLParser):
-    def __init__(self) -> None:
-        super().__init__()
-        self.ids: set[str] = set()
-        self.resources: list[str] = []
-
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        attributes = dict(attrs)
-        if attributes.get("id"):
-            self.ids.add(attributes["id"] or "")
-        for key in ("href", "src"):
-            if attributes.get(key):
-                self.resources.append(attributes[key] or "")
-
-
-def verify_preview() -> None:
-    parser = PreviewParser()
-    parser.feed((ROOT / "preview" / "index.html").read_text(encoding="utf-8"))
-    required_ids = {
-        "preview-title",
-        "similarity-badge",
-        "comparison-board",
-    }
-    require(required_ids <= parser.ids, "comparison preview is missing approval structure")
-    require(
-        not ({"audit-progress", "blind-stage", "continue-audit", "restart-audit"} & parser.ids),
-        "comparison preview still contains blind-audit controls",
-    )
-    preview_script = (ROOT / "preview" / "app.js").read_text(encoding="utf-8")
-    for marker in (
-        "const typescriptSample",
-        "hexToOklab",
-        "function similarity",
-        "function closestReference",
-        '["light", "dark"]',
-    ):
-        require(marker in preview_script, f"comparison preview rendering is missing: {marker}")
-    require("localStorage" not in preview_script, "comparison preview still reads blind-audit state")
-    preview_css = (ROOT / "preview" / "style.css").read_text(encoding="utf-8")
-    require("JetBrainsMono Nerd Font Mono" in preview_css, "comparison preview is missing its JetBrains Mono stack")
-    require(parser.resources[:2] == ["data:,", "generated/palette.css"], "preview resource order changed unexpectedly")
-    for resource in parser.resources:
-        if resource.startswith(("data:", "#", "http://", "https://")):
-            continue
-        target = (ROOT / "preview" / resource.split("#", 1)[0]).resolve()
-        require(target.exists(), f"preview resource is missing: {resource}")
-    comparison_data = json.loads((ROOT / "palette" / "comparisons.json").read_text(encoding="utf-8"))
-    themes = comparison_data.get("themes", [])
-    require(
-        [theme.get("slug") for theme in themes]
-        == [
-            "flexoki",
-            "solarized",
-            "everforest",
-            "rose-pine",
-            "kanagawa",
-            "gruvbox",
-            "papercolor",
-            "melange",
-            "ayu",
-            "tokyo-night",
-            "catppuccin",
-            "modus",
-        ],
-        "comparison palette set or order changed unexpectedly",
-    )
-    required_mode_keys = {"variant", "background", "surface", "foreground", "muted", "accents"}
-    required_accents = {"red", "orange", "yellow", "green", "cyan", "blue", "purple", "magenta"}
-    for theme in themes:
-        require(str(theme.get("source", "")).startswith("https://"), f"{theme.get('slug')}: source URL is missing")
-        require(set(theme.get("modes", {})) == {"light", "dark"}, f"{theme.get('slug')}: paired modes are required")
-        for style, mode in theme["modes"].items():
-            require(required_mode_keys <= set(mode), f"{theme['slug']} {style}: required comparison roles are missing")
-            require(set(mode["accents"]) == required_accents, f"{theme['slug']} {style}: accent set is incomplete")
-            colors = [mode[key] for key in ("background", "surface", "foreground", "muted")]
-            colors.extend(mode["accents"].values())
-            require(all(HEX_RE.fullmatch(color) for color in colors), f"{theme['slug']} {style}: invalid color value")
-    node = shutil.which("node")
-    if node:
-        command([node, "--check", "preview/app.js"])
-    else:
-        print("  JavaScript syntax: skipped (node unavailable)")
-
-
 def verify_fixtures() -> None:
     expected = {
         "lua/ledger.lua", "python/ledger.py", "go/ledger.go", "rust/ledger.rs",
@@ -625,7 +640,8 @@ def verify_neovim() -> None:
 def verify_documentation() -> None:
     required = [
         "README.md", "CHANGELOG.md", "CONTRIBUTING.md", "LICENSE", "THIRD_PARTY_REFERENCES.md",
-        "docs/ACCESSIBILITY.md", "docs/BLIND_AUDIT.md", "docs/GHOSTTY.md", "docs/NEOVIM.md",
+        "docs/ACCESSIBILITY.md", "docs/BLIND_AUDIT.md", "docs/FIREFOX.md", "docs/GHOSTTY.md",
+        "docs/HELIUM.md", "docs/NEOVIM.md",
         "docs/PALETTE.md", "docs/RESEARCH.md", "docs/SHADERS.md", "docs/DEVELOPMENT.md",
         "docs/EMACS.md", "docs/VSCODE.md", "docs/ZED.md",
     ]
@@ -662,10 +678,10 @@ CHECKS: tuple[tuple[str, Callable[[], None]], ...] = (
     ("Emacs theme structure and runtime", verify_emacs),
     ("VS Code and Cursor extension structure", verify_vscode),
     ("Zed extension and theme structure", verify_zed),
+    ("Firefox and Helium browser themes", verify_browser_themes),
     ("Ghostty themes and paired configuration", verify_ghostty),
     ("dry-run installer, backups, and symlinks", verify_installer),
     ("static shader structure and compilation", verify_shaders),
-    ("comparison preview and reference palettes", verify_preview),
     ("language and terminal fixtures", verify_fixtures),
     ("Neovim runtime, switching, and setup API", verify_neovim),
     ("documentation presence and local links", verify_documentation),

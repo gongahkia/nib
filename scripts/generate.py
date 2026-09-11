@@ -64,6 +64,108 @@ def generated_ghostty(style: str, mode: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def firefox_theme(style: str, mode: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "colors": {
+            "frame": mode["surface"]["elevated"],
+            "frame_inactive": mode["surface"]["subtle"],
+            "tab_background_text": mode["foreground"]["secondary"],
+            "tab_selected": mode["background"],
+            "tab_text": mode["foreground"]["primary"],
+            "tab_line": mode["focus"],
+            "tab_loading": mode["blue_ink"]["bright"],
+            "toolbar": mode["background"],
+            "toolbar_text": mode["foreground"]["primary"],
+            "bookmark_text": mode["foreground"]["primary"],
+            "icons": mode["foreground"]["secondary"],
+            "icons_attention": mode["blue_ink"]["bright"],
+            "toolbar_field": mode["surface"]["floating"],
+            "toolbar_field_text": mode["foreground"]["primary"],
+            "toolbar_field_border": mode["border"]["default"],
+            "toolbar_field_focus": mode["surface"]["floating"],
+            "toolbar_field_text_focus": mode["foreground"]["primary"],
+            "toolbar_field_border_focus": mode["border"]["focus"],
+            "toolbar_field_highlight": mode["selection"]["background"],
+            "toolbar_field_highlight_text": mode["selection"]["foreground"],
+            "toolbar_top_separator": mode["border"]["subtle"],
+            "toolbar_bottom_separator": mode["border"]["default"],
+            "toolbar_vertical_separator": mode["border"]["subtle"],
+            "button_background_hover": mode["current_line"],
+            "button_background_active": mode["selection"]["background"],
+            "popup": mode["surface"]["floating"],
+            "popup_text": mode["foreground"]["primary"],
+            "popup_border": mode["border"]["default"],
+            "popup_highlight": mode["selection"]["background"],
+            "popup_highlight_text": mode["selection"]["foreground"],
+            "sidebar": mode["surface"]["elevated"],
+            "sidebar_text": mode["foreground"]["secondary"],
+            "sidebar_border": mode["border"]["default"],
+            "sidebar_highlight": mode["selection"]["background"],
+            "sidebar_highlight_text": mode["selection"]["foreground"],
+            "ntp_background": mode["background"],
+            "ntp_card_background": mode["surface"]["elevated"],
+            "ntp_text": mode["foreground"]["primary"],
+        },
+        "properties": {"color_scheme": style, "content_color_scheme": style},
+    }
+
+
+def generated_firefox_manifest(palette: dict[str, Any]) -> str:
+    meta = palette["meta"]
+    manifest = {
+        "manifest_version": 3,
+        "name": "Nib",
+        "version": meta["version"],
+        "description": meta["description"],
+        "browser_specific_settings": {
+            "gecko": {
+                "id": "nib-theme@gongahkia",
+                "strict_min_version": "140.0",
+                "data_collection_permissions": {"required": ["none"]},
+            }
+        },
+        "theme": firefox_theme("light", palette["modes"]["light"]),
+        "dark_theme": firefox_theme("dark", palette["modes"]["dark"]),
+    }
+    return json.dumps(manifest, indent=2) + "\n"
+
+
+def rgb(color: str) -> list[int]:
+    return [int(color[index : index + 2], 16) for index in (1, 3, 5)]
+
+
+def chromium_theme(mode: dict[str, Any]) -> dict[str, Any]:
+    colors = {
+        "frame": mode["surface"]["elevated"],
+        "frame_inactive": mode["surface"]["subtle"],
+        "frame_incognito": mode["surface"]["subtle"],
+        "frame_incognito_inactive": mode["surface"]["floating"],
+        "toolbar": mode["background"],
+        "tab_text": mode["foreground"]["primary"],
+        "tab_background_text": mode["foreground"]["secondary"],
+        "bookmark_text": mode["foreground"]["primary"],
+        "ntp_background": mode["background"],
+        "ntp_text": mode["foreground"]["primary"],
+        "ntp_link": mode["hyperlink"],
+        "ntp_header": mode["foreground"]["muted"],
+        "button_background": mode["surface"]["elevated"],
+    }
+    return {"colors": {name: rgb(color) for name, color in colors.items()}}
+
+
+def generated_helium_manifest(style: str, palette: dict[str, Any]) -> str:
+    meta = palette["meta"]
+    paper = "cool-neutral paper" if style == "light" else "a near-black chalkboard"
+    manifest = {
+        "manifest_version": 3,
+        "name": f"Nib {style.title()}",
+        "version": meta["version"],
+        "description": f"Nib {style}: fountain-pen ink on {paper}.",
+        "theme": chromium_theme(palette["modes"][style]),
+    }
+    return json.dumps(manifest, indent=2) + "\n"
+
+
 def generated_emacs_theme(style: str, mode: dict[str, Any]) -> str:
     theme = f"nib-{style}"
 
@@ -764,40 +866,6 @@ def generated_zed_manifest(meta: dict[str, Any]) -> str:
     )
 
 
-def css_name(path: str) -> str:
-    return "--nib-" + path.replace(".", "-").replace("_", "-")
-
-
-def generated_css(palette: dict[str, Any]) -> str:
-    blocks = [f"/* {MARKER} */"]
-    for style, mode in palette["modes"].items():
-        selector = ":root, [data-theme=\"light\"]" if style == "light" else "[data-theme=\"dark\"]"
-        blocks.append(f"{selector} {{")
-        for path, color in iter_colors(mode):
-            if ".hex" in path:
-                continue
-            blocks.append(f"  {css_name(path)}: {color};")
-        for entry in mode["ansi"]:
-            blocks.append(f"  --nib-ansi-{entry['index']}: {entry['hex']};")
-        blocks.append("}")
-    return "\n".join(blocks) + "\n"
-
-
-def generated_javascript(palette: dict[str, Any]) -> str:
-    data = json.dumps(palette, indent=2, sort_keys=True)
-    return f"/* {MARKER} */\nwindow.NIB_PALETTE = {data};\n"
-
-
-def generated_comparison_javascript() -> str:
-    comparisons = json.loads((ROOT / "palette" / "comparisons.json").read_text(encoding="utf-8"))
-    data = json.dumps(comparisons, indent=2, sort_keys=True)
-    return (
-        f"/* {MARKER} */\n"
-        "/* Reference values are maintained in palette/comparisons.json. */\n"
-        f"window.NIB_COMPARISONS = {data};\n"
-    )
-
-
 def generated_export(palette: dict[str, Any]) -> str:
     export = {
         "generated": MARKER,
@@ -955,9 +1023,9 @@ def render_files(palette: dict[str, Any]) -> dict[Path, str]:
         Path("vscode/themes/nib-dark-color-theme.json"): generated_vscode_theme("dark", palette["modes"]["dark"]),
         Path("zed/extension.toml"): generated_zed_manifest(palette["meta"]),
         Path("zed/themes/nib.json"): generated_zed_theme(palette),
-        Path("preview/generated/palette.css"): generated_css(palette),
-        Path("preview/generated/palette.js"): generated_javascript(palette),
-        Path("preview/generated/comparisons.js"): generated_comparison_javascript(),
+        Path("firefox/manifest.json"): generated_firefox_manifest(palette),
+        Path("helium/nib-light/manifest.json"): generated_helium_manifest("light", palette),
+        Path("helium/nib-dark/manifest.json"): generated_helium_manifest("dark", palette),
         Path("dist/nib-palette.json"): generated_export(palette),
         Path("docs/generated/CONTRAST.md"): generated_contrast(palette),
         Path("docs/generated/ANSI.md"): generated_ansi(palette),

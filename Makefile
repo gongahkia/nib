@@ -1,6 +1,6 @@
 PYTHON ?= python3
 
-.PHONY: generate check-generated shaders preview verify
+.PHONY: generate check-generated shaders verify
 
 generate:
 	$(PYTHON) scripts/generate.py
@@ -10,9 +10,6 @@ check-generated:
 
 shaders:
 	$(PYTHON) scripts/validate_shaders.py
-
-preview: check-generated
-	$(PYTHON) -m http.server 8765 --bind 127.0.0.1
 
 verify:
 	$(PYTHON) tests/verify.py

@@ -8,7 +8,7 @@ All notable changes to Nib are documented here. The format follows [Keep a Chang
 
 - Renamed the public theme and Lua namespace to `nib`; the explicit Neovim and Ghostty variants are now exactly `nib-light` and `nib-dark`.
 - Refined the canonical palette from a completed twelve-match blind preference audit: light surfaces are cooler and less yellow, while dark surfaces move from navy to chalkboard charcoal and use quieter syntax accents.
-- Replaced the completed blind-test interface with a focused, named light/dark comparison between Nib and its nearest full-palette reference.
+- Locked the approved canonical palette by hash and removed the completed browser comparison frontend and its reference-color dataset.
 
 ### Added
 
@@ -19,6 +19,10 @@ All notable changes to Nib are documented here. The format follows [Keep a Chang
 - A generated theme-only Zed extension using theme schema v0.2.0, with paired
   appearances, UI/editor coverage, syntax, diagnostics, version control, and
   terminal colors.
+- A permission-free Firefox Manifest V3 static theme with paired automatic
+  light/dark definitions and explicit no-data declaration.
+- Separate Manifest V3 light and dark themes for Helium and compatible
+  Chromium theme loaders.
 - Offline structural verification, optional Emacs batch loading, packaging and
   installation documentation, and current upstream format provenance for the
   additional editors.
