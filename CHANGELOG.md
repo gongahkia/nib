@@ -8,6 +8,7 @@ All notable changes to Nib are documented here. The format follows [Keep a Chang
 
 - Renamed the public theme and Lua namespace to `nib`; the explicit Neovim and Ghostty variants are now exactly `nib-light` and `nib-dark`.
 - Refined the canonical palette from a completed twelve-match blind preference audit: light surfaces are cooler and less yellow, while dark surfaces move from navy to chalkboard charcoal and use quieter syntax accents.
+- Replaced the completed blind-test interface with a focused, named light/dark comparison between Nib and its nearest full-palette reference.
 
 ### Added
 

@@ -522,35 +522,25 @@ def verify_preview() -> None:
     parser = PreviewParser()
     parser.feed((ROOT / "preview" / "index.html").read_text(encoding="utf-8"))
     required_ids = {
-        "audit-progress",
-        "progress-fill",
-        "audit-title",
-        "blind-stage",
-        "skip-matchup",
-        "continue-audit",
-        "copy-audit",
-        "export-audit",
-        "restart-audit",
-        "audit-status",
+        "preview-title",
+        "similarity-badge",
+        "comparison-board",
     }
-    require(required_ids <= parser.ids, "comparison preview is missing blind-audit structure")
+    require(required_ids <= parser.ids, "comparison preview is missing approval structure")
     require(
-        not ({"sample-select", "control-status"} & parser.ids),
-        "comparison preview still contains removed controls",
+        not ({"audit-progress", "blind-stage", "continue-audit", "restart-audit"} & parser.ids),
+        "comparison preview still contains blind-audit controls",
     )
     preview_script = (ROOT / "preview" / "app.js").read_text(encoding="utf-8")
     for marker in (
         "const typescriptSample",
-        "function shuffle",
-        "function newDraft",
-        "lightFeedback",
-        "darkFeedback",
-        "identitiesVisibleDuringTest: false",
         "hexToOklab",
-        "localStorage",
-        "new Blob",
+        "function similarity",
+        "function closestReference",
+        '["light", "dark"]',
     ):
-        require(marker in preview_script, f"comparison preview interaction is missing: {marker}")
+        require(marker in preview_script, f"comparison preview rendering is missing: {marker}")
+    require("localStorage" not in preview_script, "comparison preview still reads blind-audit state")
     preview_css = (ROOT / "preview" / "style.css").read_text(encoding="utf-8")
     require("JetBrainsMono Nerd Font Mono" in preview_css, "comparison preview is missing its JetBrains Mono stack")
     require(parser.resources[:2] == ["data:,", "generated/palette.css"], "preview resource order changed unexpectedly")

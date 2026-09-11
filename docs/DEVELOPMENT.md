@@ -81,4 +81,4 @@ Remove the temporary directory after inspection. Ghostty configuration validatio
 
 ## Comparison preview
 
-The browser comparison has no build step beyond palette generation and makes no runtime network request. It runs shuffled, anonymous A/B matchups with separate light and dark choices, one required comment attached to either mode, browser-local progress, and a portable JSON result export. It uses normalized token roles for a controlled visual comparison; it is not a claim that the upstream themes assign every syntax group identically in their native implementations.
+The browser comparison has no build step beyond palette generation and makes no runtime network request. It calculates the nearest reference across the complete light and dark palette, then renders that theme beside Nib in both modes. Names, normalized TypeScript token roles, and hexadecimal swatches remain visible for final palette approval. This is a controlled visual comparison, not a claim that the upstream theme assigns every syntax group identically in its native implementation.

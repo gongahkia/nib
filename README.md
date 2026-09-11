@@ -146,7 +146,7 @@ make preview
 # open http://127.0.0.1:8765/preview/
 ```
 
-It runs a blind preference audit between Nib and twelve reference themes using the same TypeScript sample and normalized token roles. Opponent order and A/B placement are shuffled, identities stay hidden, and each light or dark choice opens a mode-specific comment field. Only one comment across the two modes is required, keeping the remaining matchups rapid. Progress survives reloads in browser-local storage; completed answers can be copied or exported as JSON with the hidden identity key for later synthesis. Reference values and upstream links live in [`palette/comparisons.json`](palette/comparisons.json).
+It renders the revised Nib palette beside the reference theme with the smallest normalized full-palette distance. Light and dark modes appear together using the same TypeScript sample and token roles; names and hexadecimal swatches stay visible for final approval. The page has no controls or browser-local state. Reference values and upstream links live in [`palette/comparisons.json`](palette/comparisons.json).
 
 ## Design and accessibility
 
