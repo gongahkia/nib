@@ -1,0 +1,246 @@
+{
+  "name": "Nib Dark",
+  "variables": {
+    "background": "#181A19",
+    "elevated": "#20231F",
+    "subtle": "#2D302B",
+    "border": "#626A64",
+    "border_subtle": "#424A44",
+    "fg": "#DDDCD2",
+    "fg_secondary": "#BABCB4",
+    "muted": "#969C97",
+    "disabled": "#707772",
+    "blue_deep": "#7795A7",
+    "blue": "#83A8BB",
+    "blue_bright": "#95B7C8",
+    "moss": "#A3AE72",
+    "teal": "#6FA8A0",
+    "burgundy": "#C17E8B",
+    "rust": "#C28168",
+    "violet": "#AF97B7",
+    "amber": "#C5A667",
+    "sepia": "#AE967B",
+    "graphite": "#959C98",
+    "error": "#CF8389",
+    "warning": "#C6A565",
+    "info": "#83A8BB",
+    "success": "#A4B073",
+    "selection_bg": "#3A5550",
+    "selection_fg": "#E5E2D8",
+    "search_bg": "#55502F",
+    "search_fg": "#E5E2D8",
+    "current_line": "#222620",
+    "hyperlink": "#8CB2C5",
+    "diff_add": "#21342A",
+    "diff_change": "#273137",
+    "diff_delete": "#3A272D",
+    "diff_fg": "#CFD1C9",
+    "cursor_bg": "#C9BE83"
+  },
+  "globals": {
+    "background": "var(background)",
+    "foreground": "var(fg)",
+    "invisibles": "var(disabled)",
+    "caret": "var(cursor_bg)",
+    "block_caret": "var(cursor_bg)",
+    "block_caret_border": "var(cursor_bg)",
+    "line_highlight": "var(current_line)",
+    "accent": "var(blue)",
+    "misspelling": "var(error)",
+    "fold_marker": "var(muted)",
+    "minimap_border": "var(border)",
+    "gutter": "var(background)",
+    "gutter_foreground": "var(disabled)",
+    "gutter_foreground_highlight": "var(blue_bright)",
+    "line_diff_width": 3,
+    "line_diff_added": "var(success)",
+    "line_diff_modified": "var(info)",
+    "line_diff_deleted": "var(error)",
+    "selection": "var(selection_bg)",
+    "selection_foreground": "var(selection_fg)",
+    "selection_border": "var(border)",
+    "inactive_selection": "var(subtle)",
+    "inactive_selection_foreground": "var(fg_secondary)",
+    "highlight": "var(search_bg)",
+    "find_highlight": "var(search_bg)",
+    "find_highlight_foreground": "var(search_fg)",
+    "scroll_highlight": "var(amber)",
+    "scroll_selected_highlight": "var(rust)",
+    "rulers": "var(border_subtle)",
+    "guide": "var(border_subtle)",
+    "active_guide": "var(border)",
+    "stack_guide": "var(blue)",
+    "brackets_foreground": "var(graphite)",
+    "brackets_options": "underline",
+    "tags_foreground": "var(moss)",
+    "tags_options": "stippled_underline",
+    "shadow": "var(border)"
+  },
+  "rules": [
+    {
+      "name": "Comment",
+      "scope": "comment",
+      "foreground": "var(muted)",
+      "font_style": "italic"
+    },
+    {
+      "name": "String",
+      "scope": "string",
+      "foreground": "var(teal)"
+    },
+    {
+      "name": "Regular expression",
+      "scope": "string.regexp",
+      "foreground": "var(rust)"
+    },
+    {
+      "name": "Number",
+      "scope": "constant.numeric",
+      "foreground": "var(amber)"
+    },
+    {
+      "name": "Language constant",
+      "scope": "constant.language",
+      "foreground": "var(burgundy)",
+      "font_style": "bold"
+    },
+    {
+      "name": "Constant",
+      "scope": "constant",
+      "foreground": "var(amber)"
+    },
+    {
+      "name": "Variable",
+      "scope": "variable",
+      "foreground": "var(fg)"
+    },
+    {
+      "name": "Parameter",
+      "scope": "variable.parameter",
+      "foreground": "var(fg_secondary)"
+    },
+    {
+      "name": "Property",
+      "scope": "variable.other.member, support.type.property-name",
+      "foreground": "var(sepia)"
+    },
+    {
+      "name": "Function",
+      "scope": "entity.name.function, support.function",
+      "foreground": "var(blue_bright)",
+      "font_style": "bold"
+    },
+    {
+      "name": "Type",
+      "scope": "entity.name.type, entity.name.class, support.type, storage.type",
+      "foreground": "var(moss)",
+      "font_style": "bold"
+    },
+    {
+      "name": "Tag",
+      "scope": "entity.name.tag",
+      "foreground": "var(moss)"
+    },
+    {
+      "name": "Attribute",
+      "scope": "entity.other.attribute-name",
+      "foreground": "var(sepia)"
+    },
+    {
+      "name": "Keyword",
+      "scope": "keyword",
+      "foreground": "var(blue_deep)",
+      "font_style": "bold"
+    },
+    {
+      "name": "Control keyword",
+      "scope": "keyword.control",
+      "foreground": "var(burgundy)",
+      "font_style": "bold"
+    },
+    {
+      "name": "Operator",
+      "scope": "keyword.operator",
+      "foreground": "var(graphite)"
+    },
+    {
+      "name": "Storage modifier",
+      "scope": "storage.modifier",
+      "foreground": "var(moss)"
+    },
+    {
+      "name": "Preprocessor",
+      "scope": "meta.preprocessor, keyword.control.import",
+      "foreground": "var(violet)"
+    },
+    {
+      "name": "Punctuation",
+      "scope": "punctuation",
+      "foreground": "var(graphite)"
+    },
+    {
+      "name": "Escape",
+      "scope": "constant.character.escape",
+      "foreground": "var(rust)"
+    },
+    {
+      "name": "Invalid",
+      "scope": "invalid",
+      "foreground": "var(error)",
+      "font_style": "squiggly_underline"
+    },
+    {
+      "name": "Deprecated",
+      "scope": "invalid.deprecated",
+      "foreground": "var(disabled)",
+      "font_style": "stippled_underline"
+    },
+    {
+      "name": "Heading",
+      "scope": "markup.heading",
+      "foreground": "var(blue_deep)",
+      "font_style": "bold"
+    },
+    {
+      "name": "Bold",
+      "scope": "markup.bold",
+      "foreground": "var(fg)",
+      "font_style": "bold"
+    },
+    {
+      "name": "Italic",
+      "scope": "markup.italic",
+      "foreground": "var(fg)",
+      "font_style": "italic"
+    },
+    {
+      "name": "Link",
+      "scope": "markup.underline.link",
+      "foreground": "var(hyperlink)",
+      "font_style": "underline"
+    },
+    {
+      "name": "Code",
+      "scope": "markup.raw",
+      "foreground": "var(teal)"
+    },
+    {
+      "name": "Inserted",
+      "scope": "markup.inserted",
+      "foreground": "var(diff_fg)",
+      "background": "var(diff_add)"
+    },
+    {
+      "name": "Changed",
+      "scope": "markup.changed",
+      "foreground": "var(diff_fg)",
+      "background": "var(diff_change)"
+    },
+    {
+      "name": "Deleted",
+      "scope": "markup.deleted",
+      "foreground": "var(diff_fg)",
+      "background": "var(diff_delete)"
+    }
+  ]
+}

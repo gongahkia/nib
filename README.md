@@ -1,6 +1,6 @@
 # Nib
 
-Nib is a coordinated light/dark theme family for [Ghostty](https://ghostty.org/), [Neovim](https://neovim.io/), [GNU Emacs](https://www.gnu.org/software/emacs/), [VS Code](https://code.visualstudio.com/), [Cursor](https://www.cursor.com/), [Zed](https://zed.dev/), [Firefox](https://www.mozilla.org/firefox/), and [Helium](https://helium.computer/). Its light mode places deep blue-black fountain-pen ink on cool-neutral paper; its dark sibling uses soft ivory ink on near-black chalkboard charcoal. Moss leads the non-blue syntax colors, followed by peacock teal, restrained burgundy, rust, violet, amber, sepia, and graphite.
+Nib is a coordinated light/dark theme family for [Ghostty](https://ghostty.org/), [Neovim](https://neovim.io/), Vim, Helix, GNU Emacs, VS Code, Cursor, Zed, Sublime Text, Firefox, and Helium. Its light mode places deep blue-black fountain-pen ink on cool-neutral paper; its dark sibling uses soft ivory ink on near-black chalkboard charcoal. Moss leads the non-blue syntax colors, followed by peacock teal, restrained burgundy, rust, violet, amber, sepia, and graphite.
 
 The core themes are opaque, dependency-free, and complete without shaders. No normal foreground or background is pure black or pure white.
 
@@ -105,6 +105,24 @@ From Zed's Extensions page, choose **Install Dev Extension** and select the
 repository's `zed/` directory. The [Zed guide](docs/ZED.md) includes exact
 selection, paired system-mode settings, removal, and compatibility notes.
 
+### Vim
+
+Copy `vim/colors/*.vim` to `~/.vim/colors/`, enable `termguicolors`, set
+`background`, and load `colorscheme nib`. Explicit light and dark entry points
+are also included. See the [Vim guide](docs/VIM.md).
+
+### Helix
+
+Copy `helix/nib-*.toml` to `~/.config/helix/themes/`, then set
+`theme = "nib-dark"` or switch with `:theme nib-light`. See the
+[Helix guide](docs/HELIX.md).
+
+### Sublime Text
+
+Copy both files under `sublime/` into Sublime's `Packages/User` directory and
+select **Nib Light** or **Nib Dark** as the color scheme. See the
+[Sublime Text guide](docs/SUBLIME.md).
+
 ### Firefox
 
 Load [`firefox/manifest.json`](firefox/manifest.json) as a temporary add-on from
@@ -155,7 +173,7 @@ Ghostty post-processing affects the whole rendered surface, including Neovim chr
 
 ## Design and accessibility
 
-One canonical [palette](palette/palette.json), validated by its [schema](palette/schema.json) and frozen by an explicit [palette lock](palette/lock.json), generates the Neovim palettes and entry points, Ghostty themes, Emacs custom themes, VS Code/Cursor extension themes, Zed extension theme, Firefox theme, Helium themes, machine export, contrast table, ANSI table, and color-vision report. Physical inks and external palettes informed relationships only; none supplied an “exact” Nib screen color.
+One canonical [palette](palette/palette.json), validated by its [schema](palette/schema.json) and frozen by an explicit [palette lock](palette/lock.json), generates the Neovim, Vim, Helix, Emacs, VS Code/Cursor, Zed, and Sublime Text themes; the Ghostty, Firefox, and Helium themes; and the machine-readable palette and audit reports. Physical inks and external palettes informed relationships only; none supplied an “exact” Nib screen color.
 
 Principal text targets 7:1 contrast where aesthetically reasonable. Meaningful text requires 4.5:1, and relevant boundaries/non-text indicators require 3:1. Comments pass the ordinary-text target in both modes. Protanopia, deuteranopia, and tritanopia simulations are regression-tested, while critical states also use letters, signs, undercurls, weight, strikethrough, or distinct surface tints. These scoped checks are not blanket accessibility certification.
 
@@ -168,6 +186,9 @@ Read the [palette rationale](docs/PALETTE.md), [blind-audit synthesis](docs/BLIN
 - GNU Emacs 27.1 or newer. Batch validation runs when Emacs is available.
 - VS Code `^1.85.0`, and Cursor versions compatible with that VS Code theme-extension API.
 - Zed versions supporting the current theme schema v0.2.0; Zed does not publish a stable app-version mapping for that schema.
+- Vim 9.1 was used for headless loading validation. Exact colors require `termguicolors`.
+- Helix versions supporting the documented TOML theme format and current scope names.
+- Sublime Text 3.1 or newer for the `.sublime-color-scheme` format.
 - Firefox 140 or newer. The paired static theme declares no data collection and requires no permissions or scripts.
 - Helium 0.16.6.1 was used for local packaging validation. The two variants use the standard Chromium Manifest V3 theme format.
 - A truecolor terminal is recommended for Neovim. The 16-color Ghostty palette remains intentionally conventional for remote and degraded sessions.
@@ -182,7 +203,7 @@ Run the complete local suite:
 make verify
 ```
 
-It checks the palette lock, schema, required roles, color format, generation drift, contrast, semantic and ANSI distinguishability, color-vision regressions, Neovim and Emacs loading behavior, VS Code/Cursor, Zed, Firefox, and Helium package structure, Ghostty structure and runtime validation when installed, shader structure and compilation when `glslc` is installed, fixtures, documentation links, syntax, and `git diff --check`. Optional application runtimes are reported as skipped when unavailable.
+It checks the palette lock, schema, required roles, color format, generation drift, contrast, semantic and ANSI distinguishability, color-vision regressions, Neovim, Vim, and Emacs loading behavior, VS Code/Cursor, Zed, Helix, Sublime Text, Firefox, and Helium package structure, Ghostty structure and runtime validation when installed, shader structure and compilation when `glslc` is installed, fixtures, documentation links, syntax, and `git diff --check`. Optional application runtimes are reported as skipped when unavailable.
 
 ## Troubleshooting
 

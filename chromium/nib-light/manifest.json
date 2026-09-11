@@ -1,0 +1,75 @@
+{
+  "manifest_version": 3,
+  "name": "Nib Light",
+  "version": "0.1.0",
+  "description": "Nib light: fountain-pen ink on cool-neutral paper.",
+  "theme": {
+    "colors": {
+      "frame": [
+        231,
+        232,
+        228
+      ],
+      "frame_inactive": [
+        221,
+        225,
+        224
+      ],
+      "frame_incognito": [
+        221,
+        225,
+        224
+      ],
+      "frame_incognito_inactive": [
+        250,
+        250,
+        247
+      ],
+      "toolbar": [
+        242,
+        241,
+        236
+      ],
+      "tab_text": [
+        24,
+        42,
+        56
+      ],
+      "tab_background_text": [
+        57,
+        75,
+        86
+      ],
+      "bookmark_text": [
+        24,
+        42,
+        56
+      ],
+      "ntp_background": [
+        242,
+        241,
+        236
+      ],
+      "ntp_text": [
+        24,
+        42,
+        56
+      ],
+      "ntp_link": [
+        28,
+        95,
+        139
+      ],
+      "ntp_header": [
+        89,
+        101,
+        106
+      ],
+      "button_background": [
+        231,
+        232,
+        228
+      ]
+    }
+  }
+}

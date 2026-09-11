@@ -1,0 +1,23 @@
+{
+  "name": "Nib Dark",
+  "background": "#181A19",
+  "foreground": "#DDDCD2",
+  "cursorColor": "#C9BE83",
+  "selectionBackground": "#3A5550",
+  "black": "#232622",
+  "brightBlack": "#7C8580",
+  "red": "#C1777D",
+  "brightRed": "#D48A90",
+  "green": "#98A56C",
+  "brightGreen": "#AEBB79",
+  "yellow": "#B89A60",
+  "brightYellow": "#CDAE6C",
+  "blue": "#779BAF",
+  "brightBlue": "#8AAFC2",
+  "purple": "#A88FAF",
+  "brightPurple": "#BBA0C1",
+  "cyan": "#669D97",
+  "brightCyan": "#76AEA7",
+  "white": "#B9BDB6",
+  "brightWhite": "#DDDCD2"
+}

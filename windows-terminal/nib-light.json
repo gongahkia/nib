@@ -1,0 +1,23 @@
+{
+  "name": "Nib Light",
+  "background": "#F2F1EC",
+  "foreground": "#182A38",
+  "cursorColor": "#244D68",
+  "selectionBackground": "#AFC9C3",
+  "black": "#1D2B36",
+  "brightBlack": "#5C686E",
+  "red": "#8D3342",
+  "brightRed": "#A22F42",
+  "green": "#526126",
+  "brightGreen": "#62721F",
+  "yellow": "#76540B",
+  "brightYellow": "#8A5B00",
+  "blue": "#285D7C",
+  "brightBlue": "#176594",
+  "purple": "#70446F",
+  "brightPurple": "#82487B",
+  "cyan": "#17666A",
+  "brightCyan": "#006E74",
+  "white": "#4F5960",
+  "brightWhite": "#303F49"
+}
