@@ -1,8 +1,8 @@
 # Third-party references
 
 Original research entries were accessed on **2026-09-09**; Firefox, Chromium,
-Helium, Vim, Helix, Sublime Text, and portability references were accessed on
-**2026-09-11**. Nib contains original
+Helium, Vim, Helix, Sublime Text, portability, Obsidian, Yazi, and messaging
+references were accessed on **2026-09-11**. Nib contains original
 code, prose, generated artifacts, and original sRGB values. No external image,
 font, or runtime resource is bundled or hotlinked.
 
@@ -196,6 +196,95 @@ font, or runtime resource is bundled or hotlinked.
   no upstream theme colors or implementation were copied.
 - **Required attribution:** links are retained as technical provenance.
 
+### macOS Terminal, Konsole, and Yazi
+
+- **Creators/publishers:** Apple, KDE, and Yazi projects
+- **URLs:** <https://support.apple.com/en-lamr/guide/terminal/trml4299c696/mac>,
+  <https://docs.kde.org/trunk_kf6/en/konsole/konsole/profiles.html>,
+  <https://github.com/KDE/konsole/blob/master/data/color-schemes/Linux.colorscheme>,
+  <https://yazi-rs.github.io/docs/configuration/overview/>, and
+  <https://yazi-rs.github.io/docs/configuration/theme/>
+- **Stated licences:** Konsole is GPL-2.0-or-later and Yazi is MIT; Apple's
+  support page does not state a separate documentation-content licence.
+- **AI disclosure:** none stated.
+- **Visual/technical lesson:** verified Terminal profile importing and native
+  profile structure, Konsole color-scheme sections and discovery, and Yazi's
+  current theme file location and semantic TOML fields.
+- **Exact reusable values:** format identifiers and configuration facts only;
+  no upstream theme colors or source implementations were copied.
+- **Required attribution:** links are retained as technical provenance.
+
+### Obsidian themes
+
+- **Creator/publisher:** Obsidian
+- **URLs:** <https://docs.obsidian.md/Themes/App+themes/Build+a+theme>,
+  <https://docs.obsidian.md/Themes/App+themes/Theme+guidelines>, and
+  <https://github.com/obsidianmd/obsidian-sample-theme>
+- **Stated licence:** the sample theme repository is Unlicense; the linked
+  documentation pages do not state a separate content licence.
+- **AI disclosure:** none stated.
+- **Visual/technical lesson:** verified the `manifest.json`, `theme.css`, and
+  `versions.json` package shape, paired `.theme-light`/`.theme-dark` scopes,
+  current CSS variable names, and the guidance to avoid remote assets and high
+  selector specificity.
+- **Exact reusable values:** public manifest fields and CSS variable names
+  only; Nib's mappings and all color values are independently authored.
+- **Required attribution:** none identified; links are retained for
+  verification.
+
+### Discord theme loaders
+
+- **Creators/publishers:** BetterDiscord and Vencord projects
+- **URLs:** <https://docs.betterdiscord.app/themes/introduction/quick-start>,
+  <https://docs.betterdiscord.app/themes/introduction/structure>,
+  <https://docs.betterdiscord.app/themes/tutorials/selectors>, and
+  <https://github.com/Vendicated/Vencord>
+- **Stated licences:** BetterDiscord and Vencord source repositories are
+  GPL-3.0; documentation terms may differ.
+- **AI disclosure:** none stated.
+- **Visual/technical lesson:** verified BetterDiscord's single
+  `.theme.css` package and metadata header, theme-folder discovery, Vencord's
+  support for local/custom CSS themes, and the maintenance benefit of semantic
+  custom properties over generated class selectors.
+- **Exact reusable values:** metadata and current public custom-property names
+  only; no loader source, upstream stylesheet, or theme color was copied.
+- **Required attribution:** links are retained as technical provenance. Both
+  loaders are unofficial Discord modifications and are not bundled by Nib.
+
+### Slack custom colours and Slick
+
+- **Creators/publishers:** Slack Technologies / Salesforce and the Slick
+  project
+- **URLs:** <https://slack.com/help/articles/205166337-Change-your-Slack-theme>
+  and <https://github.com/3kh0/slick>
+- **Stated licences:** Slick is GPL-3.0; Slack's help page does not state a
+  separate documentation-content licence.
+- **AI disclosure:** none stated.
+- **Visual/technical lesson:** verified Slack's native custom-theme import and
+  its limited legacy color mapping, plus Slick's current JSON theme catalogue
+  using `vars` and `sidebar` objects.
+- **Exact reusable values:** file-shape, variable identifiers, and installation
+  facts only; no Slick theme or Slack palette values were copied.
+- **Required attribution:** links are retained as technical provenance. Slick
+  is not bundled, endorsed, or installed by Nib and describes itself as an
+  early-alpha modification that may not be allowed by Salesforce.
+
+### Telegram Desktop themes
+
+- **Creator/publisher:** Telegram Desktop project
+- **URLs:** <https://github.com/telegramdesktop/tdesktop/wiki/Theme-Reference>
+  and
+  <https://github.com/telegramdesktop/tdesktop/blob/dev/Telegram/SourceFiles/window/themes/window_theme.cpp>
+- **Stated licence:** Telegram Desktop is GPL-3.0 with OpenSSL exception; wiki
+  content terms may differ.
+- **AI disclosure:** none stated.
+- **Visual/technical lesson:** verified semantic theme keys, reference aliases,
+  native `.tdesktop-theme` loading, and that a plain-text theme needs a ZIP
+  container only when a background image is included.
+- **Exact reusable values:** public theme-key names and parsing behavior only;
+  no upstream theme colors or source implementation were copied.
+- **Required attribution:** source links are retained as technical provenance.
+
 ### IntelliJ, Lite XL, CSS, and Tailwind
 
 - **Creators/publishers:** JetBrains, Lite XL project, WHATWG/W3C ecosystem,
@@ -364,5 +453,6 @@ Nib is an independent software theme. It is not affiliated with,
 sponsored by, endorsed by, or licensed by Pilot Corporation, C. Josef Lamy
 GmbH, The Sailor Pen Co., Diamine Inks, Pelikan, Paleto, itch.io, Ghostty,
 Neovim, GNU/FSF, Microsoft, Visual Studio Code, Cursor/Anysphere, Zed
-Industries, or the plugin projects listed above. Manufacturer and product
+Industries, Apple, KDE, Yazi, Obsidian, Discord, BetterDiscord, Vencord, Slack,
+Slick, Telegram, or the plugin projects listed above. Manufacturer and product
 names appear only for factual research attribution.

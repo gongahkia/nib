@@ -29,12 +29,15 @@ generated from [`palette/palette.json`](palette/palette.json).
 - [VS Code and Cursor](docs/VSCODE.md)
 - [Zed](docs/ZED.md)
 - [Sublime Text](docs/SUBLIME.md)
+- [Obsidian](docs/OBSIDIAN.md)
 - [IntelliJ Platform IDEs](intellij/)
 - [Lite XL](lite-xl/)
 
 ### Terminals
 
 - [Ghostty](docs/GHOSTTY.md)
+- [macOS Terminal](docs/PORTS.md#macos-terminal)
+- [Konsole](docs/PORTS.md#konsole)
 - [Alacritty](alacritty/)
 - [Black Box](black-box/)
 - [iTerm2](iterm2/)
@@ -56,7 +59,14 @@ generated from [`palette/palette.json`](palette/palette.json).
 - [fzf](fzf/)
 - [tmux](tmux/)
 - [Zellij](zellij/)
+- [Yazi](docs/PORTS.md#yazi)
 - [Pywal](pywal/)
+
+### Messaging
+
+- [Discord through BetterDiscord or Vencord](docs/MESSAGING.md#discord)
+- [Slack through Slick or Slack's native custom colours](docs/MESSAGING.md#slack)
+- [Telegram Desktop](docs/MESSAGING.md#telegram-desktop)
 
 ### Frameworks
 

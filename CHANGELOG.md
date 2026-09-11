@@ -29,6 +29,9 @@ All notable changes to Nib are documented here. The format follows [Keep a Chang
   Kitty, WezTerm, Windows Terminal, Warp, and Xresources terminal schemes;
   fish, fzf, tmux, Zellij, and Pywal integrations; reusable CSS and Tailwind v4
   tokens; and generic Chrome/Chromium packages.
+- Native macOS Terminal and Konsole schemes, complete Yazi themes, a paired
+  Obsidian app theme, native Telegram Desktop themes, a variable-only
+  BetterDiscord/Vencord theme, and Slick plus native Slack colour imports.
 - A Flexoki support audit, consolidated port-installation guide, and a compact
   port-led README patterned after Flexoki's information architecture.
 - Offline structural verification, optional Emacs batch loading, packaging and

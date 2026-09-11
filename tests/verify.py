@@ -1033,6 +1033,7 @@ def verify_documentation() -> None:
         "README.md", "CHANGELOG.md", "CONTRIBUTING.md", "LICENSE", "THIRD_PARTY_REFERENCES.md",
         "docs/ACCESSIBILITY.md", "docs/BLIND_AUDIT.md", "docs/FIREFOX.md", "docs/GHOSTTY.md",
         "docs/HELIUM.md", "docs/NEOVIM.md",
+        "docs/MESSAGING.md", "docs/OBSIDIAN.md",
         "docs/PALETTE.md", "docs/PORTS.md", "docs/PORT_AUDIT.md", "docs/RESEARCH.md",
         "docs/SHADERS.md", "docs/DEVELOPMENT.md",
         "docs/EMACS.md", "docs/HELIX.md", "docs/SUBLIME.md", "docs/VIM.md",
