@@ -1,4 +1,4 @@
-# Nib
+# `Nib` 🖋
 
 Nib is a coordinated light/dark theme family for [Ghostty](https://ghostty.org/), [Neovim](https://neovim.io/), Vim, Helix, GNU Emacs, VS Code, Cursor, Zed, Sublime Text, Firefox, and Helium. Its light mode places deep blue-black fountain-pen ink on cool-neutral paper; its dark sibling uses soft ivory ink on near-black chalkboard charcoal. Moss leads the non-blue syntax colors, followed by peacock teal, restrained burgundy, rust, violet, amber, sepia, and graphite.
 
