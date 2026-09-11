@@ -143,6 +143,14 @@ def verify_generation() -> None:
         Path("firefox/manifest.json"),
         Path("helium/nib-light/manifest.json"),
         Path("helium/nib-dark/manifest.json"),
+        Path("chromium/nib-light/manifest.json"),
+        Path("chromium/nib-dark/manifest.json"),
+        Path("black-box/Nib-Light.json"),
+        Path("black-box/Nib-Dark.json"),
+        Path("windows-terminal/nib-light.json"),
+        Path("windows-terminal/nib-dark.json"),
+        Path("pywal/nib-light.json"),
+        Path("pywal/nib-dark.json"),
         Path("sublime/Nib Light.sublime-color-scheme"),
         Path("sublime/Nib Dark.sublime-color-scheme"),
     }
@@ -576,31 +584,130 @@ def verify_browser_themes() -> None:
         ("ntp_text", "ntp_background"),
         ("ntp_link", "ntp_background"),
     )
-    for style in ("light", "dark"):
-        path = ROOT / "helium" / f"nib-{style}" / "manifest.json"
-        manifest = json.loads(path.read_text(encoding="utf-8"))
-        require(manifest["manifest_version"] == 3, f"Helium {style}: Manifest V3 is required")
-        require(manifest["name"] == f"Nib {style.title()}", f"Helium {style}: theme name changed")
-        require(manifest["version"] == PALETTE["meta"]["version"], f"Helium {style}: version drifted")
-        require("permissions" not in manifest, f"Helium {style}: a static theme must not request permissions")
-        colors = manifest["theme"]["colors"]
-        require(set(colors) == required_chromium_colors, f"Helium {style}: Chromium UI coverage changed")
-        converted: dict[str, str] = {}
-        for name, channels in colors.items():
+    for browser in ("helium", "chromium"):
+        label = "Helium" if browser == "helium" else "Chromium"
+        for style in ("light", "dark"):
+            path = ROOT / browser / f"nib-{style}" / "manifest.json"
+            manifest = json.loads(path.read_text(encoding="utf-8"))
+            require(manifest["manifest_version"] == 3, f"{label} {style}: Manifest V3 is required")
+            require(manifest["name"] == f"Nib {style.title()}", f"{label} {style}: theme name changed")
+            require(manifest["version"] == PALETTE["meta"]["version"], f"{label} {style}: version drifted")
+            require("permissions" not in manifest, f"{label} {style}: a static theme must not request permissions")
+            colors = manifest["theme"]["colors"]
+            require(set(colors) == required_chromium_colors, f"{label} {style}: Chromium UI coverage changed")
+            converted: dict[str, str] = {}
+            for name, channels in colors.items():
+                require(
+                    isinstance(channels, list)
+                    and len(channels) == 3
+                    and all(isinstance(channel, int) and 0 <= channel <= 255 for channel in channels),
+                    f"{label} {style}: {name} must be an RGB triplet",
+                )
+                converted[name] = "#" + "".join(f"{channel:02X}" for channel in channels)
             require(
-                isinstance(channels, list)
-                and len(channels) == 3
-                and all(isinstance(channel, int) and 0 <= channel <= 255 for channel in channels),
-                f"Helium {style}: {name} must be an RGB triplet",
+                set(converted.values()) <= canonical_colors(PALETTE["modes"][style]),
+                f"{label} {style}: non-canonical color",
             )
-            converted[name] = "#" + "".join(f"{channel:02X}" for channel in channels)
-        require(
-            set(converted.values()) <= canonical_colors(PALETTE["modes"][style]),
-            f"Helium {style}: non-canonical color",
-        )
-        for foreground, background in chromium_pairs:
-            ratio = contrast(converted[foreground], converted[background])
-            require(ratio >= 4.5, f"Helium {style}: {foreground}/{background} contrast is {ratio:.2f}:1")
+            for foreground, background in chromium_pairs:
+                ratio = contrast(converted[foreground], converted[background])
+                require(ratio >= 4.5, f"{label} {style}: {foreground}/{background} contrast is {ratio:.2f}:1")
+
+
+def verify_portability_formats() -> None:
+    for style in ("light", "dark"):
+        mode = PALETTE["modes"][style]
+        canonical = canonical_colors(mode)
+        ansi = [entry["hex"] for entry in mode["ansi"]]
+
+        alacritty_path = ROOT / "alacritty" / f"nib-{style}.toml"
+        alacritty = tomllib.loads(alacritty_path.read_text(encoding="utf-8"))["colors"]
+        require(alacritty["primary"]["background"] == mode["background"], f"Alacritty {style}: background drifted")
+        require(alacritty["primary"]["foreground"] == mode["foreground"]["primary"], f"Alacritty {style}: foreground drifted")
+        require(list(alacritty["normal"].values()) == ansi[:8], f"Alacritty {style}: normal ANSI palette drifted")
+        require(list(alacritty["bright"].values()) == ansi[8:], f"Alacritty {style}: bright ANSI palette drifted")
+
+        wezterm_path = ROOT / "wezterm" / f"Nib {style.title()}.toml"
+        wezterm = tomllib.loads(wezterm_path.read_text(encoding="utf-8"))
+        require(wezterm["colors"]["ansi"] == ansi[:8], f"WezTerm {style}: normal ANSI palette drifted")
+        require(wezterm["colors"]["brights"] == ansi[8:], f"WezTerm {style}: bright ANSI palette drifted")
+        require(wezterm["metadata"]["name"] == f"Nib {style.title()}", f"WezTerm {style}: name drifted")
+
+        windows_path = ROOT / "windows-terminal" / f"nib-{style}.json"
+        windows = json.loads(windows_path.read_text(encoding="utf-8"))
+        require(windows["name"] == f"Nib {style.title()}", f"Windows Terminal {style}: name drifted")
+        require(windows["background"] == mode["background"], f"Windows Terminal {style}: background drifted")
+        require(windows["selectionBackground"] == mode["selection"]["background"], f"Windows Terminal {style}: selection drifted")
+
+        black_box_path = ROOT / "black-box" / f"Nib-{style.title()}.json"
+        black_box = json.loads(black_box_path.read_text(encoding="utf-8"))
+        require(black_box["palette"] == ansi, f"Black Box {style}: ANSI palette drifted")
+        require(black_box["background-color"] == mode["background"], f"Black Box {style}: background drifted")
+
+        pywal_path = ROOT / "pywal" / f"nib-{style}.json"
+        pywal = json.loads(pywal_path.read_text(encoding="utf-8"))
+        require(list(pywal["colors"].values()) == ansi, f"Pywal {style}: ANSI palette drifted")
+        require(pywal["special"]["cursor"] == mode["cursor"]["background"], f"Pywal {style}: cursor drifted")
+
+        kitty_path = ROOT / "kitty" / f"nib-{style}.conf"
+        kitty_source = kitty_path.read_text(encoding="utf-8")
+        kitty_colors = dict(re.findall(r"^(color\d+)\s+(#[0-9A-F]{6})$", kitty_source, re.MULTILINE))
+        require([kitty_colors[f"color{index}"] for index in range(16)] == ansi, f"kitty {style}: ANSI palette drifted")
+
+        warp_path = ROOT / "warp-terminal" / f"nib-{style}.yaml"
+        warp_source = warp_path.read_text(encoding="utf-8")
+        require(f'name: "Nib {style.title()}"' in warp_source, f"Warp {style}: name drifted")
+        require(f'details: {"lighter" if style == "light" else "darker"}' in warp_source, f"Warp {style}: appearance drifted")
+
+        xresources_path = ROOT / "xresources" / f"nib-{style}"
+        xresources_source = xresources_path.read_text(encoding="utf-8")
+        xresources_colors = dict(re.findall(r"^\*color(\d+):\s+(#[0-9A-F]{6})$", xresources_source, re.MULTILINE))
+        require([xresources_colors[str(index)] for index in range(16)] == ansi, f"Xresources {style}: ANSI palette drifted")
+
+        fish_path = ROOT / "fish" / f"nib-{style}.theme"
+        fish_source = fish_path.read_text(encoding="utf-8")
+        require("fish_color_error" in fish_source and "fish_pager_color_selected_background" in fish_source, f"fish {style}: theme coverage is incomplete")
+        fish_colors = {f"#{value.upper()}" for value in re.findall(r"(?<![A-Fa-f0-9])([A-Fa-f0-9]{6})(?![A-Fa-f0-9])", fish_source)}
+        require(fish_colors <= canonical, f"fish {style}: non-canonical color")
+
+        fzf_path = ROOT / "fzf" / f"nib-{style}.sh"
+        command(["sh", "-n", str(fzf_path)])
+        fzf_source = fzf_path.read_text(encoding="utf-8")
+        require(all(f"{role}:" in fzf_source for role in ("fg", "bg", "hl", "border", "prompt", "pointer", "marker")), f"fzf {style}: role coverage is incomplete")
+
+        tmux_path = ROOT / "tmux" / f"nib-{style}.conf"
+        tmux_source = tmux_path.read_text(encoding="utf-8")
+        require(all(option in tmux_source for option in ("status-style", "mode-style", "pane-active-border-style", "window-status-current-style")), f"tmux {style}: UI coverage is incomplete")
+
+        for path in (
+            alacritty_path, wezterm_path, windows_path, black_box_path, pywal_path,
+            kitty_path, warp_path, xresources_path, fzf_path, tmux_path,
+        ):
+            serialized_colors = set(re.findall(r"#[0-9A-Fa-f]{6}\b", path.read_text(encoding="utf-8")))
+            require(serialized_colors <= canonical, f"{path.relative_to(ROOT)}: non-canonical color")
+
+    fzf = shutil.which("fzf")
+    if fzf:
+        for style in ("light", "dark"):
+            command(["sh", "-c", f". ./fzf/nib-{style}.sh; printf 'nib\\n' | fzf --filter nib >/dev/null"])
+        print(f"  fzf runtime: pass ({command([fzf, '--version']).stdout.strip()})")
+    else:
+        print("  fzf runtime: skipped (fzf unavailable; option structure passed)")
+
+    css_source = (ROOT / "css" / "nib.css").read_text(encoding="utf-8")
+    require('@media (prefers-color-scheme: dark)' in css_source, "CSS tokens lack automatic dark-mode selection")
+    require('[data-nib-theme="light"]' in css_source and '[data-nib-theme="dark"]' in css_source, "CSS tokens lack explicit mode selectors")
+    all_canonical = canonical_colors(PALETTE["modes"]["light"]) | canonical_colors(PALETTE["modes"]["dark"])
+    require(set(re.findall(r"#[0-9A-Fa-f]{6}\b", css_source)) <= all_canonical, "CSS tokens contain a non-canonical color")
+
+    zellij_source = (ROOT / "zellij" / "nib.kdl").read_text(encoding="utf-8")
+    require("nib-light {" in zellij_source and "nib-dark {" in zellij_source, "Zellij variants are incomplete")
+    require(zellij_source.count("multiplayer_user_colors {") == 2, "Zellij multiplayer colors are incomplete")
+    palette_rgb = {
+        tuple(int(color[index : index + 2], 16) for index in (1, 3, 5))
+        for color in all_canonical
+    }
+    triplets = {tuple(map(int, match)) for match in re.findall(r"\b(\d{1,3}) (\d{1,3}) (\d{1,3})$", zellij_source, re.MULTILINE)}
+    require(triplets <= palette_rgb, "Zellij contains a non-canonical RGB triplet")
 
 
 def parse_ghostty_theme(path: Path) -> dict[str, Any]:
@@ -785,6 +892,7 @@ CHECKS: tuple[tuple[str, Callable[[], None]], ...] = (
     ("Zed extension and theme structure", verify_zed),
     ("Vim, Helix, and Sublime Text themes", verify_vim_helix_sublime),
     ("Firefox and Helium browser themes", verify_browser_themes),
+    ("terminal, shell, multiplexer, and CSS ports", verify_portability_formats),
     ("Ghostty themes and paired configuration", verify_ghostty),
     ("dry-run installer, backups, and symlinks", verify_installer),
     ("static shader structure and compilation", verify_shaders),
