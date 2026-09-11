@@ -146,7 +146,7 @@ make preview
 # open http://127.0.0.1:8765/preview/
 ```
 
-It renders Nib beside Flexoki, Solarized, Everforest, Rosé Pine, Kanagawa, and Gruvbox using identical code samples and normalized token roles. Light/dark filters and the sample selector are keyboard accessible. Reference values and upstream links live in [`palette/comparisons.json`](palette/comparisons.json).
+It renders Nib beside twelve reference themes—Flexoki, Solarized, Everforest, Rosé Pine, Kanagawa, Gruvbox, PaperColor, Mélange, Ayu, Tokyo Night, Catppuccin, and Modus—using identical code samples and normalized token roles. Light/dark filters and the sample selector are keyboard accessible. Reference values and upstream links live in [`palette/comparisons.json`](palette/comparisons.json).
 
 ## Design and accessibility
 
