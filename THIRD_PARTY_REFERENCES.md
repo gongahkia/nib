@@ -1,7 +1,8 @@
 # Third-party references
 
 Original research entries were accessed on **2026-09-09**; Firefox, Chromium,
-Helium, Vim, Helix, and Sublime Text references were accessed on **2026-09-11**. Nib contains original
+Helium, Vim, Helix, Sublime Text, and portability references were accessed on
+**2026-09-11**. Nib contains original
 code, prose, generated artifacts, and original sRGB values. No external image,
 font, or runtime resource is bundled or hotlinked.
 
@@ -168,6 +169,63 @@ font, or runtime resource is bundled or hotlinked.
   theme colors or implementation were copied.
 - **Required attribution:** links are retained as technical provenance for the
   independently authored generated themes.
+
+### Terminal and command-line portability
+
+- **Creators/publishers:** Alacritty, kitty, WezTerm, Microsoft, Warp, iTerm2,
+  fish, fzf, tmux, Zellij, and Pywal projects
+- **URLs:** <https://alacritty.org/releases/0.14.0/config-alacritty.html>,
+  <https://sw.kovidgoyal.net/kitty/color-stack/>,
+  <https://wezterm.org/config/appearance.html>,
+  <https://learn.microsoft.com/en-us/windows/terminal/customize-settings/color-schemes>,
+  <https://docs.warp.dev/terminal/appearance/custom-themes>,
+  <https://iterm2.com/documentation-preferences-profiles-colors.html>,
+  <https://fishshell.com/docs/current/interactive.html>,
+  <https://github.com/junegunn/fzf/blob/master/man/man1/fzf.1>,
+  <https://github.com/tmux/tmux/wiki/Getting-Started>,
+  <https://zellij.dev/documentation/themes.html>, and
+  <https://github.com/dylanaraps/pywal>
+- **Stated licences:** vary by project; linked source repositories retain their
+  respective open-source licences. Microsoft, Warp, iTerm2, and fish web pages
+  do not state a separate documentation-content licence.
+- **AI disclosure:** none stated.
+- **Visual/technical lesson:** verified current color roles, supported file
+  formats, ANSI ordering, installation paths, RGB syntax, and light/dark
+  selection behavior.
+- **Exact reusable values:** format identifiers and configuration facts only;
+  no upstream theme colors or implementation were copied.
+- **Required attribution:** links are retained as technical provenance.
+
+### IntelliJ, Lite XL, CSS, and Tailwind
+
+- **Creators/publishers:** JetBrains, Lite XL project, WHATWG/W3C ecosystem,
+  and Tailwind Labs
+- **URLs:** <https://plugins.jetbrains.com/docs/intellij/themes-extras.html>,
+  <https://github.com/lite-xl/lite-xl>,
+  <https://github.com/lite-xl/lite-xl-plugins>, and
+  <https://tailwindcss.com/docs/customizing-colors>
+- **Stated licences:** IntelliJ Community source is Apache-2.0, Lite XL is MIT,
+  and Tailwind CSS is MIT; linked documentation terms may differ.
+- **AI disclosure:** none stated.
+- **Visual/technical lesson:** verified IntelliJ color-scheme XML roles, Lite
+  XL Lua style conventions, CSS variable portability, and Tailwind v4
+  `@theme` color namespaces.
+- **Exact reusable values:** format and role identifiers only; no upstream
+  palette values or implementation were copied.
+- **Required attribution:** links are retained as technical provenance.
+
+### Flexoki port-coverage audit
+
+- **Creator/publisher:** Steph Ango and Flexoki contributors
+- **URL:** <https://github.com/kepano/flexoki>
+- **Stated licence:** MIT
+- **AI disclosure:** none stated.
+- **Use:** port names, repository layout, and README information architecture
+  were audited to identify coverage gaps. Nib's wording, generated formats,
+  role mappings, and palette values are independently authored.
+- **Exact reusable values:** none.
+- **Required attribution:** this ledger and the port audit retain the source
+  link.
 
 ### Plugin highlight definitions
 
