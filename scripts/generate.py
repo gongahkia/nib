@@ -411,6 +411,675 @@ def generated_iterm2(mode: dict[str, Any]) -> str:
     return plistlib.dumps(document, fmt=plistlib.FMT_XML, sort_keys=True).decode("utf-8")
 
 
+def archived_terminal_color(value: str) -> bytes:
+    """Encode an sRGB color in the NSColor archive used by Terminal.app profiles."""
+    channels = " ".join(f"{channel / 255:.10g}" for channel in rgb(value))
+    archive = {
+        "$archiver": "NSKeyedArchiver",
+        "$objects": [
+            "$null",
+            {
+                "$class": plistlib.UID(2),
+                "NSColorSpace": 2,
+                "NSRGB": f"{channels}\0".encode("ascii"),
+            },
+            {"$classes": ["NSColor", "NSObject"], "$classname": "NSColor"},
+        ],
+        "$top": {"root": plistlib.UID(1)},
+        "$version": 100000,
+    }
+    return plistlib.dumps(archive, fmt=plistlib.FMT_BINARY, sort_keys=False)
+
+
+def generated_macos_terminal(style: str, mode: dict[str, Any]) -> str:
+    ansi = ansi_colors(mode)
+    ansi_keys = (
+        "Black", "Red", "Green", "Yellow", "Blue", "Magenta", "Cyan", "White"
+    )
+    document: dict[str, Any] = {
+        "BackgroundColor": archived_terminal_color(mode["background"]),
+        "CursorColor": archived_terminal_color(mode["cursor"]["background"]),
+        "ProfileCurrentVersion": 2.07,
+        "SelectionColor": archived_terminal_color(mode["selection"]["background"]),
+        "TextBoldColor": archived_terminal_color(ansi[15]),
+        "TextColor": archived_terminal_color(mode["foreground"]["primary"]),
+        "UseBrightBold": False,
+        "name": f"Nib {style.title()}",
+        "type": "Window Settings",
+    }
+    for index, name in enumerate(ansi_keys):
+        document[f"ANSI{name}Color"] = archived_terminal_color(ansi[index])
+        document[f"ANSIBright{name}Color"] = archived_terminal_color(ansi[index + 8])
+    return plistlib.dumps(document, fmt=plistlib.FMT_XML, sort_keys=True).decode("utf-8")
+
+
+def generated_konsole(style: str, mode: dict[str, Any]) -> str:
+    def channels(value: str) -> str:
+        return ",".join(str(channel) for channel in rgb(value))
+
+    ansi = ansi_colors(mode)
+    lines = [
+        f"# {MARKER}",
+        "[Background]",
+        f"Color={channels(mode['background'])}",
+        "",
+        "[BackgroundFaint]",
+        f"Color={channels(mode['background'])}",
+        "",
+        "[BackgroundIntense]",
+        f"Color={channels(mode['background'])}",
+        "",
+    ]
+    for index in range(8):
+        lines.extend(
+            [
+                f"[Color{index}]",
+                f"Color={channels(ansi[index])}",
+                "",
+                f"[Color{index}Faint]",
+                f"Color={channels(ansi[index])}",
+                "",
+                f"[Color{index}Intense]",
+                f"Color={channels(ansi[index + 8])}",
+                "",
+            ]
+        )
+    lines.extend(
+        [
+            "[Foreground]",
+            f"Color={channels(mode['foreground']['primary'])}",
+            "",
+            "[ForegroundFaint]",
+            f"Color={channels(mode['foreground']['muted'])}",
+            "",
+            "[ForegroundIntense]",
+            f"Color={channels(ansi[15])}",
+            "",
+            "[General]",
+            "Blur=false",
+            "ColorRandomization=false",
+            f"Description=Nib {style.title()}",
+            "Opacity=1",
+            "Wallpaper=",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def generated_yazi(style: str, mode: dict[str, Any]) -> str:
+    def styled(*, fg: str | None = None, bg: str | None = None, **flags: bool) -> str:
+        values: list[str] = []
+        if fg:
+            values.append(f'fg = "{fg}"')
+        if bg:
+            values.append(f'bg = "{bg}"')
+        values.extend(f"{name} = true" for name, enabled in flags.items() if enabled)
+        return "{ " + ", ".join(values) + " }"
+
+    fg = mode["foreground"]
+    surface = mode["surface"]
+    border = mode["border"]
+    selection = mode["selection"]
+    lines = [
+        f"# {MARKER}",
+        f"# Nib {style.title()} for Yazi 26.9+", 
+        "[app]",
+        f"overall = {styled(bg=mode['background'])}",
+        "",
+        "[mgr]",
+        f"cwd = {styled(fg=mode['blue_ink']['bright'], bold=True)}",
+        f"find_keyword = {styled(fg=mode['search']['foreground'], bg=mode['search']['background'], bold=True)}",
+        f"find_position = {styled(fg=mode['amber'])}",
+        f"symlink_target = {styled(fg=mode['teal']['muted'], italic=True)}",
+        f"marker_copied = {styled(fg=mode['diagnostic']['success'], bg=mode['diagnostic']['success'])}",
+        f"marker_cut = {styled(fg=mode['diagnostic']['error'], bg=mode['diagnostic']['error'])}",
+        f"marker_marked = {styled(fg=mode['violet'], bg=mode['violet'])}",
+        f"marker_selected = {styled(fg=mode['blue_ink']['bright'], bg=mode['blue_ink']['bright'])}",
+        f"count_copied = {styled(fg=mode['cursor']['foreground'], bg=mode['diagnostic']['success'], bold=True)}",
+        f"count_cut = {styled(fg=mode['cursor']['foreground'], bg=mode['diagnostic']['error'], bold=True)}",
+        f"count_selected = {styled(fg=selection['foreground'], bg=selection['background'], bold=True)}",
+        'border_symbol = "│"',
+        f"border_style = {styled(fg=border['subtle'])}",
+        "",
+        "[indicator]",
+        f"parent = {styled(fg=fg['muted'], bg=surface['elevated'])}",
+        f"current = {styled(fg=mode['cursor']['foreground'], bg=mode['focus'], bold=True)}",
+        f"preview = {styled(fg=mode['moss']['primary'], bg=surface['elevated'])}",
+        'padding = { open = "▐", close = "▌" }',
+        "",
+        "[tabs]",
+        f"active = {styled(fg=selection['foreground'], bg=selection['background'], bold=True)}",
+        f"inactive = {styled(fg=fg['muted'], bg=surface['elevated'])}",
+        'sep_inner = { open = "", close = "" }',
+        'sep_outer = { open = "", close = "" }',
+        "",
+        "[mode]",
+        f"normal_main = {styled(fg=mode['cursor']['foreground'], bg=mode['focus'], bold=True)}",
+        f"normal_alt = {styled(fg=mode['focus'], bg=surface['subtle'])}",
+        f"select_main = {styled(fg=selection['foreground'], bg=mode['violet'], bold=True)}",
+        f"select_alt = {styled(fg=mode['violet'], bg=surface['subtle'])}",
+        f"unset_main = {styled(fg=mode['cursor']['foreground'], bg=mode['rust'], bold=True)}",
+        f"unset_alt = {styled(fg=mode['rust'], bg=surface['subtle'])}",
+        "",
+        "[status]",
+        f"overall = {styled(fg=fg['secondary'], bg=surface['elevated'])}",
+        'sep_left = { open = "", close = "" }',
+        'sep_right = { open = "", close = "" }',
+        f"perm_type = {styled(fg=mode['moss']['primary'])}",
+        f"perm_read = {styled(fg=mode['amber'])}",
+        f"perm_write = {styled(fg=mode['diagnostic']['error'])}",
+        f"perm_exec = {styled(fg=mode['teal']['primary'])}",
+        f"perm_sep = {styled(fg=fg['disabled'])}",
+        f"progress_label = {styled(fg=selection['foreground'], bold=True)}",
+        f"progress_normal = {styled(fg=mode['focus'], bg=surface['subtle'])}",
+        f"progress_error = {styled(fg=mode['diagnostic']['error'], bg=surface['subtle'])}",
+        "",
+        "[which]",
+        f"border = {styled(fg=border['focus'])}",
+        "cols = 3",
+        f"mask = {styled(bg=surface['elevated'])}",
+        f"cand = {styled(fg=mode['blue_ink']['bright'], bold=True)}",
+        f"rest = {styled(fg=fg['muted'])}",
+        f"desc = {styled(fg=mode['teal']['primary'])}",
+        'separator = "  →  "',
+        f"separator_style = {styled(fg=fg['disabled'])}",
+        "",
+        "[confirm]",
+        f"border = {styled(fg=border['focus'])}",
+        f"title = {styled(fg=mode['blue_ink']['bright'], bold=True)}",
+        f"body = {styled(fg=fg['primary'])}",
+        f"list = {styled(fg=fg['secondary'])}",
+        f"btn_yes = {styled(fg=mode['cursor']['foreground'], bg=mode['diagnostic']['success'], bold=True)}",
+        f"btn_no = {styled(fg=mode['cursor']['foreground'], bg=mode['diagnostic']['error'], bold=True)}",
+        "",
+        "[spot]",
+        f"border = {styled(fg=border['focus'])}",
+        f"title = {styled(fg=mode['blue_ink']['bright'], bold=True)}",
+        f"tbl_col = {styled(fg=mode['moss']['primary'])}",
+        f"tbl_cell = {styled(fg=fg['primary'], bg=surface['subtle'])}",
+        "",
+        "[notify]",
+        f"title_info = {styled(fg=mode['diagnostic']['information'])}",
+        f"title_warn = {styled(fg=mode['diagnostic']['warning'])}",
+        f"title_error = {styled(fg=mode['diagnostic']['error'])}",
+        "",
+        "[pick]",
+        f"border = {styled(fg=border['focus'])}",
+        f"active = {styled(fg=selection['foreground'], bg=selection['background'], bold=True)}",
+        f"inactive = {styled(fg=fg['secondary'])}",
+        "",
+        "[input]",
+        f"border = {styled(fg=border['focus'])}",
+        f"title = {styled(fg=mode['blue_ink']['bright'])}",
+        f"value = {styled(fg=fg['primary'])}",
+        f"selected = {styled(fg=selection['foreground'], bg=selection['background'])}",
+        "",
+        "[cmp]",
+        f"border = {styled(fg=border['focus'])}",
+        f"active = {styled(fg=selection['foreground'], bg=selection['background'])}",
+        f"inactive = {styled(fg=fg['secondary'])}",
+        "",
+        "[tasks]",
+        f"border = {styled(fg=border['focus'])}",
+        f"title = {styled(fg=mode['blue_ink']['bright'], bold=True)}",
+        f"hovered = {styled(fg=selection['foreground'], bg=selection['background'])}",
+        "",
+        "[help]",
+        f"border = {styled(fg=border['focus'])}",
+        f"chord = {styled(fg=mode['blue_ink']['bright'], bold=True)}",
+        f"action = {styled(fg=mode['teal']['primary'])}",
+        f"hovered = {styled(fg=selection['foreground'], bg=selection['background'])}",
+        "",
+        "[filetype]",
+        "rules = [",
+        f'  {{ mime = "image/*", fg = "{mode["violet"]}" }},',
+        f'  {{ mime = "{{audio,video}}/*", fg = "{mode["burgundy"]}" }},',
+        f'  {{ mime = "application/{{zip,rar,7z*,tar,gzip,xz,zstd}}", fg = "{mode["amber"]}" }},',
+        f'  {{ mime = "application/{{pdf,doc,rtf}}", fg = "{mode["rust"]}" }},',
+        f'  {{ name = "*", is = "orphan", bg = "{mode["diagnostic"]["error"]}" }},',
+        f'  {{ name = "*/", fg = "{mode["blue_ink"]["bright"]}", bold = true }},',
+        f'  {{ name = "*", fg = "{fg["primary"]}" }},',
+        "]",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def generated_obsidian_theme(palette: dict[str, Any]) -> str:
+    lines = [f"/* {MARKER} */"]
+    for style in ("light", "dark"):
+        mode = palette["modes"][style]
+        fg = mode["foreground"]
+        surface = mode["surface"]
+        border = mode["border"]
+        selection = mode["selection"]
+        base = [
+            surface["floating"], mode["background"], mode["background"], surface["elevated"],
+            surface["subtle"], mode["current_line"], border["subtle"], border["default"],
+            fg["disabled"], fg["muted"], fg["secondary"], fg["primary"],
+        ]
+        values = {
+            **{f"color-base-{name}": color for name, color in zip(("00", "05", "10", "20", "25", "30", "35", "40", "50", "60", "70", "100"), base)},
+            "color-red": mode["diagnostic"]["error"],
+            "color-orange": mode["rust"],
+            "color-yellow": mode["amber"],
+            "color-green": mode["diagnostic"]["success"],
+            "color-cyan": mode["teal"]["primary"],
+            "color-blue": mode["blue_ink"]["primary"],
+            "color-purple": mode["violet"],
+            "color-pink": mode["burgundy"],
+            "color-accent": mode["focus"],
+            "color-accent-1": mode["blue_ink"]["primary"],
+            "color-accent-2": mode["blue_ink"]["bright"],
+            "background-primary": mode["background"],
+            "background-primary-alt": surface["floating"],
+            "background-secondary": surface["elevated"],
+            "background-secondary-alt": surface["subtle"],
+            "background-modifier-hover": mode["current_line"],
+            "background-modifier-active-hover": selection["background"],
+            "background-modifier-border": border["subtle"],
+            "background-modifier-border-hover": border["default"],
+            "background-modifier-border-focus": border["focus"],
+            "background-modifier-error": mode["diff"]["delete"],
+            "background-modifier-error-hover": mode["diff"]["delete_text"],
+            "background-modifier-success": mode["diff"]["add"],
+            "background-modifier-message": surface["subtle"],
+            "background-modifier-form-field": surface["floating"],
+            "interactive-normal": surface["elevated"],
+            "interactive-hover": surface["subtle"],
+            "interactive-accent": mode["focus"],
+            "interactive-accent-hover": mode["blue_ink"]["bright"],
+            "text-normal": fg["primary"],
+            "text-muted": fg["muted"],
+            "text-faint": fg["disabled"],
+            "text-on-accent": mode["cursor"]["foreground"],
+            "text-on-accent-inverted": mode["cursor"]["foreground"],
+            "text-success": mode["diagnostic"]["success"],
+            "text-warning": mode["diagnostic"]["warning"],
+            "text-error": mode["diagnostic"]["error"],
+            "text-accent": mode["hyperlink"],
+            "text-accent-hover": mode["blue_ink"]["bright"],
+            "text-selection": selection["background"],
+            "text-highlight-bg": mode["search"]["background"],
+            "caret-color": mode["cursor"]["background"],
+            "link-color": mode["hyperlink"],
+            "link-color-hover": mode["blue_ink"]["bright"],
+            "link-external-color": mode["teal"]["primary"],
+            "link-external-color-hover": mode["teal"]["muted"],
+            "link-unresolved-color": mode["burgundy"],
+            "code-background": surface["elevated"],
+            "code-normal": fg["primary"],
+            "code-comment": fg["muted"],
+            "code-function": mode["blue_ink"]["bright"],
+            "code-important": mode["burgundy"],
+            "code-keyword": mode["blue_ink"]["deep"],
+            "code-operator": mode["graphite"],
+            "code-property": mode["sepia"],
+            "code-punctuation": fg["secondary"],
+            "code-string": mode["teal"]["primary"],
+            "code-tag": mode["violet"],
+            "code-value": mode["amber"],
+            "h1-color": mode["blue_ink"]["deep"],
+            "h2-color": mode["blue_ink"]["primary"],
+            "h3-color": mode["moss"]["primary"],
+            "h4-color": mode["teal"]["primary"],
+            "h5-color": mode["violet"],
+            "h6-color": mode["sepia"],
+            "blockquote-background-color": surface["elevated"],
+            "blockquote-border-color": border["focus"],
+            "blockquote-color": fg["secondary"],
+            "tag-background": mode["match"]["background"],
+            "tag-background-hover": selection["background"],
+            "tag-border-color": border["subtle"],
+            "tag-border-color-hover": border["focus"],
+            "tag-color": mode["match"]["foreground"],
+            "tag-color-hover": selection["foreground"],
+            "nav-item-color": fg["secondary"],
+            "nav-item-color-hover": fg["primary"],
+            "nav-item-color-active": fg["primary"],
+            "nav-item-background-hover": mode["current_line"],
+            "nav-item-background-active": selection["background"],
+            "tab-container-background": surface["elevated"],
+            "tab-background-active": mode["background"],
+            "tab-divider-color": border["subtle"],
+            "tab-outline-color": border["default"],
+            "tab-text-color": fg["muted"],
+            "tab-text-color-active": fg["primary"],
+            "titlebar-background": surface["elevated"],
+            "titlebar-background-focused": surface["subtle"],
+            "titlebar-border-color": border["subtle"],
+            "titlebar-text-color": fg["muted"],
+            "titlebar-text-color-focused": fg["primary"],
+            "ribbon-background": surface["elevated"],
+            "ribbon-background-collapsed": surface["elevated"],
+            "status-bar-background": surface["elevated"],
+            "status-bar-border-color": border["subtle"],
+            "status-bar-text-color": fg["muted"],
+            "divider-color": border["subtle"],
+            "divider-color-hover": border["focus"],
+            "scrollbar-bg": surface["elevated"],
+            "scrollbar-thumb-bg": border["subtle"],
+            "scrollbar-active-thumb-bg": border["default"],
+            "modal-background": surface["floating"],
+            "modal-border-color": border["default"],
+            "checkbox-color": mode["focus"],
+            "checkbox-color-hover": mode["blue_ink"]["bright"],
+            "checkbox-border-color": border["default"],
+            "checkbox-border-color-hover": border["focus"],
+            "checkbox-marker-color": mode["cursor"]["foreground"],
+            "table-background": mode["background"],
+            "table-border-color": border["subtle"],
+            "table-header-background": surface["elevated"],
+            "table-header-background-hover": surface["subtle"],
+            "table-header-color": fg["primary"],
+            "table-text-color": fg["primary"],
+            "graph-line": border["default"],
+            "graph-node": mode["blue_ink"]["primary"],
+            "graph-node-focused": mode["focus"],
+            "graph-node-tag": mode["moss"]["primary"],
+            "graph-node-attachment": mode["violet"],
+            "graph-node-unresolved": mode["burgundy"],
+            "graph-text": fg["primary"],
+        }
+        lines.extend(["", f".theme-{style} {{", f"  color-scheme: {style};"])
+        lines.extend(f"  --{name}: {value};" for name, value in values.items())
+        lines.append("}")
+    return "\n".join(lines) + "\n"
+
+
+def generated_obsidian_manifest(meta: dict[str, Any]) -> str:
+    return json.dumps(
+        {
+            "name": "Nib",
+            "version": meta["version"],
+            "minAppVersion": "1.10.6",
+            "author": "gongahkia",
+            "authorUrl": "https://github.com/gongahkia",
+        },
+        indent=2,
+    ) + "\n"
+
+
+def generated_obsidian_versions(meta: dict[str, Any]) -> str:
+    return json.dumps({meta["version"]: "1.10.6"}, indent=2) + "\n"
+
+
+def generated_discord_theme(palette: dict[str, Any]) -> str:
+    lines = [
+        "/**",
+        " * @name Nib",
+        " * @author gongahkia",
+        " * @description Fountain-pen ink on cool-neutral paper and chalkboard charcoal.",
+        f" * @version {palette['meta']['version']}",
+        " * @website https://github.com/gongahkia/nib",
+        " * @source https://github.com/gongahkia/nib/blob/main/discord/Nib.theme.css",
+        " */",
+        f"/* {MARKER} */",
+    ]
+    for style in ("light", "dark"):
+        mode = palette["modes"][style]
+        fg = mode["foreground"]
+        surface = mode["surface"]
+        border = mode["border"]
+        selectors = ".theme-light" if style == "light" else ".theme-dark, .theme-darker, .theme-midnight"
+        values = {
+            "background-base-lowest": mode["background"],
+            "background-base-lower": surface["elevated"],
+            "background-base-low": surface["elevated"],
+            "background-surface-high": surface["subtle"],
+            "background-surface-higher": surface["floating"],
+            "background-primary": mode["background"],
+            "background-secondary": surface["elevated"],
+            "background-secondary-alt": surface["subtle"],
+            "background-tertiary": surface["subtle"],
+            "background-floating": surface["floating"],
+            "background-mod-subtle": mode["current_line"],
+            "background-mod-normal": surface["subtle"],
+            "background-mod-strong": mode["selection"]["background"],
+            "background-modifier-hover": mode["current_line"],
+            "background-modifier-active": surface["subtle"],
+            "background-modifier-selected": mode["selection"]["background"],
+            "background-modifier-accent": border["subtle"],
+            "channeltextarea-background": surface["elevated"],
+            "input-background": surface["floating"],
+            "modal-background": surface["floating"],
+            "modal-footer-background": surface["elevated"],
+            "card-background-default": surface["elevated"],
+            "text-default": fg["primary"],
+            "text-strong": fg["primary"],
+            "text-normal": fg["primary"],
+            "text-muted": fg["muted"],
+            "text-subtle": fg["disabled"],
+            "text-link": mode["hyperlink"],
+            "header-primary": fg["primary"],
+            "header-secondary": fg["secondary"],
+            "interactive-normal": fg["secondary"],
+            "interactive-hover": fg["primary"],
+            "interactive-active": mode["blue_ink"]["bright"],
+            "interactive-muted": fg["disabled"],
+            "interactive-icon-default": fg["secondary"],
+            "interactive-icon-hover": fg["primary"],
+            "interactive-icon-active": mode["blue_ink"]["bright"],
+            "channels-default": fg["muted"],
+            "channel-icon": fg["muted"],
+            "border-subtle": border["subtle"],
+            "border-normal": border["default"],
+            "border-focus": border["focus"],
+            "brand-500": mode["focus"],
+            "brand-experiment": mode["focus"],
+            "brand-experiment-560": mode["blue_ink"]["primary"],
+            "background-feedback-critical": mode["diff"]["delete"],
+            "background-feedback-warning": mode["search"]["background"],
+            "background-feedback-positive": mode["diff"]["add"],
+            "background-feedback-info": mode["diff"]["change"],
+            "icon-feedback-critical": mode["diagnostic"]["error"],
+            "icon-feedback-warning": mode["diagnostic"]["warning"],
+            "icon-feedback-positive": mode["diagnostic"]["success"],
+            "icon-feedback-info": mode["diagnostic"]["information"],
+            "text-feedback-critical": mode["diagnostic"]["error"],
+            "text-feedback-warning": mode["diagnostic"]["warning"],
+            "text-feedback-positive": mode["diagnostic"]["success"],
+            "text-feedback-info": mode["diagnostic"]["information"],
+        }
+        lines.extend(["", f"{selectors} {{", f"  color-scheme: {style};"])
+        lines.extend(f"  --{name}: {value};" for name, value in values.items())
+        lines.append("}")
+    return "\n".join(lines) + "\n"
+
+
+def generated_slack_slick_theme(style: str, mode: dict[str, Any]) -> str:
+    def channels(value: str) -> str:
+        return ",".join(str(channel) for channel in rgb(value))
+
+    variables = {
+        "--dt_color-base-pry": mode["background"],
+        "--dt_color-base-sec": mode["surface"]["elevated"],
+        "--dt_color-base-ter": mode["surface"]["subtle"],
+        "--dt_color-base-inv-pry": mode["surface"]["floating"],
+        "--dt_color-ctr-pry": mode["surface"]["elevated"],
+        "--dt_color-ctr-sec": mode["surface"]["subtle"],
+        "--dt_color-surf-pry": mode["background"],
+        "--dt_color-surf-sec": mode["surface"]["elevated"],
+        "--dt_color-surf-ter": mode["surface"]["subtle"],
+        "--dt_color-content-pry": mode["foreground"]["primary"],
+        "--dt_color-content-sec": mode["foreground"]["secondary"],
+        "--dt_color-content-ter": mode["foreground"]["muted"],
+        "--dt_color-content-hgl-1": mode["hyperlink"],
+        "--dt_color-content-inv-hgl-1": mode["cursor"]["foreground"],
+        "--dt_color-base-hgl-1": mode["selection"]["background"],
+        "--dt_color-base-inv-hgl-1": mode["focus"],
+        "--dt_color-otl-pry": mode["border"]["default"],
+        "--dt_color-otl-sec": mode["border"]["subtle"],
+        "--dt_color-otl-ter": mode["border"]["subtle"],
+        "--dt_color-otl-hgl-1": mode["focus"],
+        "--dt_color-content-negative": mode["diagnostic"]["error"],
+        "--dt_color-content-caution": mode["diagnostic"]["warning"],
+        "--dt_color-content-positive": mode["diagnostic"]["success"],
+        "--sk_primary_foreground": channels(mode["foreground"]["primary"]),
+        "--sk_primary_background": channels(mode["background"]),
+        "--sk_foreground_max": channels(mode["foreground"]["primary"]),
+        "--sk_foreground_high": channels(mode["foreground"]["secondary"]),
+        "--sk_foreground_low": channels(mode["foreground"]["muted"]),
+        "--sk_foreground_min": channels(mode["foreground"]["disabled"]),
+        "--sk_foreground_max_solid": channels(mode["foreground"]["secondary"]),
+        "--sk_foreground_low_solid": channels(mode["surface"]["subtle"]),
+        "--sk_foreground_min_solid": channels(mode["surface"]["elevated"]),
+        "--sk_highlight": channels(mode["hyperlink"]),
+        "--sk_highlight_hover": channels(mode["blue_ink"]["bright"]),
+        "--sk_highlight_accent": channels(mode["focus"]),
+    }
+    document = {
+        "name": f"Nib {style.title()}",
+        "description": "Fountain-pen ink on paper and chalkboard charcoal.",
+        "vars": variables,
+        "sidebar": {
+            "nav-bg": mode["surface"]["elevated"],
+            "text-color": mode["foreground"]["primary"],
+            "badge": mode["diagnostic"]["error"],
+            "badge-text-color": mode["cursor"]["foreground"],
+        },
+    }
+    return json.dumps(document, indent=2) + "\n"
+
+
+def generated_slack_legacy_theme(mode: dict[str, Any]) -> str:
+    colors = (
+        mode["background"], mode["surface"]["floating"], mode["focus"], mode["background"],
+        mode["surface"]["elevated"], mode["foreground"]["primary"], mode["hyperlink"],
+        mode["diagnostic"]["error"], mode["background"], mode["foreground"]["primary"],
+    )
+    return ",".join(colors) + "\n"
+
+
+def generated_telegram_theme(style: str, mode: dict[str, Any]) -> str:
+    constants = {
+        "NIB_BG": mode["background"],
+        "NIB_SURFACE": mode["surface"]["elevated"],
+        "NIB_FLOATING": mode["surface"]["floating"],
+        "NIB_SUBTLE": mode["surface"]["subtle"],
+        "NIB_BORDER": mode["border"]["default"],
+        "NIB_BORDER_SUBTLE": mode["border"]["subtle"],
+        "NIB_FOCUS": mode["focus"],
+        "NIB_TEXT": mode["foreground"]["primary"],
+        "NIB_TEXT_SECONDARY": mode["foreground"]["secondary"],
+        "NIB_TEXT_MUTED": mode["foreground"]["muted"],
+        "NIB_TEXT_DISABLED": mode["foreground"]["disabled"],
+        "NIB_ON_ACCENT": mode["cursor"]["foreground"],
+        "NIB_BLUE": mode["blue_ink"]["bright"],
+        "NIB_MOSS": mode["moss"]["primary"],
+        "NIB_TEAL": mode["teal"]["primary"],
+        "NIB_BURGUNDY": mode["burgundy"],
+        "NIB_RUST": mode["rust"],
+        "NIB_VIOLET": mode["violet"],
+        "NIB_AMBER": mode["amber"],
+        "NIB_ERROR": mode["diagnostic"]["error"],
+        "NIB_WARNING": mode["diagnostic"]["warning"],
+        "NIB_SUCCESS": mode["diagnostic"]["success"],
+        "NIB_LINK": mode["hyperlink"],
+        "NIB_SELECTION": mode["selection"]["background"],
+        "NIB_SELECTION_TEXT": mode["selection"]["foreground"],
+        "NIB_IN_BUBBLE": mode["surface"]["floating"],
+        "NIB_OUT_BUBBLE": mode["match"]["background"],
+    }
+    aliases = {
+        "windowBg": "NIB_BG", "windowFg": "NIB_TEXT", "windowBgOver": "NIB_SURFACE",
+        "windowBgRipple": "NIB_SUBTLE", "windowFgOver": "NIB_TEXT",
+        "windowSubTextFg": "NIB_TEXT_MUTED", "windowSubTextFgOver": "NIB_TEXT_SECONDARY",
+        "windowBoldFg": "NIB_TEXT", "windowBoldFgOver": "NIB_TEXT",
+        "windowBgActive": "NIB_FOCUS", "windowFgActive": "NIB_ON_ACCENT",
+        "windowActiveTextFg": "NIB_LINK", "windowShadowFgFallback": "NIB_BORDER_SUBTLE",
+        "activeButtonBg": "NIB_FOCUS", "activeButtonBgOver": "NIB_BLUE",
+        "activeButtonBgRipple": "NIB_SELECTION", "activeButtonFg": "NIB_ON_ACCENT",
+        "activeButtonFgOver": "NIB_ON_ACCENT", "activeButtonSecondaryFg": "NIB_ON_ACCENT",
+        "activeButtonSecondaryFgOver": "NIB_ON_ACCENT", "activeLineFg": "NIB_FOCUS",
+        "activeLineFgError": "NIB_ERROR", "lightButtonBg": "NIB_BG",
+        "lightButtonBgOver": "NIB_SURFACE", "lightButtonBgRipple": "NIB_SUBTLE",
+        "lightButtonFg": "NIB_LINK", "lightButtonFgOver": "NIB_BLUE",
+        "attentionButtonFg": "NIB_ERROR", "attentionButtonFgOver": "NIB_ERROR",
+        "attentionButtonBgOver": "NIB_SUBTLE", "attentionButtonBgRipple": "NIB_SELECTION",
+        "menuBg": "NIB_FLOATING", "menuBgOver": "NIB_SURFACE", "menuBgRipple": "NIB_SUBTLE",
+        "menuIconFg": "NIB_TEXT_SECONDARY", "menuIconFgOver": "NIB_TEXT",
+        "menuSubmenuArrowFg": "NIB_TEXT_SECONDARY", "menuFgDisabled": "NIB_TEXT_DISABLED",
+        "menuSeparatorFg": "NIB_BORDER_SUBTLE", "scrollBarBg": "NIB_BORDER",
+        "scrollBarBgOver": "NIB_FOCUS", "scrollBg": "NIB_SURFACE", "scrollBgOver": "NIB_SUBTLE",
+        "smallCloseIconFg": "NIB_TEXT_MUTED", "smallCloseIconFgOver": "NIB_TEXT",
+        "placeholderFg": "NIB_TEXT_MUTED", "placeholderFgActive": "NIB_TEXT_SECONDARY",
+        "inputBorderFg": "NIB_BORDER", "filterInputBorderFg": "NIB_FOCUS",
+        "filterInputActiveBg": "NIB_FLOATING", "filterInputInactiveBg": "NIB_SURFACE",
+        "checkboxFg": "NIB_BORDER", "sliderBgInactive": "NIB_BORDER_SUBTLE",
+        "sliderBgActive": "NIB_FOCUS", "tooltipBg": "NIB_FLOATING",
+        "tooltipFg": "NIB_TEXT_SECONDARY", "tooltipBorderFg": "NIB_BORDER",
+        "titleBg": "NIB_SURFACE", "titleBgActive": "NIB_SUBTLE",
+        "titleFg": "NIB_TEXT_MUTED", "titleFgActive": "NIB_TEXT",
+        "trayCounterBg": "NIB_ERROR", "trayCounterBgMute": "NIB_TEXT_DISABLED",
+        "trayCounterFg": "NIB_ON_ACCENT", "cancelIconFg": "NIB_TEXT_MUTED",
+        "cancelIconFgOver": "NIB_TEXT", "boxBg": "NIB_FLOATING", "boxTextFg": "NIB_TEXT",
+        "boxTextFgGood": "NIB_SUCCESS", "boxTextFgError": "NIB_ERROR",
+        "boxTitleFg": "NIB_TEXT", "boxSearchBg": "NIB_SURFACE",
+        "boxTitleAdditionalFg": "NIB_TEXT_MUTED", "boxTitleCloseFg": "NIB_TEXT_MUTED",
+        "boxTitleCloseFgOver": "NIB_TEXT", "contactsBg": "NIB_BG",
+        "contactsBgOver": "NIB_SURFACE", "contactsNameFg": "NIB_TEXT",
+        "contactsStatusFg": "NIB_TEXT_MUTED", "contactsStatusFgOver": "NIB_TEXT_SECONDARY",
+        "contactsStatusFgOnline": "NIB_SUCCESS", "callArrowFg": "NIB_SUCCESS",
+        "callArrowMissedFg": "NIB_ERROR", "introBg": "NIB_BG", "introTitleFg": "NIB_TEXT",
+        "introDescriptionFg": "NIB_TEXT_MUTED", "introErrorFg": "NIB_ERROR",
+        "dialogsMenuIconFg": "NIB_TEXT_SECONDARY", "dialogsMenuIconFgOver": "NIB_TEXT",
+        "dialogsBg": "NIB_BG", "dialogsNameFg": "NIB_TEXT", "dialogsChatIconFg": "NIB_TEXT_SECONDARY",
+        "dialogsDateFg": "NIB_TEXT_MUTED", "dialogsTextFg": "NIB_TEXT_MUTED",
+        "dialogsTextFgService": "NIB_TEAL", "dialogsDraftFg": "NIB_ERROR",
+        "dialogsVerifiedIconBg": "NIB_FOCUS", "dialogsVerifiedIconFg": "NIB_ON_ACCENT",
+        "dialogsSendingIconFg": "NIB_TEXT_DISABLED", "dialogsSentIconFg": "NIB_SUCCESS",
+        "dialogsUnreadBg": "NIB_FOCUS", "dialogsUnreadBgMuted": "NIB_TEXT_DISABLED",
+        "dialogsUnreadFg": "NIB_ON_ACCENT", "dialogsOnlineBadgeFg": "NIB_SUCCESS",
+        "dialogsBgOver": "NIB_SURFACE", "dialogsNameFgOver": "NIB_TEXT",
+        "dialogsDateFgOver": "NIB_TEXT_SECONDARY", "dialogsTextFgOver": "NIB_TEXT_SECONDARY",
+        "dialogsBgActive": "NIB_SELECTION", "dialogsNameFgActive": "NIB_SELECTION_TEXT",
+        "dialogsDateFgActive": "NIB_SELECTION_TEXT", "dialogsTextFgActive": "NIB_SELECTION_TEXT",
+        "dialogsUnreadBgActive": "NIB_SELECTION_TEXT", "dialogsUnreadFgActive": "NIB_SELECTION",
+        "dialogsRippleBg": "NIB_SUBTLE", "dialogsRippleBgActive": "NIB_FOCUS",
+        "searchedBarBg": "NIB_SURFACE", "searchedBarFg": "NIB_TEXT_SECONDARY",
+        "topBarBg": "NIB_BG", "emojiPanBg": "NIB_FLOATING", "emojiPanCategories": "NIB_SURFACE",
+        "emojiPanHeaderFg": "NIB_TEXT_MUTED", "emojiPanHeaderBg": "NIB_FLOATING",
+        "historyTextInFg": "NIB_TEXT", "historyTextInFgSelected": "NIB_SELECTION_TEXT",
+        "historyTextOutFg": "NIB_TEXT", "historyTextOutFgSelected": "NIB_SELECTION_TEXT",
+        "historyLinkInFg": "NIB_LINK", "historyLinkInFgSelected": "NIB_SELECTION_TEXT",
+        "historyLinkOutFg": "NIB_TEAL", "historyLinkOutFgSelected": "NIB_SELECTION_TEXT",
+        "historyFileNameInFg": "NIB_TEXT", "historyFileNameInFgSelected": "NIB_SELECTION_TEXT",
+        "historyFileNameOutFg": "NIB_TEXT", "historyFileNameOutFgSelected": "NIB_SELECTION_TEXT",
+        "historyOutIconFg": "NIB_SUCCESS", "historyOutIconFgSelected": "NIB_SELECTION_TEXT",
+        "historySendingOutIconFg": "NIB_TEXT_MUTED", "historySendingInIconFg": "NIB_TEXT_MUTED",
+        "historyUnreadBarBg": "NIB_SURFACE", "historyUnreadBarBorder": "NIB_BORDER_SUBTLE",
+        "historyUnreadBarFg": "NIB_LINK", "historyComposeAreaBg": "NIB_BG",
+        "historyComposeAreaFg": "NIB_TEXT", "historyComposeAreaFgService": "NIB_TEXT_MUTED",
+        "historyComposeButtonBg": "NIB_FOCUS", "historyComposeButtonBgOver": "NIB_BLUE",
+        "historyComposeButtonBgRipple": "NIB_SELECTION", "historyComposeIconFg": "NIB_TEXT_MUTED",
+        "historyComposeIconFgOver": "NIB_TEXT", "msgInBg": "NIB_IN_BUBBLE",
+        "msgInBgSelected": "NIB_SELECTION", "msgOutBg": "NIB_OUT_BUBBLE",
+        "msgOutBgSelected": "NIB_SELECTION", "msgInDateFg": "NIB_TEXT_MUTED",
+        "msgInDateFgSelected": "NIB_SELECTION_TEXT", "msgOutDateFg": "NIB_TEXT_MUTED",
+        "msgOutDateFgSelected": "NIB_SELECTION_TEXT", "msgInServiceFg": "NIB_TEXT_SECONDARY",
+        "msgInServiceFgSelected": "NIB_SELECTION_TEXT", "msgOutServiceFg": "NIB_TEXT_SECONDARY",
+        "msgOutServiceFgSelected": "NIB_SELECTION_TEXT", "msgInReplyBarColor": "NIB_BLUE",
+        "msgInReplyBarSelColor": "NIB_SELECTION_TEXT", "msgOutReplyBarColor": "NIB_MOSS",
+        "msgOutReplyBarSelColor": "NIB_SELECTION_TEXT", "msgServiceBg": "NIB_SURFACE",
+        "msgServiceBgSelected": "NIB_SELECTION", "msgServiceFg": "NIB_TEXT_SECONDARY",
+        "notificationBg": "NIB_FLOATING", "notificationSampleNameFg": "NIB_TEXT",
+        "notificationSampleTextFg": "NIB_TEXT_MUTED", "toastBg": "NIB_FLOATING",
+        "toastFg": "NIB_TEXT", "reportSpamBg": "NIB_SURFACE", "reportSpamFg": "NIB_ERROR",
+    }
+    peer_colors = ("NIB_BURGUNDY", "NIB_RUST", "NIB_AMBER", "NIB_MOSS", "NIB_TEAL", "NIB_BLUE", "NIB_VIOLET", "NIB_TEXT_SECONDARY")
+    for index, color in enumerate(peer_colors, start=1):
+        aliases[f"historyPeer{index}NameFg"] = color
+        aliases[f"historyPeer{index}NameFgSelected"] = "NIB_SELECTION_TEXT"
+        aliases[f"historyPeer{index}UserpicBg"] = color
+    lines = [f"// {MARKER}", f"// Nib {style.title()} for Telegram Desktop", ""]
+    lines.extend(f"{name}: {value};" for name, value in constants.items())
+    lines.append("")
+    lines.extend(f"{name}: {value};" for name, value in aliases.items())
+    return "\n".join(lines) + "\n"
+
+
 def generated_lite_xl(style: str, mode: dict[str, Any]) -> str:
     def color(value: str) -> str:
         return f'{{ common.color "{value}" }}'
@@ -1930,6 +2599,10 @@ def render_files(palette: dict[str, Any]) -> dict[Path, str]:
         Path("wezterm/Nib Dark.toml"): generated_wezterm("dark", palette["modes"]["dark"]),
         Path("iterm2/Nib Light.itermcolors"): generated_iterm2(palette["modes"]["light"]),
         Path("iterm2/Nib Dark.itermcolors"): generated_iterm2(palette["modes"]["dark"]),
+        Path("macos-terminal/Nib Light.terminal"): generated_macos_terminal("light", palette["modes"]["light"]),
+        Path("macos-terminal/Nib Dark.terminal"): generated_macos_terminal("dark", palette["modes"]["dark"]),
+        Path("konsole/Nib Light.colorscheme"): generated_konsole("light", palette["modes"]["light"]),
+        Path("konsole/Nib Dark.colorscheme"): generated_konsole("dark", palette["modes"]["dark"]),
         Path("windows-terminal/nib-light.json"): generated_windows_terminal("light", palette["modes"]["light"]),
         Path("windows-terminal/nib-dark.json"): generated_windows_terminal("dark", palette["modes"]["dark"]),
         Path("warp-terminal/nib-light.yaml"): generated_warp("light", palette["modes"]["light"]),
@@ -1946,6 +2619,8 @@ def render_files(palette: dict[str, Any]) -> dict[Path, str]:
         Path("tmux/nib-dark.conf"): generated_tmux("dark", palette["modes"]["dark"]),
         Path("pywal/nib-light.json"): generated_pywal(palette["modes"]["light"]),
         Path("pywal/nib-dark.json"): generated_pywal(palette["modes"]["dark"]),
+        Path("yazi/nib-light.toml"): generated_yazi("light", palette["modes"]["light"]),
+        Path("yazi/nib-dark.toml"): generated_yazi("dark", palette["modes"]["dark"]),
         Path("css/nib.css"): generated_css(palette),
         Path("tailwind/nib.css"): generated_tailwind(),
         Path("zellij/nib.kdl"): generated_zellij(palette),
@@ -1972,6 +2647,16 @@ def render_files(palette: dict[str, Any]) -> dict[Path, str]:
         Path("lite-xl/nib-dark.lua"): generated_lite_xl("dark", palette["modes"]["dark"]),
         Path("intellij/Nib Light.icls"): generated_intellij("light", palette["modes"]["light"]),
         Path("intellij/Nib Dark.icls"): generated_intellij("dark", palette["modes"]["dark"]),
+        Path("obsidian/Nib/manifest.json"): generated_obsidian_manifest(palette["meta"]),
+        Path("obsidian/Nib/versions.json"): generated_obsidian_versions(palette["meta"]),
+        Path("obsidian/Nib/theme.css"): generated_obsidian_theme(palette),
+        Path("discord/Nib.theme.css"): generated_discord_theme(palette),
+        Path("slack/nib-light.json"): generated_slack_slick_theme("light", palette["modes"]["light"]),
+        Path("slack/nib-dark.json"): generated_slack_slick_theme("dark", palette["modes"]["dark"]),
+        Path("slack/nib-light.txt"): generated_slack_legacy_theme(palette["modes"]["light"]),
+        Path("slack/nib-dark.txt"): generated_slack_legacy_theme(palette["modes"]["dark"]),
+        Path("telegram/Nib Light.tdesktop-theme"): generated_telegram_theme("light", palette["modes"]["light"]),
+        Path("telegram/Nib Dark.tdesktop-theme"): generated_telegram_theme("dark", palette["modes"]["dark"]),
         Path("dist/nib-palette.json"): generated_export(palette),
         Path("docs/generated/CONTRAST.md"): generated_contrast(palette),
         Path("docs/generated/ANSI.md"): generated_ansi(palette),
