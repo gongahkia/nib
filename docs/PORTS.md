@@ -6,6 +6,12 @@ them.
 
 ## Editors
 
+### Obsidian
+
+Nib is a paired app theme, not only an editor palette. See the dedicated
+[Obsidian guide](OBSIDIAN.md) for the vault-local installation and theme
+gallery status.
+
 ### IntelliJ Platform IDEs
 
 Open **Settings → Editor → Color Scheme**, use the scheme menu's **Import
@@ -26,6 +32,29 @@ The optional official `select_colorscheme` plugin can select installed themes
 through the command palette.
 
 ## Terminals
+
+### macOS Terminal
+
+Open **Terminal → Settings → Profiles**, open the action menu below the
+profiles list, choose **Import…**, and select `macos-terminal/Nib
+Light.terminal` or `macos-terminal/Nib Dark.terminal`. Importing both creates
+two profiles so macOS Terminal can switch between them manually.
+
+The profiles include the foreground, background, cursor, selection, and all
+sixteen ANSI colours. Importing does not make either profile the default.
+
+### Konsole
+
+Copy both `.colorscheme` files to the Konsole data directory:
+
+```sh
+mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}/konsole"
+cp konsole/*.colorscheme "${XDG_DATA_HOME:-$HOME/.local/share}/konsole/"
+```
+
+In Konsole, edit a profile, open **Appearance**, and select **Nib Light** or
+**Nib Dark**. These files contain regular, faint, and intense forms of all
+eight ANSI slots.
 
 ### Alacritty
 
@@ -135,6 +164,20 @@ Copy `zellij/nib.kdl` to the Zellij themes directory and select a variant in
 theme "nib-dark"
 ```
 
+### Yazi
+
+Yazi reads one active `theme.toml`. Copy the desired generated variant into
+its configuration directory:
+
+```sh
+mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}/yazi"
+cp yazi/nib-dark.toml "${XDG_CONFIG_HOME:-$HOME/.config}/yazi/theme.toml"
+```
+
+Use `nib-light.toml` instead for a light terminal. The themes cover the
+manager, tabs, modes, status bar, dialogs, notifications, completion, tasks,
+help, and file-type rules using Yazi's current theme schema.
+
 ### Pywal
 
 Pywal is archived upstream but still accepts predefined JSON themes:
@@ -152,3 +195,9 @@ with `prefers-color-scheme` and accepts explicit `data-nib-theme="light"` or
 For Tailwind CSS v4, import `tailwind/nib.css`. Its `@theme inline` block makes
 the semantic roles available as utilities such as `bg-nib-background`,
 `text-nib-foreground`, and `border-nib-border`.
+
+## Messaging
+
+Telegram Desktop has a native Nib theme. Discord and Slack require either a
+third-party loader or Slack's more limited native custom-colour importer. See
+the [messaging guide](MESSAGING.md) before installing those files.
