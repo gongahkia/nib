@@ -532,7 +532,21 @@ def verify_preview() -> None:
     comparison_data = json.loads((ROOT / "palette" / "comparisons.json").read_text(encoding="utf-8"))
     themes = comparison_data.get("themes", [])
     require(
-        [theme.get("slug") for theme in themes] == ["flexoki", "solarized", "everforest", "rose-pine", "kanagawa", "gruvbox"],
+        [theme.get("slug") for theme in themes]
+        == [
+            "flexoki",
+            "solarized",
+            "everforest",
+            "rose-pine",
+            "kanagawa",
+            "gruvbox",
+            "papercolor",
+            "melange",
+            "ayu",
+            "tokyo-night",
+            "catppuccin",
+            "modus",
+        ],
         "comparison palette set or order changed unexpectedly",
     )
     required_mode_keys = {"variant", "background", "surface", "foreground", "muted", "accents"}

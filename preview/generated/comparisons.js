@@ -247,6 +247,252 @@ window.NIB_COMPARISONS = {
       "name": "Gruvbox",
       "slug": "gruvbox",
       "source": "https://github.com/morhetz/gruvbox/blob/master/colors/gruvbox.vim"
+    },
+    {
+      "modes": {
+        "dark": {
+          "accents": {
+            "blue": "#5FAFD7",
+            "cyan": "#00AFAF",
+            "green": "#5FAF00",
+            "magenta": "#FF5FAF",
+            "orange": "#D7875F",
+            "purple": "#AF87D7",
+            "red": "#AF005F",
+            "yellow": "#D7AF5F"
+          },
+          "background": "#1C1C1C",
+          "foreground": "#D0D0D0",
+          "muted": "#808080",
+          "surface": "#303030",
+          "variant": "Dark"
+        },
+        "light": {
+          "accents": {
+            "blue": "#0087AF",
+            "cyan": "#005F87",
+            "green": "#008700",
+            "magenta": "#D70087",
+            "orange": "#D75F00",
+            "purple": "#8700AF",
+            "red": "#AF0000",
+            "yellow": "#5F8700"
+          },
+          "background": "#EEEEEE",
+          "foreground": "#444444",
+          "muted": "#878787",
+          "surface": "#E4E4E4",
+          "variant": "Light"
+        }
+      },
+      "name": "PaperColor",
+      "slug": "papercolor",
+      "source": "https://github.com/NLKNguyen/papercolor-theme/blob/master/colors/PaperColor.vim"
+    },
+    {
+      "modes": {
+        "dark": {
+          "accents": {
+            "blue": "#7F91B2",
+            "cyan": "#7B9695",
+            "green": "#78997A",
+            "magenta": "#B380B0",
+            "orange": "#E49B5D",
+            "purple": "#CF9BC2",
+            "red": "#BD8183",
+            "yellow": "#EBC06D"
+          },
+          "background": "#292522",
+          "foreground": "#ECE1D7",
+          "muted": "#867462",
+          "surface": "#34302C",
+          "variant": "Dark"
+        },
+        "light": {
+          "accents": {
+            "blue": "#7892BD",
+            "cyan": "#739797",
+            "green": "#6E9B72",
+            "magenta": "#BE79BB",
+            "orange": "#BC5C00",
+            "purple": "#904180",
+            "red": "#C77B8B",
+            "yellow": "#A06D00"
+          },
+          "background": "#F1F1F1",
+          "foreground": "#54433A",
+          "muted": "#7D6658",
+          "surface": "#E9E1DB",
+          "variant": "Light"
+        }
+      },
+      "name": "M\u00e9lange",
+      "slug": "melange",
+      "source": "https://github.com/savq/melange-nvim"
+    },
+    {
+      "modes": {
+        "dark": {
+          "accents": {
+            "blue": "#59C2FF",
+            "cyan": "#95E6CB",
+            "green": "#AAD94C",
+            "magenta": "#F29668",
+            "orange": "#FF8F40",
+            "purple": "#D2A6FF",
+            "red": "#F07178",
+            "yellow": "#FFB454"
+          },
+          "background": "#10141C",
+          "foreground": "#BFBDB6",
+          "muted": "#5A6378",
+          "surface": "#141821",
+          "variant": "Dark"
+        },
+        "light": {
+          "accents": {
+            "blue": "#22A4E6",
+            "cyan": "#4CBF99",
+            "green": "#86B300",
+            "magenta": "#F2A191",
+            "orange": "#FA8532",
+            "purple": "#A37ACC",
+            "red": "#F07171",
+            "yellow": "#EBA400"
+          },
+          "background": "#FCFCFC",
+          "foreground": "#5C6166",
+          "muted": "#828E9F",
+          "surface": "#F8F9FA",
+          "variant": "Light"
+        }
+      },
+      "name": "Ayu",
+      "slug": "ayu",
+      "source": "https://github.com/ayu-theme/ayu-colors"
+    },
+    {
+      "modes": {
+        "dark": {
+          "accents": {
+            "blue": "#7AA2F7",
+            "cyan": "#7DCFFF",
+            "green": "#9ECE6A",
+            "magenta": "#BB9AF7",
+            "orange": "#FF9E64",
+            "purple": "#9D7CD8",
+            "red": "#F7768E",
+            "yellow": "#E0AF68"
+          },
+          "background": "#1A1B26",
+          "foreground": "#C0CAF5",
+          "muted": "#565F89",
+          "surface": "#292E42",
+          "variant": "Night"
+        },
+        "light": {
+          "accents": {
+            "blue": "#2E7DE9",
+            "cyan": "#007197",
+            "green": "#587539",
+            "magenta": "#9854F1",
+            "orange": "#B15C00",
+            "purple": "#7847BD",
+            "red": "#F52A65",
+            "yellow": "#8C6C3E"
+          },
+          "background": "#E1E2E7",
+          "foreground": "#3760BF",
+          "muted": "#848CB5",
+          "surface": "#D0D5E3",
+          "variant": "Day"
+        }
+      },
+      "name": "Tokyo Night",
+      "slug": "tokyo-night",
+      "source": "https://github.com/folke/tokyonight.nvim"
+    },
+    {
+      "modes": {
+        "dark": {
+          "accents": {
+            "blue": "#89B4FA",
+            "cyan": "#94E2D5",
+            "green": "#A6E3A1",
+            "magenta": "#F5C2E7",
+            "orange": "#FAB387",
+            "purple": "#CBA6F7",
+            "red": "#F38BA8",
+            "yellow": "#F9E2AF"
+          },
+          "background": "#1E1E2E",
+          "foreground": "#CDD6F4",
+          "muted": "#7F849C",
+          "surface": "#313244",
+          "variant": "Mocha"
+        },
+        "light": {
+          "accents": {
+            "blue": "#1E66F5",
+            "cyan": "#179299",
+            "green": "#40A02B",
+            "magenta": "#EA76CB",
+            "orange": "#FE640B",
+            "purple": "#8839EF",
+            "red": "#D20F39",
+            "yellow": "#DF8E1D"
+          },
+          "background": "#EFF1F5",
+          "foreground": "#4C4F69",
+          "muted": "#8C8FA1",
+          "surface": "#E6E9EF",
+          "variant": "Latte"
+        }
+      },
+      "name": "Catppuccin",
+      "slug": "catppuccin",
+      "source": "https://github.com/catppuccin/catppuccin"
+    },
+    {
+      "modes": {
+        "dark": {
+          "accents": {
+            "blue": "#2FAFFF",
+            "cyan": "#00D3D0",
+            "green": "#44BC44",
+            "magenta": "#FEACD0",
+            "orange": "#FEC43F",
+            "purple": "#B6A0FF",
+            "red": "#FF5F59",
+            "yellow": "#D0BC00"
+          },
+          "background": "#000000",
+          "foreground": "#FFFFFF",
+          "muted": "#989898",
+          "surface": "#1E1E1E",
+          "variant": "Vivendi"
+        },
+        "light": {
+          "accents": {
+            "blue": "#0031A9",
+            "cyan": "#005E8B",
+            "green": "#006800",
+            "magenta": "#721045",
+            "orange": "#884900",
+            "purple": "#531AB6",
+            "red": "#A60000",
+            "yellow": "#6F5500"
+          },
+          "background": "#FFFFFF",
+          "foreground": "#000000",
+          "muted": "#595959",
+          "surface": "#F2F2F2",
+          "variant": "Operandi"
+        }
+      },
+      "name": "Modus",
+      "slug": "modus",
+      "source": "https://github.com/protesilaos/modus-themes/blob/main/modus-themes.el"
     }
   ]
 };

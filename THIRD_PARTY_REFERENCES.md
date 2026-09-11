@@ -148,6 +148,12 @@ are maintained in `palette/comparisons.json`; none feeds Nib’s generated theme
 | Rosé Pine | <https://github.com/rose-pine/neovim/blob/main/lua/rose-pine/palette.lua> | MIT |
 | Kanagawa | <https://github.com/rebelot/kanagawa.nvim/blob/master/lua/kanagawa/colors.lua> | MIT |
 | Gruvbox | <https://github.com/morhetz/gruvbox/blob/master/colors/gruvbox.vim> | MIT |
+| PaperColor | <https://github.com/NLKNguyen/papercolor-theme/blob/master/colors/PaperColor.vim> | MIT |
+| Mélange | <https://github.com/savq/melange-nvim> | MIT |
+| Ayu | <https://github.com/ayu-theme/ayu-colors> | MIT |
+| Tokyo Night | <https://github.com/folke/tokyonight.nvim> | Apache-2.0 |
+| Catppuccin | <https://github.com/catppuccin/catppuccin> | MIT |
+| Modus | <https://github.com/protesilaos/modus-themes/blob/main/modus-themes.el> | GPL-3.0 |
 
 - **Exact reusable values:** background, surface, foreground, muted, and eight
   representative accent values for each displayed variant, recorded verbatim

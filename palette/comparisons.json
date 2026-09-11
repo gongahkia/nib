@@ -245,6 +245,252 @@
           }
         }
       }
+    },
+    {
+      "slug": "papercolor",
+      "name": "PaperColor",
+      "source": "https://github.com/NLKNguyen/papercolor-theme/blob/master/colors/PaperColor.vim",
+      "modes": {
+        "light": {
+          "variant": "Light",
+          "background": "#EEEEEE",
+          "surface": "#E4E4E4",
+          "foreground": "#444444",
+          "muted": "#878787",
+          "accents": {
+            "red": "#AF0000",
+            "orange": "#D75F00",
+            "yellow": "#5F8700",
+            "green": "#008700",
+            "cyan": "#005F87",
+            "blue": "#0087AF",
+            "purple": "#8700AF",
+            "magenta": "#D70087"
+          }
+        },
+        "dark": {
+          "variant": "Dark",
+          "background": "#1C1C1C",
+          "surface": "#303030",
+          "foreground": "#D0D0D0",
+          "muted": "#808080",
+          "accents": {
+            "red": "#AF005F",
+            "orange": "#D7875F",
+            "yellow": "#D7AF5F",
+            "green": "#5FAF00",
+            "cyan": "#00AFAF",
+            "blue": "#5FAFD7",
+            "purple": "#AF87D7",
+            "magenta": "#FF5FAF"
+          }
+        }
+      }
+    },
+    {
+      "slug": "melange",
+      "name": "Mélange",
+      "source": "https://github.com/savq/melange-nvim",
+      "modes": {
+        "light": {
+          "variant": "Light",
+          "background": "#F1F1F1",
+          "surface": "#E9E1DB",
+          "foreground": "#54433A",
+          "muted": "#7D6658",
+          "accents": {
+            "red": "#C77B8B",
+            "orange": "#BC5C00",
+            "yellow": "#A06D00",
+            "green": "#6E9B72",
+            "cyan": "#739797",
+            "blue": "#7892BD",
+            "purple": "#904180",
+            "magenta": "#BE79BB"
+          }
+        },
+        "dark": {
+          "variant": "Dark",
+          "background": "#292522",
+          "surface": "#34302C",
+          "foreground": "#ECE1D7",
+          "muted": "#867462",
+          "accents": {
+            "red": "#BD8183",
+            "orange": "#E49B5D",
+            "yellow": "#EBC06D",
+            "green": "#78997A",
+            "cyan": "#7B9695",
+            "blue": "#7F91B2",
+            "purple": "#CF9BC2",
+            "magenta": "#B380B0"
+          }
+        }
+      }
+    },
+    {
+      "slug": "ayu",
+      "name": "Ayu",
+      "source": "https://github.com/ayu-theme/ayu-colors",
+      "modes": {
+        "light": {
+          "variant": "Light",
+          "background": "#FCFCFC",
+          "surface": "#F8F9FA",
+          "foreground": "#5C6166",
+          "muted": "#828E9F",
+          "accents": {
+            "red": "#F07171",
+            "orange": "#FA8532",
+            "yellow": "#EBA400",
+            "green": "#86B300",
+            "cyan": "#4CBF99",
+            "blue": "#22A4E6",
+            "purple": "#A37ACC",
+            "magenta": "#F2A191"
+          }
+        },
+        "dark": {
+          "variant": "Dark",
+          "background": "#10141C",
+          "surface": "#141821",
+          "foreground": "#BFBDB6",
+          "muted": "#5A6378",
+          "accents": {
+            "red": "#F07178",
+            "orange": "#FF8F40",
+            "yellow": "#FFB454",
+            "green": "#AAD94C",
+            "cyan": "#95E6CB",
+            "blue": "#59C2FF",
+            "purple": "#D2A6FF",
+            "magenta": "#F29668"
+          }
+        }
+      }
+    },
+    {
+      "slug": "tokyo-night",
+      "name": "Tokyo Night",
+      "source": "https://github.com/folke/tokyonight.nvim",
+      "modes": {
+        "light": {
+          "variant": "Day",
+          "background": "#E1E2E7",
+          "surface": "#D0D5E3",
+          "foreground": "#3760BF",
+          "muted": "#848CB5",
+          "accents": {
+            "red": "#F52A65",
+            "orange": "#B15C00",
+            "yellow": "#8C6C3E",
+            "green": "#587539",
+            "cyan": "#007197",
+            "blue": "#2E7DE9",
+            "purple": "#7847BD",
+            "magenta": "#9854F1"
+          }
+        },
+        "dark": {
+          "variant": "Night",
+          "background": "#1A1B26",
+          "surface": "#292E42",
+          "foreground": "#C0CAF5",
+          "muted": "#565F89",
+          "accents": {
+            "red": "#F7768E",
+            "orange": "#FF9E64",
+            "yellow": "#E0AF68",
+            "green": "#9ECE6A",
+            "cyan": "#7DCFFF",
+            "blue": "#7AA2F7",
+            "purple": "#9D7CD8",
+            "magenta": "#BB9AF7"
+          }
+        }
+      }
+    },
+    {
+      "slug": "catppuccin",
+      "name": "Catppuccin",
+      "source": "https://github.com/catppuccin/catppuccin",
+      "modes": {
+        "light": {
+          "variant": "Latte",
+          "background": "#EFF1F5",
+          "surface": "#E6E9EF",
+          "foreground": "#4C4F69",
+          "muted": "#8C8FA1",
+          "accents": {
+            "red": "#D20F39",
+            "orange": "#FE640B",
+            "yellow": "#DF8E1D",
+            "green": "#40A02B",
+            "cyan": "#179299",
+            "blue": "#1E66F5",
+            "purple": "#8839EF",
+            "magenta": "#EA76CB"
+          }
+        },
+        "dark": {
+          "variant": "Mocha",
+          "background": "#1E1E2E",
+          "surface": "#313244",
+          "foreground": "#CDD6F4",
+          "muted": "#7F849C",
+          "accents": {
+            "red": "#F38BA8",
+            "orange": "#FAB387",
+            "yellow": "#F9E2AF",
+            "green": "#A6E3A1",
+            "cyan": "#94E2D5",
+            "blue": "#89B4FA",
+            "purple": "#CBA6F7",
+            "magenta": "#F5C2E7"
+          }
+        }
+      }
+    },
+    {
+      "slug": "modus",
+      "name": "Modus",
+      "source": "https://github.com/protesilaos/modus-themes/blob/main/modus-themes.el",
+      "modes": {
+        "light": {
+          "variant": "Operandi",
+          "background": "#FFFFFF",
+          "surface": "#F2F2F2",
+          "foreground": "#000000",
+          "muted": "#595959",
+          "accents": {
+            "red": "#A60000",
+            "orange": "#884900",
+            "yellow": "#6F5500",
+            "green": "#006800",
+            "cyan": "#005E8B",
+            "blue": "#0031A9",
+            "purple": "#531AB6",
+            "magenta": "#721045"
+          }
+        },
+        "dark": {
+          "variant": "Vivendi",
+          "background": "#000000",
+          "surface": "#1E1E1E",
+          "foreground": "#FFFFFF",
+          "muted": "#989898",
+          "accents": {
+            "red": "#FF5F59",
+            "orange": "#FEC43F",
+            "yellow": "#D0BC00",
+            "green": "#44BC44",
+            "cyan": "#00D3D0",
+            "blue": "#2FAFFF",
+            "purple": "#B6A0FF",
+            "magenta": "#FEACD0"
+          }
+        }
+      }
     }
   ]
 }
