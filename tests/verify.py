@@ -155,8 +155,17 @@ def verify_generation() -> None:
         Path("pywal/nib-dark.json"),
         Path("iterm2/Nib Light.itermcolors"),
         Path("iterm2/Nib Dark.itermcolors"),
+        Path("macos-terminal/Nib Light.terminal"),
+        Path("macos-terminal/Nib Dark.terminal"),
         Path("sublime/Nib Light.sublime-color-scheme"),
         Path("sublime/Nib Dark.sublime-color-scheme"),
+        Path("obsidian/Nib/manifest.json"),
+        Path("obsidian/Nib/versions.json"),
+        Path("discord/Nib.theme.css"),
+        Path("slack/nib-light.json"),
+        Path("slack/nib-dark.json"),
+        Path("slack/nib-light.txt"),
+        Path("slack/nib-dark.txt"),
     }
     for relative, content in first.items():
         if relative not in marker_exempt:
