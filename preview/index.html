@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <link rel="icon" href="data:,">
-    <title>Theme comparison</title>
+    <title>Blind theme comparison</title>
     <link rel="stylesheet" href="generated/palette.css">
     <link rel="stylesheet" href="style.css">
     <script defer src="generated/palette.js"></script>
@@ -13,34 +13,33 @@
     <script defer src="app.js"></script>
   </head>
   <body>
-    <a class="skip-link" href="#comparison-grid">Skip to comparisons</a>
+    <main class="blind-audit" aria-labelledby="audit-title">
+      <header class="audit-meta">
+        <div class="progress-summary">
+          <span id="audit-progress">Preparing shuffled test</span>
+          <div class="progress-track" aria-hidden="true"><i id="progress-fill"></i></div>
+        </div>
+        <div class="audit-tools">
+          <button type="button" class="quiet-button" id="copy-audit" hidden>Copy results</button>
+          <button type="button" class="quiet-button" id="export-audit" hidden>Export results</button>
+          <button type="button" class="quiet-button" id="restart-audit">Shuffle &amp; restart</button>
+        </div>
+      </header>
 
-    <header class="audit-bar">
-      <h1>Theme comparison</h1>
-      <div class="controls" aria-label="Comparison controls">
-        <fieldset>
-          <legend>Mode</legend>
-          <button type="button" class="mode-button is-active" data-mode="both" aria-pressed="true">Both</button>
-          <button type="button" class="mode-button" data-mode="light" aria-pressed="false">Light</button>
-          <button type="button" class="mode-button" data-mode="dark" aria-pressed="false">Dark</button>
-        </fieldset>
-        <label for="sample-select">Sample
-          <select id="sample-select">
-            <option value="typescript">TypeScript</option>
-            <option value="rust">Rust</option>
-            <option value="python">Python</option>
-            <option value="lua">Lua</option>
-            <option value="diff">Git diff</option>
-            <option value="markdown">Markdown</option>
-          </select>
-        </label>
-        <span class="mapping-label">Normalized token roles</span>
-      </div>
-      <p id="control-status" class="sr-only" aria-live="polite">Both modes visible. TypeScript sample selected.</p>
-    </header>
+      <section class="audit-step">
+        <div class="step-heading">
+          <span class="step-number" id="step-number"></span>
+          <h1 id="audit-title">Choose the light mode</h1>
+          <p id="audit-instruction">Choose only by appearance. Theme identities are hidden.</p>
+        </div>
+        <div class="blind-stage" id="blind-stage"></div>
+      </section>
 
-    <main>
-      <section class="comparison-grid" id="comparison-grid" aria-label="Colour scheme comparisons"></section>
+      <footer class="audit-actions">
+        <button type="button" class="quiet-button" id="skip-matchup">Skip matchup</button>
+        <span id="audit-status" aria-live="polite"></span>
+        <button type="button" class="primary-button" id="continue-audit" disabled>Continue to dark</button>
+      </footer>
     </main>
   </body>
 </html>

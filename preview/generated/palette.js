@@ -3,7 +3,7 @@ window.NIB_PALETTE = {
   "$schema": "./schema.json",
   "meta": {
     "color_space": "sRGB",
-    "description": "Fountain-pen ink on warm ivory and near-black navy paper.",
+    "description": "Fountain-pen ink on cool-neutral paper and a near-black chalkboard.",
     "minimum_emacs": "27.1",
     "minimum_ghostty": "1.3.0",
     "minimum_neovim": "0.10.0",
@@ -15,161 +15,161 @@ window.NIB_PALETTE = {
   },
   "modes": {
     "dark": {
-      "amber": "#D0AE68",
+      "amber": "#C5A667",
       "ansi": [
         {
-          "hex": "#1A2731",
+          "hex": "#232622",
           "index": 0,
           "name": "black"
         },
         {
-          "hex": "#CE737B",
+          "hex": "#C1777D",
           "index": 1,
           "name": "red"
         },
         {
-          "hex": "#9CAF68",
+          "hex": "#98A56C",
           "index": 2,
           "name": "green"
         },
         {
-          "hex": "#C4A15D",
+          "hex": "#B89A60",
           "index": 3,
           "name": "yellow"
         },
         {
-          "hex": "#78A8CA",
+          "hex": "#779BAF",
           "index": 4,
           "name": "blue"
         },
         {
-          "hex": "#B08FB9",
+          "hex": "#A88FAF",
           "index": 5,
           "name": "magenta"
         },
         {
-          "hex": "#62AAA5",
+          "hex": "#669D97",
           "index": 6,
           "name": "cyan"
         },
         {
-          "hex": "#C2C5BE",
+          "hex": "#B9BDB6",
           "index": 7,
           "name": "white"
         },
         {
-          "hex": "#74838A",
+          "hex": "#7C8580",
           "index": 8,
           "name": "bright black"
         },
         {
-          "hex": "#E89095",
+          "hex": "#D48A90",
           "index": 9,
           "name": "bright red"
         },
         {
-          "hex": "#B8C97A",
+          "hex": "#AEBB79",
           "index": 10,
           "name": "bright green"
         },
         {
-          "hex": "#DDBD74",
+          "hex": "#CDAE6C",
           "index": 11,
           "name": "bright yellow"
         },
         {
-          "hex": "#94C2DE",
+          "hex": "#8AAFC2",
           "index": 12,
           "name": "bright blue"
         },
         {
-          "hex": "#C7A8CF",
+          "hex": "#BBA0C1",
           "index": 13,
           "name": "bright magenta"
         },
         {
-          "hex": "#7AC2BB",
+          "hex": "#76AEA7",
           "index": 14,
           "name": "bright cyan"
         },
         {
-          "hex": "#EEE9DC",
+          "hex": "#DDDCD2",
           "index": 15,
           "name": "bright white"
         }
       ],
-      "background": "#0D1822",
+      "background": "#181A19",
       "blue_ink": {
-        "bright": "#A1C5DE",
-        "deep": "#719CBC",
-        "primary": "#89B6D2"
+        "bright": "#95B7C8",
+        "deep": "#7795A7",
+        "primary": "#83A8BB"
       },
       "border": {
-        "default": "#56676F",
-        "focus": "#79A9C8",
-        "subtle": "#3B4C55"
+        "default": "#626A64",
+        "focus": "#779AA8",
+        "subtle": "#424A44"
       },
-      "burgundy": "#D18A96",
-      "current_line": "#142630",
+      "burgundy": "#C17E8B",
+      "current_line": "#222620",
       "cursor": {
-        "background": "#D7C98B",
-        "foreground": "#0D1822"
+        "background": "#C9BE83",
+        "foreground": "#181A19"
       },
       "diagnostic": {
-        "error": "#E08B91",
-        "hint": "#70B6AE",
-        "information": "#89B6D2",
-        "success": "#ADBD76",
-        "warning": "#D3B066"
+        "error": "#CF8389",
+        "hint": "#6FA8A0",
+        "information": "#83A8BB",
+        "success": "#A4B073",
+        "warning": "#C6A565"
       },
       "diff": {
-        "add": "#1D332D",
-        "add_text": "#28513F",
-        "change": "#1C303D",
-        "change_text": "#27495B",
-        "delete": "#3A282D",
-        "delete_text": "#59323A",
-        "foreground": "#D7D8CF"
+        "add": "#21342A",
+        "add_text": "#2B553A",
+        "change": "#273137",
+        "change_text": "#344752",
+        "delete": "#3A272D",
+        "delete_text": "#5C333E",
+        "foreground": "#CFD1C9"
       },
-      "focus": "#87B4D0",
+      "focus": "#82A6B6",
       "foreground": {
-        "disabled": "#748085",
-        "muted": "#9CA7A8",
-        "primary": "#E6E1D3",
-        "secondary": "#C4C4BA"
+        "disabled": "#707772",
+        "muted": "#969C97",
+        "primary": "#DDDCD2",
+        "secondary": "#BABCB4"
       },
-      "graphite": "#9DA9AD",
-      "hyperlink": "#8BC1DF",
+      "graphite": "#959C98",
+      "hyperlink": "#8CB2C5",
       "match": {
-        "background": "#364B38",
-        "foreground": "#E6E1D3"
+        "background": "#394835",
+        "foreground": "#DDDCD2"
       },
       "moss": {
-        "muted": "#929F65",
-        "primary": "#ACBA72"
+        "muted": "#899463",
+        "primary": "#A3AE72"
       },
-      "rust": "#D08A6F",
+      "rust": "#C28168",
       "search": {
-        "background": "#5C522B",
-        "current_background": "#C39A45",
-        "current_foreground": "#0D1822",
-        "foreground": "#F0EBDD"
+        "background": "#55502F",
+        "current_background": "#B08E4F",
+        "current_foreground": "#181A19",
+        "foreground": "#E5E2D8"
       },
       "selection": {
-        "background": "#2E5860",
-        "foreground": "#F0EBDD"
+        "background": "#3A5550",
+        "foreground": "#E5E2D8"
       },
-      "sepia": "#BBA080",
+      "sepia": "#AE967B",
       "surface": {
-        "elevated": "#13212C",
-        "floating": "#182834",
-        "subtle": "#1E2E39"
+        "elevated": "#20231F",
+        "floating": "#272A25",
+        "subtle": "#2D302B"
       },
       "teal": {
-        "muted": "#679A96",
-        "primary": "#70B6AE"
+        "muted": "#648F8B",
+        "primary": "#6FA8A0"
       },
-      "violet": "#BAA0C4"
+      "violet": "#AF97B7"
     },
     "light": {
       "amber": "#77560F",
@@ -255,7 +255,7 @@ window.NIB_PALETTE = {
           "name": "bright white"
         }
       ],
-      "background": "#F4EEDC",
+      "background": "#F2F1EC",
       "blue_ink": {
         "bright": "#1F668E",
         "deep": "#173B59",
@@ -267,10 +267,10 @@ window.NIB_PALETTE = {
         "subtle": "#AAA18D"
       },
       "burgundy": "#7C3448",
-      "current_line": "#E8E0CD",
+      "current_line": "#E4E7E4",
       "cursor": {
         "background": "#244D68",
-        "foreground": "#F4EEDC"
+        "foreground": "#F2F1EC"
       },
       "diagnostic": {
         "error": "#913646",
@@ -318,9 +318,9 @@ window.NIB_PALETTE = {
       },
       "sepia": "#705039",
       "surface": {
-        "elevated": "#ECE4D2",
-        "floating": "#FAF6E9",
-        "subtle": "#E3DAC5"
+        "elevated": "#E7E8E4",
+        "floating": "#FAFAF7",
+        "subtle": "#DDE1E0"
       },
       "teal": {
         "muted": "#367375",
