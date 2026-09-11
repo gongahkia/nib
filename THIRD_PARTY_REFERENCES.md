@@ -220,7 +220,7 @@ font, or runtime resource is bundled or hotlinked.
 - **URLs:** <https://docs.obsidian.md/Themes/App+themes/Build+a+theme>,
   <https://docs.obsidian.md/Themes/App+themes/Theme+guidelines>, and
   <https://github.com/obsidianmd/obsidian-sample-theme>
-- **Stated licence:** the sample theme repository is Unlicense; the linked
+- **Stated licence:** the sample theme repository is 0BSD; the linked
   documentation pages do not state a separate content licence.
 - **AI disclosure:** none stated.
 - **Visual/technical lesson:** verified the `manifest.json`, `theme.css`, and

@@ -61,8 +61,8 @@ assets. Nib does not install or vendor Slick.
 
 `telegram/Nib Light.tdesktop-theme` and `telegram/Nib Dark.tdesktop-theme` are
 native Telegram Desktop themes. In Telegram Desktop, open **Settings → Chat
-Settings → Chat background → Choose from file** and select one of them. You
-can also send the file to Saved Messages and open it there.
+background → Choose from file** and select one of them. You can also send the
+file to Saved Messages and open it there.
 
 These are plain theme files with no bundled wallpaper, so they do not need a
 ZIP container and make no network requests. Telegram does not automatically
