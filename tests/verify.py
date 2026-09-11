@@ -635,7 +635,7 @@ def verify_neovim() -> None:
 def verify_documentation() -> None:
     required = [
         "README.md", "CHANGELOG.md", "CONTRIBUTING.md", "LICENSE", "THIRD_PARTY_REFERENCES.md",
-        "docs/ACCESSIBILITY.md", "docs/GHOSTTY.md", "docs/NEOVIM.md",
+        "docs/ACCESSIBILITY.md", "docs/BLIND_AUDIT.md", "docs/GHOSTTY.md", "docs/NEOVIM.md",
         "docs/PALETTE.md", "docs/RESEARCH.md", "docs/SHADERS.md", "docs/DEVELOPMENT.md",
         "docs/EMACS.md", "docs/VSCODE.md", "docs/ZED.md",
     ]

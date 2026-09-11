@@ -55,8 +55,8 @@ mode, use `theme = nib-light` or `theme = nib-dark`. Reload the
 configuration from Ghostty after changing it.
 
 The core install has no shader, animation, transparency, font, or shell
-dependency. The canonical preview font is `AtkynsonMono Nerd Font Mono`,
-Medium, 15 pt when available; it is neither bundled nor required.
+dependency. The browser preview prefers `JetBrainsMono Nerd Font Mono`, then
+JetBrains Mono when available; neither is bundled or required.
 
 ## Existing files and removal
 

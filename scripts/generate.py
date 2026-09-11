@@ -215,12 +215,13 @@ def generated_emacs_theme(style: str, mode: dict[str, Any]) -> str:
 
     normal_vector = " ".join(json.dumps(color) for color in ansi[:8])
     terminal_vector = " ".join(["unspecified", *(json.dumps(color) for color in ansi[:8])])
+    paper = "cool-neutral paper" if style == "light" else "a near-black chalkboard"
     return (
         f";;; {theme}-theme.el --- Nib {style} colour theme -*- lexical-binding: t; -*-\n\n"
         f";; {MARKER}\n"
         ";; Package-Requires: ((emacs \"27.1\"))\n"
         ";; Keywords: faces, theme\n\n"
-        f"(deftheme {theme}\n  \"Nib {style}: fountain-pen ink on {'warm ivory' if style == 'light' else 'near-black navy'} paper.\")\n\n"
+        f"(deftheme {theme}\n  \"Nib {style}: fountain-pen ink on {paper}.\")\n\n"
         "(custom-theme-set-faces\n"
         f" '{theme}\n"
         + "\n".join(faces)

@@ -5,7 +5,7 @@
 ;; Keywords: faces, theme
 
 (deftheme nib-dark
-  "Nib dark: fountain-pen ink on near-black navy paper.")
+  "Nib dark: fountain-pen ink on a near-black chalkboard.")
 
 (custom-theme-set-faces
  'nib-dark

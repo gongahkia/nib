@@ -5,7 +5,7 @@
 ;; Keywords: faces, theme
 
 (deftheme nib-light
-  "Nib light: fountain-pen ink on warm ivory paper.")
+  "Nib light: fountain-pen ink on cool-neutral paper.")
 
 (custom-theme-set-faces
  'nib-light
