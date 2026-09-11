@@ -5,21 +5,21 @@ Indexes retain conventional terminal identities. On the light background, bright
 
 | Index | Identity | Light | Contrast | Dark | Contrast |
 | ---: | --- | --- | ---: | --- | ---: |
-| 0 | black | `#1D2B36` | 12.48:1 | `#1A2731` | 1.18:1 |
-| 1 | red | `#8D3342` | 6.75:1 | `#CE737B` | 5.43:1 |
-| 2 | green | `#526126` | 5.85:1 | `#9CAF68` | 7.47:1 |
-| 3 | yellow | `#76540B` | 5.95:1 | `#C4A15D` | 7.35:1 |
-| 4 | blue | `#285D7C` | 6.15:1 | `#78A8CA` | 7.05:1 |
-| 5 | magenta | `#70446F` | 6.60:1 | `#B08FB9` | 6.38:1 |
-| 6 | cyan | `#17666A` | 5.76:1 | `#62AAA5` | 6.67:1 |
-| 7 | white | `#4F5960` | 6.18:1 | `#C2C5BE` | 10.27:1 |
-| 8 | bright black | `#5C686E` | 4.95:1 | `#74838A` | 4.57:1 |
-| 9 | bright red | `#A22F42` | 5.99:1 | `#E89095` | 7.56:1 |
-| 10 | bright green | `#62721F` | 4.59:1 | `#B8C97A` | 9.97:1 |
-| 11 | bright yellow | `#8A5B00` | 5.06:1 | `#DDBD74` | 9.91:1 |
-| 12 | bright blue | `#176594` | 5.45:1 | `#94C2DE` | 9.42:1 |
-| 13 | bright magenta | `#82487B` | 5.73:1 | `#C7A8CF` | 8.48:1 |
-| 14 | bright cyan | `#006E74` | 5.20:1 | `#7AC2BB` | 8.76:1 |
-| 15 | bright white | `#303F49` | 9.37:1 | `#EEE9DC` | 14.80:1 |
+| 0 | black | `#1D2B36` | 12.80:1 | `#232622` | 1.14:1 |
+| 1 | red | `#8D3342` | 6.92:1 | `#C1777D` | 5.17:1 |
+| 2 | green | `#526126` | 6.00:1 | `#98A56C` | 6.61:1 |
+| 3 | yellow | `#76540B` | 6.10:1 | `#B89A60` | 6.52:1 |
+| 4 | blue | `#285D7C` | 6.30:1 | `#779BAF` | 5.91:1 |
+| 5 | magenta | `#70446F` | 6.76:1 | `#A88FAF` | 6.01:1 |
+| 6 | cyan | `#17666A` | 5.90:1 | `#669D97` | 5.69:1 |
+| 7 | white | `#4F5960` | 6.34:1 | `#B9BDB6` | 9.18:1 |
+| 8 | bright black | `#5C686E` | 5.07:1 | `#7C8580` | 4.60:1 |
+| 9 | bright red | `#A22F42` | 6.15:1 | `#D48A90` | 6.53:1 |
+| 10 | bright green | `#62721F` | 4.71:1 | `#AEBB79` | 8.48:1 |
+| 11 | bright yellow | `#8A5B00` | 5.19:1 | `#CDAE6C` | 8.22:1 |
+| 12 | bright blue | `#176594` | 5.58:1 | `#8AAFC2` | 7.49:1 |
+| 13 | bright magenta | `#82487B` | 5.87:1 | `#BBA0C1` | 7.42:1 |
+| 14 | bright cyan | `#006E74` | 5.33:1 | `#76AEA7` | 6.98:1 |
+| 15 | bright white | `#303F49` | 9.61:1 | `#DDDCD2` | 12.70:1 |
 
 ANSI index 0 intentionally remains a low-contrast near-black swatch in dark mode: terminal black is a background/building color, not a general prose color. Indices 1–15 meet the ordinary-text target against the mode background.

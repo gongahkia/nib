@@ -521,8 +521,38 @@ class PreviewParser(HTMLParser):
 def verify_preview() -> None:
     parser = PreviewParser()
     parser.feed((ROOT / "preview" / "index.html").read_text(encoding="utf-8"))
-    required_ids = {"comparison-grid", "sample-select", "control-status"}
-    require(required_ids <= parser.ids, "comparison preview is missing required structure or controls")
+    required_ids = {
+        "audit-progress",
+        "progress-fill",
+        "audit-title",
+        "blind-stage",
+        "skip-matchup",
+        "continue-audit",
+        "copy-audit",
+        "export-audit",
+        "restart-audit",
+        "audit-status",
+    }
+    require(required_ids <= parser.ids, "comparison preview is missing blind-audit structure")
+    require(
+        not ({"sample-select", "control-status"} & parser.ids),
+        "comparison preview still contains removed controls",
+    )
+    preview_script = (ROOT / "preview" / "app.js").read_text(encoding="utf-8")
+    for marker in (
+        "const typescriptSample",
+        "function shuffle",
+        "function newDraft",
+        "lightFeedback",
+        "darkFeedback",
+        "identitiesVisibleDuringTest: false",
+        "hexToOklab",
+        "localStorage",
+        "new Blob",
+    ):
+        require(marker in preview_script, f"comparison preview interaction is missing: {marker}")
+    preview_css = (ROOT / "preview" / "style.css").read_text(encoding="utf-8")
+    require("JetBrainsMono Nerd Font Mono" in preview_css, "comparison preview is missing its JetBrains Mono stack")
     require(parser.resources[:2] == ["data:,", "generated/palette.css"], "preview resource order changed unexpectedly")
     for resource in parser.resources:
         if resource.startswith(("data:", "#", "http://", "https://")):

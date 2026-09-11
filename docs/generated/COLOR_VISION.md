@@ -11,11 +11,11 @@ This deterministic screen uses full-severity linear-sRGB simulation matrices and
 | light | moss / teal | 0.101 | 0.098 | 0.100 | 0.075 |
 | light | burgundy / teal | 0.177 | 0.109 | 0.056 | 0.208 |
 | light | diff add / delete tint | 0.094 | 0.074 | 0.044 | 0.078 |
-| dark | error / success | 0.163 | 0.122 | 0.061 | 0.144 |
-| dark | error / warning | 0.126 | 0.115 | 0.082 | 0.078 |
-| dark | blue / moss | 0.138 | 0.138 | 0.139 | 0.079 |
-| dark | moss / teal | 0.103 | 0.091 | 0.105 | 0.101 |
-| dark | burgundy / teal | 0.161 | 0.082 | 0.036 | 0.204 |
-| dark | diff add / delete tint | 0.115 | 0.076 | 0.027 | 0.130 |
+| dark | error / success | 0.145 | 0.111 | 0.057 | 0.128 |
+| dark | error / warning | 0.114 | 0.106 | 0.077 | 0.072 |
+| dark | blue / moss | 0.112 | 0.111 | 0.115 | 0.068 |
+| dark | moss / teal | 0.090 | 0.078 | 0.092 | 0.089 |
+| dark | burgundy / teal | 0.147 | 0.082 | 0.032 | 0.184 |
+| dark | diff add / delete tint | 0.127 | 0.088 | 0.036 | 0.132 |
 
 Hue is never the only carrier of critical state. Diagnostics add `E`/`W`/`I`/`H` gutter signs and severity-specific undercurls; deprecated tokens use strikethrough. Diffs combine signs with separate surface and inline-text tints. Selection and search use distinct backgrounds and current-search contrast.

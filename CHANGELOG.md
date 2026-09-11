@@ -29,6 +29,6 @@ All notable changes to Nib are documented here. The format follows [Keep a Chang
 - Dependency-free Neovim colorscheme with automatic and explicit entry points, built-in UI coverage, Tree-sitter captures, LSP semantic groups, diagnostics, terminal colors, and optional plugin highlight integrations.
 - Ghostty light/dark themes, verified paired-mode example, conventional ANSI colors, and a dry-run-first installer with guarded backup behavior.
 - Static paper-grain and ink-feather shader chains in daily and showcase strengths, kept opt-in and non-animated.
-- Local static comparison preview for Nib and twelve reference palettes.
+- Blind A/B preference audit for Nib and twelve shuffled reference palettes, with randomized placement, a single light-or-dark comment requirement, resumable local progress, and JSON export for later synthesis.
 - Deterministic contrast, ANSI, and color-vision reports; multi-language fixtures; headless/runtime verification; and GitHub Actions configuration.
 - Research and licensing ledger covering technical documentation, fountain inks, and the CC0 AI-assisted Paleto references.

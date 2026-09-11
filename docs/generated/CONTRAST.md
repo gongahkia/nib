@@ -5,30 +5,30 @@ Ratios use WCAG 2 relative luminance on the authored opaque sRGB colors. Passing
 
 | Mode | Use | Foreground | Background | Ratio | Target | Result |
 | --- | --- | --- | --- | ---: | ---: | --- |
-| light | principal text | `#182A38` | `#F4EEDC` | 12.69:1 | 7.0:1 | pass |
-| light | secondary text | `#394B56` | `#F4EEDC` | 7.82:1 | 4.5:1 | pass |
-| light | comments/muted text | `#59656A` | `#F4EEDC` | 5.18:1 | 4.5:1 | pass |
-| light | deep blue ink | `#173B59` | `#F4EEDC` | 10.03:1 | 4.5:1 | pass |
-| light | blue ink | `#285D7C` | `#F4EEDC` | 6.15:1 | 4.5:1 | pass |
-| light | bright blue ink | `#1F668E` | `#F4EEDC` | 5.41:1 | 4.5:1 | pass |
-| light | moss | `#536126` | `#F4EEDC` | 5.83:1 | 4.5:1 | pass |
-| light | muted moss | `#657038` | `#F4EEDC` | 4.61:1 | 4.5:1 | pass |
-| light | teal | `#17666A` | `#F4EEDC` | 5.76:1 | 4.5:1 | pass |
-| light | muted teal | `#367375` | `#F4EEDC` | 4.68:1 | 4.5:1 | pass |
-| light | burgundy | `#7C3448` | `#F4EEDC` | 7.42:1 | 4.5:1 | pass |
-| light | rust | `#8A432C` | `#F4EEDC` | 6.20:1 | 4.5:1 | pass |
-| light | violet | `#684873` | `#F4EEDC` | 6.55:1 | 4.5:1 | pass |
-| light | amber | `#77560F` | `#F4EEDC` | 5.80:1 | 4.5:1 | pass |
-| light | sepia | `#705039` | `#F4EEDC` | 6.25:1 | 4.5:1 | pass |
-| light | graphite | `#4F5960` | `#F4EEDC` | 6.18:1 | 4.5:1 | pass |
-| light | error | `#913646` | `#F4EEDC` | 6.42:1 | 4.5:1 | pass |
-| light | warning | `#76540B` | `#F4EEDC` | 5.95:1 | 4.5:1 | pass |
-| light | information | `#285D7C` | `#F4EEDC` | 6.15:1 | 4.5:1 | pass |
-| light | hint | `#17666A` | `#F4EEDC` | 5.76:1 | 4.5:1 | pass |
-| light | success | `#526329` | `#F4EEDC` | 5.70:1 | 4.5:1 | pass |
-| light | hyperlink | `#1C5F8B` | `#F4EEDC` | 5.92:1 | 4.5:1 | pass |
-| light | boundary | `#877F6E` | `#F4EEDC` | 3.42:1 | 3.0:1 | pass |
-| light | focus boundary | `#315D78` | `#F4EEDC` | 6.10:1 | 3.0:1 | pass |
+| light | principal text | `#182A38` | `#F2F1EC` | 13.01:1 | 7.0:1 | pass |
+| light | secondary text | `#394B56` | `#F2F1EC` | 8.02:1 | 4.5:1 | pass |
+| light | comments/muted text | `#59656A` | `#F2F1EC` | 5.31:1 | 4.5:1 | pass |
+| light | deep blue ink | `#173B59` | `#F2F1EC` | 10.28:1 | 4.5:1 | pass |
+| light | blue ink | `#285D7C` | `#F2F1EC` | 6.30:1 | 4.5:1 | pass |
+| light | bright blue ink | `#1F668E` | `#F2F1EC` | 5.54:1 | 4.5:1 | pass |
+| light | moss | `#536126` | `#F2F1EC` | 5.98:1 | 4.5:1 | pass |
+| light | muted moss | `#657038` | `#F2F1EC` | 4.73:1 | 4.5:1 | pass |
+| light | teal | `#17666A` | `#F2F1EC` | 5.90:1 | 4.5:1 | pass |
+| light | muted teal | `#367375` | `#F2F1EC` | 4.80:1 | 4.5:1 | pass |
+| light | burgundy | `#7C3448` | `#F2F1EC` | 7.60:1 | 4.5:1 | pass |
+| light | rust | `#8A432C` | `#F2F1EC` | 6.36:1 | 4.5:1 | pass |
+| light | violet | `#684873` | `#F2F1EC` | 6.72:1 | 4.5:1 | pass |
+| light | amber | `#77560F` | `#F2F1EC` | 5.95:1 | 4.5:1 | pass |
+| light | sepia | `#705039` | `#F2F1EC` | 6.41:1 | 4.5:1 | pass |
+| light | graphite | `#4F5960` | `#F2F1EC` | 6.34:1 | 4.5:1 | pass |
+| light | error | `#913646` | `#F2F1EC` | 6.58:1 | 4.5:1 | pass |
+| light | warning | `#76540B` | `#F2F1EC` | 6.10:1 | 4.5:1 | pass |
+| light | information | `#285D7C` | `#F2F1EC` | 6.30:1 | 4.5:1 | pass |
+| light | hint | `#17666A` | `#F2F1EC` | 5.90:1 | 4.5:1 | pass |
+| light | success | `#526329` | `#F2F1EC` | 5.85:1 | 4.5:1 | pass |
+| light | hyperlink | `#1C5F8B` | `#F2F1EC` | 6.07:1 | 4.5:1 | pass |
+| light | boundary | `#877F6E` | `#F2F1EC` | 3.51:1 | 3.0:1 | pass |
+| light | focus boundary | `#315D78` | `#F2F1EC` | 6.26:1 | 3.0:1 | pass |
 | light | selected text | `#172A38` | `#AFC9C3` | 8.40:1 | 4.5:1 | pass |
 | light | search text | `#2A2B22` | `#DEC06C` | 8.09:1 | 4.5:1 | pass |
 | light | current search text | `#182A38` | `#BD893E` | 4.77:1 | 4.5:1 | pass |
@@ -36,36 +36,36 @@ Ratios use WCAG 2 relative luminance on the authored opaque sRGB colors. Passing
 | light | diff add text | `#263640` | `#D8E2C3` | 9.25:1 | 4.5:1 | pass |
 | light | diff change text | `#263640` | `#D7E1E4` | 9.37:1 | 4.5:1 | pass |
 | light | diff delete text | `#263640` | `#ECD5D0` | 8.90:1 | 4.5:1 | pass |
-| light | cursor text | `#F4EEDC` | `#244D68` | 7.75:1 | 4.5:1 | pass |
-| dark | principal text | `#E6E1D3` | `#0D1822` | 13.73:1 | 7.0:1 | pass |
-| dark | secondary text | `#C4C4BA` | `#0D1822` | 10.21:1 | 4.5:1 | pass |
-| dark | comments/muted text | `#9CA7A8` | `#0D1822` | 7.27:1 | 4.5:1 | pass |
-| dark | deep blue ink | `#719CBC` | `#0D1822` | 6.14:1 | 4.5:1 | pass |
-| dark | blue ink | `#89B6D2` | `#0D1822` | 8.27:1 | 4.5:1 | pass |
-| dark | bright blue ink | `#A1C5DE` | `#0D1822` | 9.87:1 | 4.5:1 | pass |
-| dark | moss | `#ACBA72` | `#0D1822` | 8.56:1 | 4.5:1 | pass |
-| dark | muted moss | `#929F65` | `#0D1822` | 6.29:1 | 4.5:1 | pass |
-| dark | teal | `#70B6AE` | `#0D1822` | 7.68:1 | 4.5:1 | pass |
-| dark | muted teal | `#679A96` | `#0D1822` | 5.67:1 | 4.5:1 | pass |
-| dark | burgundy | `#D18A96` | `#0D1822` | 6.65:1 | 4.5:1 | pass |
-| dark | rust | `#D08A6F` | `#0D1822` | 6.45:1 | 4.5:1 | pass |
-| dark | violet | `#BAA0C4` | `#0D1822` | 7.61:1 | 4.5:1 | pass |
-| dark | amber | `#D0AE68` | `#0D1822` | 8.49:1 | 4.5:1 | pass |
-| dark | sepia | `#BBA080` | `#0D1822` | 7.22:1 | 4.5:1 | pass |
-| dark | graphite | `#9DA9AD` | `#0D1822` | 7.44:1 | 4.5:1 | pass |
-| dark | error | `#E08B91` | `#0D1822` | 7.06:1 | 4.5:1 | pass |
-| dark | warning | `#D3B066` | `#0D1822` | 8.69:1 | 4.5:1 | pass |
-| dark | information | `#89B6D2` | `#0D1822` | 8.27:1 | 4.5:1 | pass |
-| dark | hint | `#70B6AE` | `#0D1822` | 7.68:1 | 4.5:1 | pass |
-| dark | success | `#ADBD76` | `#0D1822` | 8.81:1 | 4.5:1 | pass |
-| dark | hyperlink | `#8BC1DF` | `#0D1822` | 9.22:1 | 4.5:1 | pass |
-| dark | boundary | `#56676F` | `#0D1822` | 3.05:1 | 3.0:1 | pass |
-| dark | focus boundary | `#79A9C8` | `#0D1822` | 7.11:1 | 3.0:1 | pass |
-| dark | selected text | `#F0EBDD` | `#2E5860` | 6.58:1 | 4.5:1 | pass |
-| dark | search text | `#F0EBDD` | `#5C522B` | 6.54:1 | 4.5:1 | pass |
-| dark | current search text | `#0D1822` | `#C39A45` | 6.86:1 | 4.5:1 | pass |
-| dark | matching text | `#E6E1D3` | `#364B38` | 7.24:1 | 4.5:1 | pass |
-| dark | diff add text | `#D7D8CF` | `#1D332D` | 9.35:1 | 4.5:1 | pass |
-| dark | diff change text | `#D7D8CF` | `#1C303D` | 9.49:1 | 4.5:1 | pass |
-| dark | diff delete text | `#D7D8CF` | `#3A282D` | 9.61:1 | 4.5:1 | pass |
-| dark | cursor text | `#0D1822` | `#D7C98B` | 10.78:1 | 4.5:1 | pass |
+| light | cursor text | `#F2F1EC` | `#244D68` | 7.95:1 | 4.5:1 | pass |
+| dark | principal text | `#DDDCD2` | `#181A19` | 12.70:1 | 7.0:1 | pass |
+| dark | secondary text | `#BABCB4` | `#181A19` | 9.11:1 | 4.5:1 | pass |
+| dark | comments/muted text | `#969C97` | `#181A19` | 6.25:1 | 4.5:1 | pass |
+| dark | deep blue ink | `#7795A7` | `#181A19` | 5.53:1 | 4.5:1 | pass |
+| dark | blue ink | `#83A8BB` | `#181A19` | 6.90:1 | 4.5:1 | pass |
+| dark | bright blue ink | `#95B7C8` | `#181A19` | 8.23:1 | 4.5:1 | pass |
+| dark | moss | `#A3AE72` | `#181A19` | 7.38:1 | 4.5:1 | pass |
+| dark | muted moss | `#899463` | `#181A19` | 5.40:1 | 4.5:1 | pass |
+| dark | teal | `#6FA8A0` | `#181A19` | 6.48:1 | 4.5:1 | pass |
+| dark | muted teal | `#648F8B` | `#181A19` | 4.87:1 | 4.5:1 | pass |
+| dark | burgundy | `#C17E8B` | `#181A19` | 5.52:1 | 4.5:1 | pass |
+| dark | rust | `#C28168` | `#181A19` | 5.53:1 | 4.5:1 | pass |
+| dark | violet | `#AF97B7` | `#181A19` | 6.61:1 | 4.5:1 | pass |
+| dark | amber | `#C5A667` | `#181A19` | 7.52:1 | 4.5:1 | pass |
+| dark | sepia | `#AE967B` | `#181A19` | 6.20:1 | 4.5:1 | pass |
+| dark | graphite | `#959C98` | `#181A19` | 6.24:1 | 4.5:1 | pass |
+| dark | error | `#CF8389` | `#181A19` | 6.05:1 | 4.5:1 | pass |
+| dark | warning | `#C6A565` | `#181A19` | 7.47:1 | 4.5:1 | pass |
+| dark | information | `#83A8BB` | `#181A19` | 6.90:1 | 4.5:1 | pass |
+| dark | hint | `#6FA8A0` | `#181A19` | 6.48:1 | 4.5:1 | pass |
+| dark | success | `#A4B073` | `#181A19` | 7.53:1 | 4.5:1 | pass |
+| dark | hyperlink | `#8CB2C5` | `#181A19` | 7.74:1 | 4.5:1 | pass |
+| dark | boundary | `#626A64` | `#181A19` | 3.14:1 | 3.0:1 | pass |
+| dark | focus boundary | `#779AA8` | `#181A19` | 5.81:1 | 3.0:1 | pass |
+| dark | selected text | `#E5E2D8` | `#3A5550` | 6.24:1 | 4.5:1 | pass |
+| dark | search text | `#E5E2D8` | `#55502F` | 6.29:1 | 4.5:1 | pass |
+| dark | current search text | `#181A19` | `#B08E4F` | 5.69:1 | 4.5:1 | pass |
+| dark | matching text | `#DDDCD2` | `#394835` | 7.08:1 | 4.5:1 | pass |
+| dark | diff add text | `#CFD1C9` | `#21342A` | 8.57:1 | 4.5:1 | pass |
+| dark | diff change text | `#CFD1C9` | `#273137` | 8.61:1 | 4.5:1 | pass |
+| dark | diff delete text | `#CFD1C9` | `#3A272D` | 9.03:1 | 4.5:1 | pass |
+| dark | cursor text | `#181A19` | `#C9BE83` | 9.31:1 | 4.5:1 | pass |
