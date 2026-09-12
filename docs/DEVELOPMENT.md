@@ -51,6 +51,7 @@ Edit `palette/palette.json`, never its consumers. `scripts/generate.py` owns:
 - `css/nib.css` and `tailwind/nib.css`
 - `css/nib-foundation.css`, `showcase/palette.js`, and `dist/nib-foundation.json`
 - `gimp/Nib.gpl`, `python-matplotlib/nib.py`, and `r/nib.R`
+- `i3/*.conf`, `waybar/*.css`, `dunst/*.conf`, and `zathura/nib-*`
 - `dist/nib-palette.json`
 - `docs/generated/CONTRAST.md`, `ANSI.md`, and `COLOR_VISION.md`
 

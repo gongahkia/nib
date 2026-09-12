@@ -15,8 +15,8 @@ structure and callable names, moss for types, teal for strings, and quieter
 burgundy, rust, violet, amber, sepia, and graphite accents. Light and dark ports
 share the same semantic roles rather than using unrelated palettes.
 
-![Nib light reference showcase](output/playwright/nib-showcase-light.png)
-![Nib dark reference showcase](output/playwright/nib-showcase-dark.png)
+![Nib light syntax reference](output/playwright/nib-syntax-light.png)
+![Nib dark syntax reference](output/playwright/nib-syntax-dark.png)
 
 ## Ports
 
@@ -31,25 +31,27 @@ from the locked semantic palette or the reviewed foundation ramps.
 - [Black Box](black-box/)
 - [Chrome and Chromium](chromium/)
 - [Discord through BetterDiscord or Vencord](docs/MESSAGING.md#discord) — Experimental
+- [Dunst](docs/DESKTOP.md#dunst)
 - [GNU Emacs](docs/EMACS.md)
-- [GIMP palette](gimp/Nib.gpl)
+- [GIMP palette](docs/CREATIVE.md#gimp)
 - [Firefox](docs/FIREFOX.md)
 - [fish](fish/)
 - [fzf](fzf/)
 - [Ghostty](docs/GHOSTTY.md)
 - [Helium](docs/HELIUM.md)
 - [Helix](docs/HELIX.md)
+- [i3](docs/DESKTOP.md#i3)
 - [IntelliJ Platform IDEs](intellij/)
 - [iTerm2](iterm2/)
 - [Kitty](kitty/)
 - [Konsole](docs/PORTS.md#konsole)
 - [Lite XL](lite-xl/)
 - [macOS Terminal](docs/PORTS.md#macos-terminal)
-- [Matplotlib](python-matplotlib/)
+- [Matplotlib](docs/CREATIVE.md#matplotlib)
 - [Neovim](docs/NEOVIM.md)
 - [Obsidian](docs/OBSIDIAN.md)
 - [Pywal](pywal/) — Experimental
-- [R](r/)
+- [R](docs/CREATIVE.md#r)
 - [Slack through Slick or Slack's native custom colours](docs/MESSAGING.md#slack) — Experimental
 - [Sublime Text](docs/SUBLIME.md)
 - [Telegram Desktop](docs/MESSAGING.md#telegram-desktop)
@@ -57,11 +59,13 @@ from the locked semantic palette or the reviewed foundation ramps.
 - [Vim](docs/VIM.md)
 - [Visual Studio Code and Cursor](docs/VSCODE.md)
 - [Warp](warp-terminal/)
+- [Waybar](docs/DESKTOP.md#waybar)
 - [WezTerm](wezterm/)
 - [Windows Terminal](windows-terminal/)
 - [Xresources-compatible terminals](xresources/)
 - [Yazi](docs/PORTS.md#yazi)
 - [Zed](docs/ZED.md)
+- [Zathura](docs/DESKTOP.md#zathura)
 - [Zellij](zellij/)
 
 ### Frameworks

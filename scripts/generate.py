@@ -2554,6 +2554,120 @@ def generated_r_palette(foundation: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def resolved_aliases(foundation: dict[str, Any], aliases: dict[str, Any], style: str) -> dict[str, str]:
+    return {role: resolve_reference(foundation, reference) for role, reference in aliases[style].items()}
+
+
+def generated_waybar(style: str, foundation: dict[str, Any], aliases: dict[str, Any]) -> str:
+    colors = resolved_aliases(foundation, aliases, style)
+    return "\n".join(
+        [
+            f"/* {FOUNDATION_MARKER} */",
+            f"@define-color nib_background {colors['background']};",
+            f"@define-color nib_surface {colors['surface.elevated']};",
+            f"@define-color nib_text {colors['foreground.primary']};",
+            f"@define-color nib_muted {colors['foreground.muted']};",
+            f"@define-color nib_blue {colors['blue_ink.primary']};",
+            f"@define-color nib_moss {colors['moss.primary']};",
+            f"@define-color nib_teal {colors['teal.primary']};",
+            f"@define-color nib_error {colors['burgundy']};",
+            f"@define-color nib_warning {colors['amber']};",
+            "",
+            "window#waybar { background: @nib_background; color: @nib_text; }",
+            "#workspaces button { color: @nib_muted; border-color: transparent; }",
+            "#workspaces button.focused, #workspaces button.active { color: @nib_background; background: @nib_blue; }",
+            "#mode, #submap { color: @nib_background; background: @nib_teal; }",
+            "#battery.warning, #network.disconnected { color: @nib_warning; }",
+            "#battery.critical { color: @nib_error; }",
+        ]
+    ) + "\n"
+
+
+def generated_dunst(style: str, foundation: dict[str, Any], aliases: dict[str, Any]) -> str:
+    colors = resolved_aliases(foundation, aliases, style)
+    return "\n".join(
+        [
+            f"# {FOUNDATION_MARKER}",
+            "[global]",
+            f'    frame_color = "{colors["foreground.muted"]}"',
+            f'    separator_color = "{colors["surface.subtle"]}"',
+            "",
+            "[urgency_low]",
+            f'    background = "{colors["background"]}"',
+            f'    foreground = "{colors["foreground.muted"]}"',
+            f'    frame_color = "{colors["moss.primary"]}"',
+            "",
+            "[urgency_normal]",
+            f'    background = "{colors["surface.elevated"]}"',
+            f'    foreground = "{colors["foreground.primary"]}"',
+            f'    frame_color = "{colors["blue_ink.primary"]}"',
+            "",
+            "[urgency_critical]",
+            f'    background = "{colors["surface.elevated"]}"',
+            f'    foreground = "{colors["foreground.primary"]}"',
+            f'    frame_color = "{colors["burgundy"]}"',
+        ]
+    ) + "\n"
+
+
+def generated_i3(style: str, foundation: dict[str, Any], aliases: dict[str, Any]) -> str:
+    colors = resolved_aliases(foundation, aliases, style)
+    variables = {
+        "background": colors["background"],
+        "surface": colors["surface.elevated"],
+        "text": colors["foreground.primary"],
+        "muted": colors["foreground.muted"],
+        "blue": colors["blue_ink.primary"],
+        "moss": colors["moss.primary"],
+        "burgundy": colors["burgundy"],
+    }
+    lines = [f"# {FOUNDATION_MARKER}"]
+    lines.extend(f"set $nib_{name} {color}" for name, color in variables.items())
+    lines.extend(
+        [
+            "",
+            "# class                 border          background      text        indicator     child_border",
+            "client.focused          $nib_blue       $nib_blue       $nib_background $nib_moss  $nib_blue",
+            "client.focused_inactive $nib_muted      $nib_surface    $nib_text       $nib_muted $nib_muted",
+            "client.unfocused        $nib_surface    $nib_background $nib_muted      $nib_surface $nib_surface",
+            "client.urgent           $nib_burgundy   $nib_burgundy   $nib_background $nib_burgundy $nib_burgundy",
+            "client.placeholder      $nib_surface    $nib_surface    $nib_muted      $nib_surface $nib_surface",
+        ]
+    )
+    return "\n".join(lines) + "\n"
+
+
+def generated_zathura(style: str, foundation: dict[str, Any], aliases: dict[str, Any]) -> str:
+    colors = resolved_aliases(foundation, aliases, style)
+    settings = {
+        "default-bg": colors["background"],
+        "default-fg": colors["foreground.primary"],
+        "statusbar-bg": colors["surface.elevated"],
+        "statusbar-fg": colors["foreground.secondary"],
+        "inputbar-bg": colors["surface.floating"],
+        "inputbar-fg": colors["foreground.primary"],
+        "notification-bg": colors["surface.elevated"],
+        "notification-fg": colors["foreground.primary"],
+        "notification-error-bg": colors["burgundy"],
+        "notification-error-fg": colors["background"],
+        "notification-warning-bg": colors["amber"],
+        "notification-warning-fg": colors["background"],
+        "highlight-color": colors["moss.primary"],
+        "highlight-active-color": colors["blue_ink.primary"],
+        "completion-bg": colors["surface.elevated"],
+        "completion-fg": colors["foreground.secondary"],
+        "completion-highlight-bg": colors["blue_ink.primary"],
+        "completion-highlight-fg": colors["background"],
+        "recolor-lightcolor": colors["background"],
+        "recolor-darkcolor": colors["foreground.primary"],
+    }
+    lines = [f"# {FOUNDATION_MARKER}"]
+    lines.extend(f'set {name} "{color}"' for name, color in settings.items())
+    lines.append("set recolor true")
+    lines.append("set recolor-keephue true")
+    return "\n".join(lines) + "\n"
+
+
 CONTRAST_PAIRS = (
     ("foreground.primary", "background", 7.0, "principal text"),
     ("foreground.secondary", "background", 4.5, "secondary text"),
@@ -2764,6 +2878,14 @@ def render_files(palette: dict[str, Any]) -> dict[Path, str]:
         Path("gimp/Nib.gpl"): generated_gimp_palette(foundation),
         Path("python-matplotlib/nib.py"): generated_matplotlib_palette(foundation, aliases),
         Path("r/nib.R"): generated_r_palette(foundation),
+        Path("waybar/nib-light.css"): generated_waybar("light", foundation, aliases),
+        Path("waybar/nib-dark.css"): generated_waybar("dark", foundation, aliases),
+        Path("dunst/nib-light.conf"): generated_dunst("light", foundation, aliases),
+        Path("dunst/nib-dark.conf"): generated_dunst("dark", foundation, aliases),
+        Path("i3/nib-light.conf"): generated_i3("light", foundation, aliases),
+        Path("i3/nib-dark.conf"): generated_i3("dark", foundation, aliases),
+        Path("zathura/nib-light"): generated_zathura("light", foundation, aliases),
+        Path("zathura/nib-dark"): generated_zathura("dark", foundation, aliases),
         Path("docs/generated/CONTRAST.md"): generated_contrast(palette),
         Path("docs/generated/ANSI.md"): generated_ansi(palette),
         Path("docs/generated/COLOR_VISION.md"): generated_color_vision(palette),

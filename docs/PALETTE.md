@@ -22,7 +22,7 @@ Neutral, blue-black, moss, teal, burgundy, rust, violet, amber, sepia, and
 graphite each provide 13 reusable steps from `50` through `950`. The accent
 `400` values are the approved dark-mode anchors and the `600` values are the
 approved light-mode anchors. Intermediate and outer steps were deliberately
-interpolated in a perceptual colour space, gamut-clipped to sRGB, and reviewed
+interpolated in OKLab, gamut-clipped to sRGB, and reviewed
 in the canonical showcase. They extend the system; they do not retroactively
 claim that the original palette came from a mathematical ramp.
 
@@ -56,7 +56,7 @@ Modes preserve those identities while independently tuning lightness and chroma.
 - `cursor.*` provides a measured cursor/text pair.
 - `ansi` contains ordered conventional identities 0–15.
 
-The authored format is six-digit uppercase sRGB. Ramp construction used OKLCH
+The authored format is six-digit uppercase sRGB. Ramp construction used OKLab
 as a design tool, but regeneration performs no hidden interpolation: it directly
 translates reviewed checked-in values. Any future conversion step must be
 deterministic, documented, gamut-controlled, and tested before becoming part

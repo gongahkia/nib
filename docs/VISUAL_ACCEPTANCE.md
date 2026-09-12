@@ -10,6 +10,8 @@ The dependency-free [`showcase`](../showcase/index.html) renders prose,
 TypeScript, Python, diagnostics, diffs, foundation ramps, and ANSI colors from
 the checked-in generated palette data. Its screenshots are browser reference
 renders, not substitutes for native application captures.
+Capture dimensions, environment, and pinned file hashes are recorded in
+[`support/visual-evidence.json`](../support/visual-evidence.json).
 
 | Environment | Mode | Viewport | Evidence | Status |
 | --- | --- | --- | --- | --- |
@@ -47,7 +49,7 @@ python3 -m http.server 4173
 export PWCLI="${CODEX_HOME:-$HOME/.codex}/skills/playwright/scripts/playwright_cli.sh"
 "$PWCLI" open http://127.0.0.1:4173/showcase/ --headed
 "$PWCLI" snapshot
-"$PWCLI" screenshot --filename output/playwright/nib-showcase-light.png
+"$PWCLI" screenshot --filename output/playwright/nib-showcase-light.png --full-page
 ```
 
 Switch to Chalkboard using the element reference from the current snapshot,
