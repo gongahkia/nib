@@ -12,6 +12,16 @@ All notable changes to Nib are documented here. The format follows [Keep a Chang
 
 ### Added
 
+- A 13-step neutral and ink-family foundation palette with checked light/dark
+  aliases, while preserving the existing hash-locked semantic colors.
+- A canonical dependency-free showcase for prose, syntax, diagnostics, diffs,
+  ANSI output, and copyable foundation swatches, with light/dark Chromium
+  reference captures and an explicit native-application acceptance backlog.
+- Machine-readable support tiers that separate generated artifacts, native
+  visual verification, and experimental third-party integrations.
+- Foundation-driven GIMP, Matplotlib, and R exports as generated—not yet
+  visually verified—creative and data-visualization ports.
+
 - Generated `nib-light` and `nib-dark` GNU Emacs custom themes with core,
   font-lock, diff, diagnostic, Org, Markdown, completion, Git, and ANSI faces.
 - A single generated VS Code color-theme extension for VS Code and Cursor,

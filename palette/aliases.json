@@ -9,7 +9,7 @@
     "foreground.secondary": "$ramps.neutral.800",
     "foreground.muted": "$ramps.neutral.700",
     "foreground.disabled": "$ramps.neutral.500",
-    "blue_ink.deep": "$ramps.blue_black.850",
+    "blue_ink.deep": "$ramps.blue_black.800",
     "blue_ink.primary": "$ramps.blue_black.600",
     "blue_ink.bright": "$anchors.light.blue_bright",
     "moss.primary": "$ramps.moss.600",

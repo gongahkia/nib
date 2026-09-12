@@ -1,8 +1,9 @@
 # `Nib` 🖋
 
-Nib is an inky colour scheme for prose and code. It is designed for reading and
-writing on digital screens, with deep blue-black fountain-pen ink on
-cool-neutral paper and soft ivory ink on near-black chalkboard charcoal.
+Nib is a fountain-pen colour system for sustained reading, writing, and code.
+Deep blue-black gives structure to cool-neutral paper, while soft ivory marks a
+near-black chalkboard leaf; diluted washes and pooled accents carry interface
+state without turning the page into a highlighter set.
 
 Learn more in the [palette notes](docs/PALETTE.md) and
 [blind preference audit](docs/BLIND_AUDIT.md).
@@ -14,18 +15,24 @@ structure and callable names, moss for types, teal for strings, and quieter
 burgundy, rust, violet, amber, sepia, and graphite accents. Light and dark ports
 share the same semantic roles rather than using unrelated palettes.
 
+![Nib light reference showcase](output/playwright/nib-showcase-light.png)
+![Nib dark reference showcase](output/playwright/nib-showcase-dark.png)
+
 ## Ports
 
-Nib is available for the following apps and tools. Every bundled port is
-generated from [`palette/palette.json`](palette/palette.json).
+Nib contains artifacts for the following apps and tools. “Available” does not
+mean visually verified: consult the [support and evidence matrix](docs/SUPPORT.md)
+for Generated, Verified, and Experimental tiers. Every bundled port is derived
+from the locked semantic palette or the reviewed foundation ramps.
 
 ### Apps
 
 - [Alacritty](alacritty/)
 - [Black Box](black-box/)
 - [Chrome and Chromium](chromium/)
-- [Discord through BetterDiscord or Vencord](docs/MESSAGING.md#discord)
+- [Discord through BetterDiscord or Vencord](docs/MESSAGING.md#discord) — Experimental
 - [GNU Emacs](docs/EMACS.md)
+- [GIMP palette](gimp/Nib.gpl)
 - [Firefox](docs/FIREFOX.md)
 - [fish](fish/)
 - [fzf](fzf/)
@@ -38,9 +45,12 @@ generated from [`palette/palette.json`](palette/palette.json).
 - [Konsole](docs/PORTS.md#konsole)
 - [Lite XL](lite-xl/)
 - [macOS Terminal](docs/PORTS.md#macos-terminal)
+- [Matplotlib](python-matplotlib/)
 - [Neovim](docs/NEOVIM.md)
 - [Obsidian](docs/OBSIDIAN.md)
-- [Slack through Slick or Slack's native custom colours](docs/MESSAGING.md#slack)
+- [Pywal](pywal/) — Experimental
+- [R](r/)
+- [Slack through Slick or Slack's native custom colours](docs/MESSAGING.md#slack) — Experimental
 - [Sublime Text](docs/SUBLIME.md)
 - [Telegram Desktop](docs/MESSAGING.md#telegram-desktop)
 - [tmux](tmux/)
@@ -57,7 +67,6 @@ generated from [`palette/palette.json`](palette/palette.json).
 ### Frameworks
 
 - [CSS custom properties](css/nib.css)
-- [Pywal](pywal/)
 - [Tailwind CSS v4](tailwind/nib.css)
 
 See the [port installation guide](docs/PORTS.md) for the portable formats. The
@@ -74,7 +83,8 @@ palette rather than introduce parallel colour values.
 
 The tables below show Nib's core interface colours and primary syntax accents.
 The complete semantic and ANSI palette is available as
-[`dist/nib-palette.json`](dist/nib-palette.json).
+[`dist/nib-palette.json`](dist/nib-palette.json); reusable 50–950 ink ramps and
+mode aliases are in [`dist/nib-foundation.json`](dist/nib-foundation.json).
 
 ### Base
 
@@ -134,4 +144,5 @@ The release suite checks the palette lock, deterministic output, contrast,
 syntax and UI coverage, package structure, documentation, and available local
 runtimes. Development details are in
 [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md), and source provenance is recorded
-in [`THIRD_PARTY_REFERENCES.md`](THIRD_PARTY_REFERENCES.md).
+in [`THIRD_PARTY_REFERENCES.md`](THIRD_PARTY_REFERENCES.md). Visual acceptance
+is tracked separately in [`docs/VISUAL_ACCEPTANCE.md`](docs/VISUAL_ACCEPTANCE.md).

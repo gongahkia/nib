@@ -1,6 +1,34 @@
 # Palette system
 
-`palette/palette.json` is Nib's sole color source. `palette/schema.json` validates its shape, semantic role inventory, color encoding, and 16 ANSI entries. `palette/lock.json` pins the approved file by SHA-256. Generated consumers carry a warning and must not be edited directly.
+Nib now separates reusable colour decisions from application semantics:
+
+```text
+foundation ramps (`palette/foundation.json`)
+    → light/dark aliases (`palette/aliases.json`)
+        → locked semantic roles (`palette/palette.json`)
+            → generated application ports
+```
+
+The foundation and alias schemas validate their authored layers. The existing
+semantic schema still validates role inventory, color encoding, and all 16 ANSI
+entries, while `palette/lock.json` pins the approved semantic file by SHA-256.
+Verification resolves every alias and requires it to match the corresponding
+locked semantic role. Generated consumers carry a warning and must not be
+edited directly.
+
+## Foundation ramps
+
+Neutral, blue-black, moss, teal, burgundy, rust, violet, amber, sepia, and
+graphite each provide 13 reusable steps from `50` through `950`. The accent
+`400` values are the approved dark-mode anchors and the `600` values are the
+approved light-mode anchors. Intermediate and outer steps were deliberately
+interpolated in a perceptual colour space, gamut-clipped to sRGB, and reviewed
+in the canonical showcase. They extend the system; they do not retroactively
+claim that the original palette came from a mathematical ramp.
+
+Specialized selection, diff, border, and state values remain explicit approved
+anchors. They should move onto a ramp only after visual review demonstrates
+that the replacement preserves their semantic contrast.
 
 ## Visual model
 
@@ -28,7 +56,11 @@ Modes preserve those identities while independently tuning lightness and chroma.
 - `cursor.*` provides a measured cursor/text pair.
 - `ansi` contains ordered conventional identities 0–15.
 
-The authored format is six-digit uppercase sRGB. No hidden OKLCH interpolation is currently used: regeneration is a direct deterministic translation of the checked-in values. Any future conversion step must be deterministic, documented, gamut-controlled, and tested before becoming part of the generator.
+The authored format is six-digit uppercase sRGB. Ramp construction used OKLCH
+as a design tool, but regeneration performs no hidden interpolation: it directly
+translates reviewed checked-in values. Any future conversion step must be
+deterministic, documented, gamut-controlled, and tested before becoming part
+of the generator.
 
 ## Locked colors
 
