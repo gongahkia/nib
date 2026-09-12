@@ -1,4 +1,4 @@
-# Nib
+# `Nib` 🖋
 
 Nib is an inky colour scheme for prose and code. It is designed for reading and
 writing on digital screens, with deep blue-black fountain-pen ink on
