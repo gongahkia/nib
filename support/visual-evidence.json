@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-09-12",
+  "environment": {
+    "operating_system": "Fedora Linux 43",
+    "browser": "Chromium 151.0.7922.173",
+    "viewport": "1440x1200",
+    "device_scale_factor": 1
+  },
+  "captures": [
+    {
+      "path": "output/playwright/nib-showcase-light.png",
+      "mode": "light",
+      "scope": "full-page showcase",
+      "width": 1440,
+      "height": 4339,
+      "sha256": "c4a776e251ac3022f656fa36fe4ab911825d65c3e5d074cca6eaeb8033ae98ed"
+    },
+    {
+      "path": "output/playwright/nib-showcase-dark.png",
+      "mode": "dark",
+      "scope": "full-page showcase",
+      "width": 1440,
+      "height": 4339,
+      "sha256": "3a3a316d61f011f04f8c35ce3eaaf28243ffb9ec944d4e1db4ad06431ac2be38"
+    },
+    {
+      "path": "output/playwright/nib-syntax-light.png",
+      "mode": "light",
+      "scope": "README syntax section",
+      "width": 1180,
+      "height": 717,
+      "sha256": "b51b71856be97d00a6c8ab2f888388da5480dc1592ddb1bf5cdb2c64a9a9b3a7"
+    },
+    {
+      "path": "output/playwright/nib-syntax-dark.png",
+      "mode": "dark",
+      "scope": "README syntax section",
+      "width": 1180,
+      "height": 717,
+      "sha256": "09b5d0c23b87ea523fa470a9d0b49c2a6438b7c95989198c1a7d45f3a05e8d4b"
+    }
+  ]
+}

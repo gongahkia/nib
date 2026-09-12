@@ -25,6 +25,7 @@ valuable evidence, but neither proves the final pixels in a desktop window.
 | Browsers | Firefox, Chromium, Helium | — | Loaded-extension captures and version coverage |
 | Shell/tools | fish, fzf, tmux, Yazi | Pywal | Daily-use reports and host coverage |
 | Messaging | Telegram Desktop | Discord, Slack | Loader/version coverage and native captures |
+| Linux desktop | Dunst, i3, Waybar, Zathura | — | Host parsing, compositor combinations, and native captures |
 | Frameworks | CSS custom properties, Tailwind CSS v4 | — | Downstream integration examples |
 | Creative/data | GIMP, Matplotlib, R | — | Import/runtime checks in their host applications |
 

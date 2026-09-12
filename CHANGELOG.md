@@ -21,6 +21,8 @@ All notable changes to Nib are documented here. The format follows [Keep a Chang
   visual verification, and experimental third-party integrations.
 - Foundation-driven GIMP, Matplotlib, and R exports as generated—not yet
   visually verified—creative and data-visualization ports.
+- Foundation-driven i3, Waybar, Dunst, and Zathura fragments as generated—not
+  yet visually verified—Linux desktop ports.
 
 - Generated `nib-light` and `nib-dark` GNU Emacs custom themes with core,
   font-lock, diff, diagnostic, Org, Markdown, completion, Git, and ANSI faces.

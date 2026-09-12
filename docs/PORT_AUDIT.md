@@ -62,7 +62,7 @@ creative applications.
 | Group | Flexoki coverage | Nib status |
 | --- | --- | --- |
 | Web tokens | CSS, Tailwind, VitePress, Starlight | CSS custom properties and Tailwind v4 are generated. |
-| Linux desktop | GTK, KDE, Qt, i3, Waybar, Dunst, imv, Zathura | Deferred: these need environment-specific component roles and visual runtime testing. |
+| Linux desktop | GTK, KDE, Qt, i3, Waybar, Dunst, imv, Zathura | Generated i3, Waybar, Dunst, and Zathura fragments now cover stable color surfaces; GTK, KDE/Qt, imv, host parsing, and visual runtime testing remain pending. |
 | Messaging | Discord, Slack, Telegram, Substack | Discord supports BetterDiscord/Vencord, Slack supports Slick plus native custom colours, and Telegram Desktop has native themes. The third-party loaders remain explicitly opt-in. |
 | Writing apps | Drafts, Ulysses, Typora, Standard Notes | Not yet; each needs a separately tested proprietary format or maintained CSS integration. |
 | Creative palettes | Affinity, GIMP, Clip Studio Paint, Figma | A generated GIMP palette now exposes foundation anchors; host verification and the other formats remain pending. |
@@ -71,8 +71,8 @@ creative applications.
 
 ## Remaining priorities
 
-The largest remaining artifact gap is full Linux desktop coverage across GTK, KDE/Qt,
-Waybar, and notification applications. Xcode and proprietary writing-app
+The largest remaining artifact gap is full toolkit coverage across GTK and
+KDE/Qt. Xcode and proprietary writing-app
 formats remain narrower candidates. Desktop-environment themes should be
 separate packages with screenshots and runtime testing; any additional web
 patchers should retain a reproducible validation path and an unambiguous

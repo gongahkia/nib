@@ -1062,7 +1062,8 @@ def verify_neovim() -> None:
 def verify_documentation() -> None:
     required = [
         "README.md", "CHANGELOG.md", "CONTRIBUTING.md", "LICENSE", "THIRD_PARTY_REFERENCES.md",
-        "docs/ACCESSIBILITY.md", "docs/BLIND_AUDIT.md", "docs/FIREFOX.md", "docs/GHOSTTY.md",
+        "docs/ACCESSIBILITY.md", "docs/BLIND_AUDIT.md", "docs/CREATIVE.md", "docs/DESKTOP.md",
+        "docs/FIREFOX.md", "docs/GHOSTTY.md",
         "docs/HELIUM.md", "docs/NEOVIM.md",
         "docs/MESSAGING.md", "docs/OBSIDIAN.md",
         "docs/PALETTE.md", "docs/PORTS.md", "docs/PORT_AUDIT.md", "docs/RESEARCH.md",
@@ -1100,12 +1101,16 @@ def verify_showcase_and_support() -> None:
 
     verified = {target["name"] for target in targets if target["tier"] == "verified"}
     require(verified == {"Showcase"}, "native ports must not be marked verified without acceptance evidence")
-    screenshots = (
-        ROOT / "output" / "playwright" / "nib-showcase-light.png",
-        ROOT / "output" / "playwright" / "nib-showcase-dark.png",
-    )
-    for screenshot in screenshots:
+    visual = json.loads((ROOT / "support" / "visual-evidence.json").read_text(encoding="utf-8"))
+    require(visual.get("schema_version") == 1, "unsupported visual evidence schema")
+    captures = visual.get("captures", [])
+    require(len(captures) == 4, "visual evidence must include full and README captures in both modes")
+    require({capture.get("mode") for capture in captures} == {"light", "dark"}, "visual evidence omits a mode")
+    for capture in captures:
+        screenshot = ROOT / capture.get("path", "")
         require(screenshot.is_file() and screenshot.stat().st_size > 50_000, f"missing showcase evidence: {screenshot}")
+        digest = hashlib.sha256(screenshot.read_bytes()).hexdigest()
+        require(digest == capture.get("sha256"), f"visual evidence hash drifted: {screenshot}")
 
     html = (ROOT / "showcase" / "index.html").read_text(encoding="utf-8")
     javascript = (ROOT / "showcase" / "app.js").read_text(encoding="utf-8")
@@ -1115,12 +1120,27 @@ def verify_showcase_and_support() -> None:
     require("data-nib-theme" in html and "data-mode" in html, "showcase lacks an explicit mode switch")
     require("NIB_SHOWCASE" in javascript, "showcase does not consume generated palette data")
     require(not re.search(r"#[0-9A-Fa-f]{6}\b", html + javascript + stylesheet), "authored showcase contains a raw palette color")
+    node = shutil.which("node")
+    if node:
+        command([node, "--check", "showcase/app.js"])
 
     gimp = (ROOT / "gimp" / "Nib.gpl").read_text(encoding="utf-8")
     require(gimp.startswith("GIMP Palette\nName: Nib\n"), "GIMP palette header is invalid")
     command([sys.executable, "-m", "py_compile", "python-matplotlib/nib.py"])
     r_source = (ROOT / "r" / "nib.R").read_text(encoding="utf-8")
     require("nib_light <- c(" in r_source and "nib_dark <- c(" in r_source, "R palettes are incomplete")
+    foundation_colors = {color for _, color in iter_colors(FOUNDATION)}
+    desktop_paths = [
+        *(ROOT / "i3").glob("*.conf"),
+        *(ROOT / "waybar").glob("*.css"),
+        *(ROOT / "dunst").glob("*.conf"),
+        *(ROOT / "zathura").glob("nib-*"),
+    ]
+    require(len(desktop_paths) == 8, "desktop fragment set is incomplete")
+    for path in desktop_paths:
+        source = path.read_text(encoding="utf-8")
+        require(FOUNDATION_MARKER in source.splitlines()[0], f"desktop marker missing: {path}")
+        require(set(re.findall(r"#[0-9A-F]{6}\b", source)) <= foundation_colors, f"non-foundation desktop color: {path}")
 
 
 def verify_repository_hygiene() -> None:
