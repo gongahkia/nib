@@ -15,9 +15,6 @@ structure and callable names, moss for types, teal for strings, and quieter
 burgundy, rust, violet, amber, sepia, and graphite accents. Light and dark ports
 share the same semantic roles rather than using unrelated palettes.
 
-![Nib light syntax reference](output/playwright/nib-syntax-light.png)
-![Nib dark syntax reference](output/playwright/nib-syntax-dark.png)
-
 ## Ports
 
 Nib contains artifacts for the following apps and tools. “Available” does not
