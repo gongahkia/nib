@@ -63,6 +63,8 @@ fragment shader with `glslc`. This verifies GLSL syntax and types. It does not
 prove that a particular Ghostty build, GPU, display color pipeline, or driver
 will render identically.
 
-The shader-free screenshot artifacts are authoritative for palette values.
-The shader comparison is labelled as a deterministic reference simulation
-unless an actual Ghostty capture is explicitly identified.
+The browser showcase screenshots are authoritative only for the shader-free
+reference rendering they depict. They are not Ghostty captures and do not prove
+GPU shader output. A shader comparison must be labelled as a deterministic
+reference simulation unless an actual Ghostty capture identifies the app,
+version, operating system, GPU, and preset.

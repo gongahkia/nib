@@ -11,7 +11,14 @@ make shaders         # compile GLSL when glslc is installed
 make verify          # complete release suite
 ```
 
-`make verify` performs palette-lock, schema, and role checks, deterministic generation comparison, contrast and OKLab distinguishability tests, color-vision simulation, ANSI checks, editor and browser package checks, terminal/shell/multiplexer port checks, Obsidian/Yazi/messaging package checks, native plist validation on macOS, Ghostty structure/runtime validation, shader structure/compilation, fixture parsing, Neovim and Vim headless tests, local documentation-link checks, Python compilation, and `git diff --check`.
+`make verify` performs palette-lock, foundation/alias schema and binding checks,
+deterministic generation comparison, contrast and OKLab distinguishability
+tests, color-vision simulation, ANSI checks, editor and browser package checks,
+terminal/shell/multiplexer port checks, Obsidian/Yazi/messaging package checks,
+support-evidence and showcase checks, native plist validation on macOS, Ghostty
+structure/runtime validation, shader structure/compilation, fixture parsing,
+Neovim and Vim headless tests, local documentation-link checks, Python
+compilation, and `git diff --check`.
 
 The release-candidate environment was Fedora Linux 43 with Python 3.14.7, Node.js 22.22.2, Neovim 0.11.6, Ghostty 1.3.1, Chromium 151.0.7922.173, `playwright-cli` 0.1.19, and `glslc`/shaderc 2026.1.
 
@@ -42,6 +49,8 @@ Edit `palette/palette.json`, never its consumers. `scripts/generate.py` owns:
 - `discord/Nib.theme.css`, `slack/*.{json,txt}`, and
   `telegram/*.tdesktop-theme`
 - `css/nib.css` and `tailwind/nib.css`
+- `css/nib-foundation.css`, `showcase/palette.js`, and `dist/nib-foundation.json`
+- `gimp/Nib.gpl`, `python-matplotlib/nib.py`, and `r/nib.R`
 - `dist/nib-palette.json`
 - `docs/generated/CONTRAST.md`, `ANSI.md`, and `COLOR_VISION.md`
 

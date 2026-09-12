@@ -21,7 +21,7 @@ from typing import Any, Callable
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from generate import CONTRAST_PAIRS, CVD_PAIRS, MARKER, render_files  # noqa: E402
+from generate import CONTRAST_PAIRS, CVD_PAIRS, FOUNDATION_MARKER, MARKER, render_files  # noqa: E402
 from theme_utils import (  # noqa: E402
     CVD_MATRICES,
     HEX_RE,
@@ -200,7 +200,8 @@ def verify_generation() -> None:
     }
     for relative, content in first.items():
         if relative not in marker_exempt:
-            require(MARKER in "\n".join(content.splitlines()[:3]), f"generated marker missing: {relative}")
+            header = "\n".join(content.splitlines()[:3])
+            require(MARKER in header or FOUNDATION_MARKER in header, f"generated marker missing: {relative}")
     authored = [
         ROOT / "colors" / "nib.lua",
         ROOT / "lua" / "nib" / "init.lua",
@@ -1066,7 +1067,8 @@ def verify_documentation() -> None:
         "docs/MESSAGING.md", "docs/OBSIDIAN.md",
         "docs/PALETTE.md", "docs/PORTS.md", "docs/PORT_AUDIT.md", "docs/RESEARCH.md",
         "docs/SHADERS.md", "docs/DEVELOPMENT.md",
-        "docs/EMACS.md", "docs/HELIX.md", "docs/SUBLIME.md", "docs/VIM.md",
+        "docs/EMACS.md", "docs/HELIX.md", "docs/SUBLIME.md", "docs/SUPPORT.md",
+        "docs/VISUAL_ACCEPTANCE.md", "docs/VIM.md",
         "docs/VSCODE.md", "docs/ZED.md",
     ]
     for relative in required:
@@ -1079,6 +1081,46 @@ def verify_documentation() -> None:
                 continue
             resolved = (path.parent / target.split("#", 1)[0]).resolve()
             require(resolved.exists(), f"broken local link in {path.relative_to(ROOT)}: {target}")
+
+
+def verify_showcase_and_support() -> None:
+    support = json.loads((ROOT / "support" / "targets.json").read_text(encoding="utf-8"))
+    require(support.get("schema_version") == 1, "unsupported support manifest schema")
+    tiers = set(support.get("tiers", {}))
+    require(tiers == {"verified", "generated", "experimental"}, "support tiers are incomplete")
+    targets = support.get("targets", [])
+    names = [target.get("name") for target in targets]
+    require(len(names) == len(set(names)), "support target names must be unique")
+    require(len(targets) >= 35, "support manifest omits known targets")
+    for target in targets:
+        require(target.get("tier") in tiers, f"invalid support tier: {target}")
+        require(bool(target.get("evidence")), f"support target lacks evidence: {target.get('name')}")
+        path = ROOT / target.get("path", "")
+        require(path.exists(), f"support target path does not exist: {target.get('name')}")
+
+    verified = {target["name"] for target in targets if target["tier"] == "verified"}
+    require(verified == {"Showcase"}, "native ports must not be marked verified without acceptance evidence")
+    screenshots = (
+        ROOT / "output" / "playwright" / "nib-showcase-light.png",
+        ROOT / "output" / "playwright" / "nib-showcase-dark.png",
+    )
+    for screenshot in screenshots:
+        require(screenshot.is_file() and screenshot.stat().st_size > 50_000, f"missing showcase evidence: {screenshot}")
+
+    html = (ROOT / "showcase" / "index.html").read_text(encoding="utf-8")
+    javascript = (ROOT / "showcase" / "app.js").read_text(encoding="utf-8")
+    stylesheet = (ROOT / "showcase" / "styles.css").read_text(encoding="utf-8")
+    for section in ('id="writing"', 'id="syntax"', 'id="states"', 'id="foundation"', 'id="terminal"'):
+        require(section in html, f"showcase section is missing: {section}")
+    require("data-nib-theme" in html and "data-mode" in html, "showcase lacks an explicit mode switch")
+    require("NIB_SHOWCASE" in javascript, "showcase does not consume generated palette data")
+    require(not re.search(r"#[0-9A-Fa-f]{6}\b", html + javascript + stylesheet), "authored showcase contains a raw palette color")
+
+    gimp = (ROOT / "gimp" / "Nib.gpl").read_text(encoding="utf-8")
+    require(gimp.startswith("GIMP Palette\nName: Nib\n"), "GIMP palette header is invalid")
+    command([sys.executable, "-m", "py_compile", "python-matplotlib/nib.py"])
+    r_source = (ROOT / "r" / "nib.R").read_text(encoding="utf-8")
+    require("nib_light <- c(" in r_source and "nib_dark <- c(" in r_source, "R palettes are incomplete")
 
 
 def verify_repository_hygiene() -> None:
@@ -1112,6 +1154,7 @@ CHECKS: tuple[tuple[str, Callable[[], None]], ...] = (
     ("language and terminal fixtures", verify_fixtures),
     ("Neovim runtime, switching, and setup API", verify_neovim),
     ("documentation presence and local links", verify_documentation),
+    ("showcase, support tiers, and visual evidence", verify_showcase_and_support),
     ("repository formatting and hygiene", verify_repository_hygiene),
 )
 

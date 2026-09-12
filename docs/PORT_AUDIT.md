@@ -2,9 +2,9 @@
 
 This audit compares the applications listed by Flexoki and the formats present
 in its repository with Nib's first-party generated outputs. It was performed on
-2026-09-11 against Flexoki's `main` branch. “Supported” means this repository
-contains an applicable artifact; it does not imply publication in an app store
-or upstream theme gallery.
+2026-09-11 against Flexoki's `main` branch. This table records artifact coverage,
+not visual verification, publication, or ecosystem maturity. Current evidence
+tiers live in [`SUPPORT.md`](SUPPORT.md).
 
 ## Summary
 
@@ -61,18 +61,20 @@ creative applications.
 
 | Group | Flexoki coverage | Nib status |
 | --- | --- | --- |
-| Web tokens | CSS, Tailwind, VitePress, Starlight | CSS custom properties and Tailwind v4 are supported. |
+| Web tokens | CSS, Tailwind, VitePress, Starlight | CSS custom properties and Tailwind v4 are generated. |
 | Linux desktop | GTK, KDE, Qt, i3, Waybar, Dunst, imv, Zathura | Deferred: these need environment-specific component roles and visual runtime testing. |
 | Messaging | Discord, Slack, Telegram, Substack | Discord supports BetterDiscord/Vencord, Slack supports Slick plus native custom colours, and Telegram Desktop has native themes. The third-party loaders remain explicitly opt-in. |
 | Writing apps | Drafts, Ulysses, Typora, Standard Notes | Not yet; each needs a separately tested proprietary format or maintained CSS integration. |
-| Creative palettes | Affinity, GIMP, Clip Studio Paint, Figma | Not yet; these are palette interchange formats rather than code/UI themes. |
+| Creative palettes | Affinity, GIMP, Clip Studio Paint, Figma | A generated GIMP palette now exposes foundation anchors; host verification and the other formats remain pending. |
+| Data visualization | Matplotlib and R | Generated foundation-driven color cycles are available; host runtime and visual verification remain pending. |
 | Site tooling | VitePress and framework-specific ports | Nib's CSS variables are usable now; packaged integrations remain future work. |
 
 ## Remaining priorities
 
-The largest remaining gap is full Linux desktop coverage across GTK, KDE/Qt,
+The largest remaining artifact gap is full Linux desktop coverage across GTK, KDE/Qt,
 Waybar, and notification applications. Xcode and proprietary writing-app
 formats remain narrower candidates. Desktop-environment themes should be
 separate packages with screenshots and runtime testing; any additional web
 patchers should retain a reproducible validation path and an unambiguous
-third-party warning.
+third-party warning. The larger evidence gap is tracked explicitly in the visual
+acceptance matrix; no generated artifact is promoted without native screenshots.

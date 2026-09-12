@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en" data-nib-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='25' font-size='25'%3E%E2%9C%92%3C/text%3E%3C/svg%3E">
+    <title>Nib — fountain-pen colour system</title>
+    <link rel="stylesheet" href="../css/nib.css">
+    <link rel="stylesheet" href="../css/nib-foundation.css">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="masthead">
+      <a class="wordmark" href="../README.md" aria-label="Nib README">Nib <span>⌁</span></a>
+      <div class="mode-switch" role="group" aria-label="Color mode">
+        <button type="button" data-mode="light" aria-pressed="true">Paper</button>
+        <button type="button" data-mode="dark" aria-pressed="false">Chalkboard</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">A fountain-pen colour system</p>
+        <h1>Quiet enough for a long read.<br><em>Precise enough for code.</em></h1>
+        <p class="lede">Blue-black establishes structure, diluted washes hold state, and
+          restrained writing-material accents preserve hierarchy without glare.</p>
+        <div class="hero-rule" aria-hidden="true"><span></span></div>
+      </section>
+
+      <section id="writing" class="section-grid">
+        <div class="section-copy">
+          <p class="eyebrow">Prose</p>
+          <h2>Made for the page</h2>
+          <p>Nib begins with reading. Its cool paper and charcoal leaves avoid stark
+            black and white, while the primary ink stays dense enough for sustained work.</p>
+        </div>
+        <article class="paper-card">
+          <p class="folio">Field note · 12 September</p>
+          <h3>The line remembers pressure</h3>
+          <p>A fountain pen does not print a perfectly even mark. It pools at a pause,
+            thins through a quick turn, and leaves enough variation for the eye to follow.</p>
+          <blockquote>Structure should be visible before colour calls attention to itself.</blockquote>
+          <p class="annotation">blue-black / moss / graphite</p>
+        </article>
+      </section>
+
+      <section id="syntax">
+        <div class="section-heading">
+          <div><p class="eyebrow">Syntax</p><h2>One hierarchy, several languages</h2></div>
+          <p>Representative source fixtures use the same semantic roles across TypeScript,
+            Python, Rust, and JSON.</p>
+        </div>
+        <div class="code-grid">
+          <article class="code-card">
+            <header><span>ledger.ts</span><span>TypeScript</span></header>
+            <pre><code><span class="kw">type</span> <span class="type">Entry</span> = {
+  <span class="prop">note</span>: <span class="type">string</span>; <span class="prop">amount</span>: <span class="type">number</span>;
+};
+
+<span class="kw">export function</span> <span class="fn">balance</span>(<span class="arg">rows</span>: <span class="type">Entry</span>[]) {
+  <span class="kw">return</span> rows.<span class="fn">reduce</span>((<span class="arg">sum</span>, <span class="arg">row</span>) =>
+    sum + row.amount, <span class="num">0</span>); <span class="comment">// settled ink</span>
+}</code></pre>
+          </article>
+          <article class="code-card">
+            <header><span>ledger.py</span><span>Python</span></header>
+            <pre><code><span class="kw">from</span> decimal <span class="kw">import</span> <span class="type">Decimal</span>
+
+<span class="kw">def</span> <span class="fn">balance</span>(<span class="arg">entries</span>):
+    <span class="string">"""Return the settled balance."""</span>
+    <span class="kw">return</span> <span class="fn">sum</span>(
+        (<span class="type">Decimal</span>(row[<span class="string">"amount"</span>]) <span class="kw">for</span> row <span class="kw">in</span> entries),
+        start=<span class="type">Decimal</span>(<span class="string">"0"</span>),
+    )</code></pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="states" class="section-grid">
+        <div class="section-copy">
+          <p class="eyebrow">State</p>
+          <h2>Meaning beyond hue</h2>
+          <p>Diagnostics combine labels and borders with colour. Diffs separate line
+            washes from denser inline marks, preserving meaning when hues converge.</p>
+          <div class="diagnostics">
+            <div class="diagnostic error"><b>E</b><span>Type mismatch</span><code>ledger.ts:18</code></div>
+            <div class="diagnostic warning"><b>W</b><span>Unused account</span><code>ledger.ts:7</code></div>
+            <div class="diagnostic info"><b>I</b><span>3 references</span><code>balance</code></div>
+            <div class="diagnostic hint"><b>H</b><span>Prefer readonly</span><code>Entry[]</code></div>
+          </div>
+        </div>
+        <div class="diff-card" aria-label="Example source diff">
+          <header><span>ledger.ts</span><span>− 2&nbsp;&nbsp;+ 3</span></header>
+          <pre><span class="context">  export function balance(rows: Entry[]) {</span>
+<span class="delete">−   return rows.reduce((sum, row) =&gt; sum + row.amount, 0);</span>
+<span class="add">+   const settled = rows.filter((row) =&gt; row.state === "settled");</span>
+<span class="add">+   return settled.reduce((sum, row) =&gt; sum + row.amount, 0);</span>
+<span class="context">  }</span></pre>
+        </div>
+      </section>
+
+      <section id="foundation">
+        <div class="section-heading">
+          <div><p class="eyebrow">Foundation</p><h2>Reusable ink ramps</h2></div>
+          <p>Click any swatch to copy its value. Steps 400 and 600 preserve the approved
+            dark- and light-mode accent anchors.</p>
+        </div>
+        <div id="ramps" class="ramps"></div>
+      </section>
+
+      <section id="terminal">
+        <div class="section-heading">
+          <div><p class="eyebrow">Terminal</p><h2>Conventional ANSI identities</h2></div>
+          <p>Normal and bright colors retain their terminal meaning in both modes.</p>
+        </div>
+        <div id="ansi" class="ansi-grid"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Reference rendering from the locked Nib palette.</p>
+      <a href="../docs/VISUAL_ACCEPTANCE.md">Visual acceptance record →</a>
+    </footer>
+
+    <div id="copy-status" class="copy-status" role="status" aria-live="polite"></div>
+    <script src="palette.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
