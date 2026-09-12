@@ -1,123 +1,127 @@
 # Nib
 
-Nib is an inky colour scheme for reading, writing, and code. Its light mode
-uses deep blue-black fountain-pen ink on cool-neutral paper; its dark mode uses
-soft ivory ink on near-black chalkboard charcoal.
+Nib is an inky colour scheme for prose and code. It is designed for reading and
+writing on digital screens, with deep blue-black fountain-pen ink on
+cool-neutral paper and soft ivory ink on near-black chalkboard charcoal.
 
-The palette was selected through a twelve-match blind preference audit and is
-now [locked by hash](palette/lock.json). Learn more in the
-[palette notes](docs/PALETTE.md) and [audit synthesis](docs/BLIND_AUDIT.md).
+Learn more in the [palette notes](docs/PALETTE.md) and
+[blind preference audit](docs/BLIND_AUDIT.md).
 
 ## Syntax highlighting
 
 Nib keeps prose calm and gives syntax a restrained hierarchy: blue ink for
 structure and callable names, moss for types, teal for strings, and quieter
-burgundy, rust, violet, amber, sepia, and graphite accents. Light and dark
-ports share the same semantic roles rather than being unrelated palettes.
+burgundy, rust, violet, amber, sepia, and graphite accents. Light and dark ports
+share the same semantic roles rather than using unrelated palettes.
 
 ## Ports
 
 Nib is available for the following apps and tools. Every bundled port is
 generated from [`palette/palette.json`](palette/palette.json).
 
-### Editors
+### Apps
 
-- [Neovim](docs/NEOVIM.md)
-- [Vim](docs/VIM.md)
-- [Helix](docs/HELIX.md)
-- [GNU Emacs](docs/EMACS.md)
-- [VS Code and Cursor](docs/VSCODE.md)
-- [Zed](docs/ZED.md)
-- [Sublime Text](docs/SUBLIME.md)
-- [Obsidian](docs/OBSIDIAN.md)
-- [IntelliJ Platform IDEs](intellij/)
-- [Lite XL](lite-xl/)
-
-### Terminals
-
-- [Ghostty](docs/GHOSTTY.md)
-- [macOS Terminal](docs/PORTS.md#macos-terminal)
-- [Konsole](docs/PORTS.md#konsole)
 - [Alacritty](alacritty/)
 - [Black Box](black-box/)
+- [Chrome and Chromium](chromium/)
+- [Discord through BetterDiscord or Vencord](docs/MESSAGING.md#discord)
+- [GNU Emacs](docs/EMACS.md)
+- [Firefox](docs/FIREFOX.md)
+- [fish](fish/)
+- [fzf](fzf/)
+- [Ghostty](docs/GHOSTTY.md)
+- [Helium](docs/HELIUM.md)
+- [Helix](docs/HELIX.md)
+- [IntelliJ Platform IDEs](intellij/)
 - [iTerm2](iterm2/)
 - [Kitty](kitty/)
+- [Konsole](docs/PORTS.md#konsole)
+- [Lite XL](lite-xl/)
+- [macOS Terminal](docs/PORTS.md#macos-terminal)
+- [Neovim](docs/NEOVIM.md)
+- [Obsidian](docs/OBSIDIAN.md)
+- [Slack through Slick or Slack's native custom colours](docs/MESSAGING.md#slack)
+- [Sublime Text](docs/SUBLIME.md)
+- [Telegram Desktop](docs/MESSAGING.md#telegram-desktop)
+- [tmux](tmux/)
+- [Vim](docs/VIM.md)
+- [Visual Studio Code and Cursor](docs/VSCODE.md)
 - [Warp](warp-terminal/)
 - [WezTerm](wezterm/)
 - [Windows Terminal](windows-terminal/)
 - [Xresources-compatible terminals](xresources/)
-
-### Browsers
-
-- [Firefox](docs/FIREFOX.md)
-- [Chrome and Chromium](chromium/)
-- [Helium](docs/HELIUM.md)
-
-### Shell and command-line tools
-
-- [fish](fish/)
-- [fzf](fzf/)
-- [tmux](tmux/)
-- [Zellij](zellij/)
 - [Yazi](docs/PORTS.md#yazi)
-- [Pywal](pywal/)
-
-### Messaging
-
-- [Discord through BetterDiscord or Vencord](docs/MESSAGING.md#discord)
-- [Slack through Slick or Slack's native custom colours](docs/MESSAGING.md#slack)
-- [Telegram Desktop](docs/MESSAGING.md#telegram-desktop)
+- [Zed](docs/ZED.md)
+- [Zellij](zellij/)
 
 ### Frameworks
 
 - [CSS custom properties](css/nib.css)
+- [Pywal](pywal/)
 - [Tailwind CSS v4](tailwind/nib.css)
 
-See the [port installation guide](docs/PORTS.md) for the new portable formats.
-The [Flexoki comparison audit](docs/PORT_AUDIT.md) records supported, missing,
-and intentionally deferred targets.
-
-## Colours
-
-### Core
-
-| Role | Light | Dark |
-| --- | --- | --- |
-| Background | `#F2F1EC` | `#181A19` |
-| Foreground | `#182A38` | `#DDDCD2` |
-| Elevated surface | `#E7E8E4` | `#20231F` |
-| Floating surface | `#FAFAF7` | `#272A25` |
-| Muted text | `#59656A` | `#969C97` |
-| Focus | `#315D78` | `#82A6B6` |
-
-### Accents
-
-| Ink | Light | Dark |
-| --- | --- | --- |
-| Blue | `#285D7C` | `#83A8BB` |
-| Moss | `#536126` | `#A3AE72` |
-| Teal | `#17666A` | `#6FA8A0` |
-| Burgundy | `#7C3448` | `#C17E8B` |
-| Rust | `#8A432C` | `#C28168` |
-| Violet | `#684873` | `#AF97B7` |
-| Amber | `#77560F` | `#C5A667` |
-
-The complete semantic and ANSI palette is available as
-[`dist/nib-palette.json`](dist/nib-palette.json).
-
-## Accessibility
-
-Principal text targets 7:1 contrast where practical, meaningful text targets
-4.5:1, and relevant boundaries target 3:1. Diagnostics and diffs do not rely
-on hue alone. See the [accessibility notes](docs/ACCESSIBILITY.md) and generated
-[contrast](docs/generated/CONTRAST.md), [ANSI](docs/generated/ANSI.md), and
-[colour-vision](docs/generated/COLOR_VISION.md) reports.
+See the [port installation guide](docs/PORTS.md) for the portable formats. The
+[Flexoki comparison audit](docs/PORT_AUDIT.md) records supported, missing, and
+intentionally deferred targets.
 
 ## Contributing
 
 Nib is MIT licensed. Ports and fixes are welcome; please read
 [`CONTRIBUTING.md`](CONTRIBUTING.md). New ports should consume the canonical
 palette rather than introduce parallel colour values.
+
+## Colors
+
+The tables below show Nib's core interface colours and primary syntax accents.
+The complete semantic and ANSI palette is available as
+[`dist/nib-palette.json`](dist/nib-palette.json).
+
+### Base
+
+| Name | Light | Light RGB | Dark | Dark RGB |
+| --- | --- | --- | --- | --- |
+| background | `#F2F1EC` | `242, 241, 236` | `#181A19` | `24, 26, 25` |
+| foreground | `#182A38` | `24, 42, 56` | `#DDDCD2` | `221, 220, 210` |
+| elevated surface | `#E7E8E4` | `231, 232, 228` | `#20231F` | `32, 35, 31` |
+| floating surface | `#FAFAF7` | `250, 250, 247` | `#272A25` | `39, 42, 37` |
+| muted text | `#59656A` | `89, 101, 106` | `#969C97` | `150, 156, 151` |
+| focus | `#315D78` | `49, 93, 120` | `#82A6B6` | `130, 166, 182` |
+
+### Dark colors
+
+These accents are used by the dark theme.
+
+| Color | Hex | RGB |
+| --- | --- | --- |
+| blue | `#83A8BB` | `131, 168, 187` |
+| moss | `#A3AE72` | `163, 174, 114` |
+| teal | `#6FA8A0` | `111, 168, 160` |
+| burgundy | `#C17E8B` | `193, 126, 139` |
+| rust | `#C28168` | `194, 129, 104` |
+| violet | `#AF97B7` | `175, 151, 183` |
+| amber | `#C5A667` | `197, 166, 103` |
+
+### Light colors
+
+These accents are used by the light theme.
+
+| Color | Hex | RGB |
+| --- | --- | --- |
+| blue | `#285D7C` | `40, 93, 124` |
+| moss | `#536126` | `83, 97, 38` |
+| teal | `#17666A` | `23, 102, 106` |
+| burgundy | `#7C3448` | `124, 52, 72` |
+| rust | `#8A432C` | `138, 67, 44` |
+| violet | `#684873` | `104, 72, 115` |
+| amber | `#77560F` | `119, 86, 15` |
+
+## Accessibility
+
+Principal text targets 7:1 contrast where practical, meaningful text targets
+4.5:1, and relevant boundaries target 3:1. Diagnostics and diffs do not rely on
+hue alone. See the [accessibility notes](docs/ACCESSIBILITY.md) and generated
+[contrast](docs/generated/CONTRAST.md), [ANSI](docs/generated/ANSI.md), and
+[colour-vision](docs/generated/COLOR_VISION.md) reports.
 
 ## Development
 
@@ -128,6 +132,6 @@ make verify
 
 The release suite checks the palette lock, deterministic output, contrast,
 syntax and UI coverage, package structure, documentation, and available local
-runtimes. Development details are in [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md),
-and source provenance is recorded in
-[`THIRD_PARTY_REFERENCES.md`](THIRD_PARTY_REFERENCES.md).
+runtimes. Development details are in
+[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md), and source provenance is recorded
+in [`THIRD_PARTY_REFERENCES.md`](THIRD_PARTY_REFERENCES.md).
