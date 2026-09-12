@@ -85,6 +85,20 @@ def load_palette(root: Path) -> dict[str, Any]:
     return json.loads((root / "palette" / "palette.json").read_text(encoding="utf-8"))
 
 
+def load_foundation(root: Path) -> dict[str, Any]:
+    return json.loads((root / "palette" / "foundation.json").read_text(encoding="utf-8"))
+
+
+def load_aliases(root: Path) -> dict[str, Any]:
+    return json.loads((root / "palette" / "aliases.json").read_text(encoding="utf-8"))
+
+
+def resolve_reference(value: dict[str, Any], reference: str) -> Any:
+    if not reference.startswith("$"):
+        raise ValueError(f"invalid palette reference: {reference}")
+    return get_path(value, reference[1:])
+
+
 def get_path(value: dict[str, Any], dotted: str) -> Any:
     current: Any = value
     for component in dotted.split("."):

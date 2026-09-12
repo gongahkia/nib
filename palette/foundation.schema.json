@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nib.local/foundation.schema.json",
+  "title": "Nib foundation palette",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["meta", "ramps", "anchors"],
+  "properties": {
+    "$schema": { "const": "./foundation.schema.json" },
+    "meta": { "type": "object" },
+    "ramps": {
+      "type": "object",
+      "minProperties": 10,
+      "additionalProperties": { "$ref": "#/$defs/ramp" }
+    },
+    "anchors": {
+      "type": "object",
+      "required": ["light", "dark"],
+      "additionalProperties": { "$ref": "#/$defs/colorMap" }
+    }
+  },
+  "$defs": {
+    "color": { "type": "string", "pattern": "^#[0-9A-F]{6}$" },
+    "colorMap": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/color" }
+    },
+    "ramp": {
+      "type": "object",
+      "required": ["50", "100", "150", "200", "300", "400", "500", "600", "700", "800", "850", "900", "950"],
+      "additionalProperties": false,
+      "properties": {
+        "50": { "$ref": "#/$defs/color" }, "100": { "$ref": "#/$defs/color" },
+        "150": { "$ref": "#/$defs/color" }, "200": { "$ref": "#/$defs/color" },
+        "300": { "$ref": "#/$defs/color" }, "400": { "$ref": "#/$defs/color" },
+        "500": { "$ref": "#/$defs/color" }, "600": { "$ref": "#/$defs/color" },
+        "700": { "$ref": "#/$defs/color" }, "800": { "$ref": "#/$defs/color" },
+        "850": { "$ref": "#/$defs/color" }, "900": { "$ref": "#/$defs/color" },
+        "950": { "$ref": "#/$defs/color" }
+      }
+    }
+  }
+}

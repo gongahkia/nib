@@ -30,13 +30,18 @@ from theme_utils import (  # noqa: E402
     contrast,
     get_path,
     iter_colors,
+    load_aliases,
+    load_foundation,
     load_palette,
     luminance,
     oklab_distance,
+    resolve_reference as resolve_palette_reference,
 )
 
 PALETTE = load_palette(ROOT)
 SCHEMA = json.loads((ROOT / "palette" / "schema.json").read_text(encoding="utf-8"))
+FOUNDATION = load_foundation(ROOT)
+ALIASES = load_aliases(ROOT)
 
 
 class VerificationError(RuntimeError):
@@ -56,17 +61,23 @@ def command(arguments: list[str], *, env: dict[str, str] | None = None) -> subpr
     return result
 
 
-def resolve_reference(reference: str) -> dict[str, Any]:
+def resolve_reference(reference: str, schema: dict[str, Any]) -> dict[str, Any]:
     require(reference.startswith("#/"), f"unsupported schema reference: {reference}")
-    value: Any = SCHEMA
+    value: Any = schema
     for component in reference[2:].split("/"):
         value = value[component.replace("~1", "/").replace("~0", "~")]
     return value
 
 
-def validate_schema(value: Any, rule: dict[str, Any], path: str = "$") -> None:
+def validate_schema(
+    value: Any,
+    rule: dict[str, Any],
+    path: str = "$",
+    schema: dict[str, Any] | None = None,
+) -> None:
+    schema = schema or SCHEMA
     if "$ref" in rule:
-        validate_schema(value, resolve_reference(rule["$ref"]), path)
+        validate_schema(value, resolve_reference(rule["$ref"], schema), path, schema)
         return
     if "const" in rule:
         require(value == rule["const"], f"{path}: expected constant {rule['const']!r}")
@@ -88,17 +99,17 @@ def validate_schema(value: Any, rule: dict[str, Any], path: str = "$") -> None:
         for key, child in value.items():
             child_path = f"{path}.{key}"
             if key in properties:
-                validate_schema(child, properties[key], child_path)
+                validate_schema(child, properties[key], child_path, schema)
             elif additional is False:
                 raise VerificationError(f"{child_path}: unexpected property")
             elif isinstance(additional, dict):
-                validate_schema(child, additional, child_path)
+                validate_schema(child, additional, child_path, schema)
     if isinstance(value, list):
         require(len(value) >= rule.get("minItems", 0), f"{path}: too few items")
         require(len(value) <= rule.get("maxItems", math.inf), f"{path}: too many items")
         if "items" in rule:
             for index, child in enumerate(value):
-                validate_schema(child, rule["items"], f"{path}[{index}]")
+                validate_schema(child, rule["items"], f"{path}[{index}]", schema)
     if isinstance(value, str) and "pattern" in rule:
         require(re.search(rule["pattern"], value) is not None, f"{path}: pattern mismatch")
     if isinstance(value, int) and not isinstance(value, bool):
@@ -108,6 +119,10 @@ def validate_schema(value: Any, rule: dict[str, Any], path: str = "$") -> None:
 
 def verify_palette() -> None:
     validate_schema(PALETTE, SCHEMA)
+    foundation_schema = json.loads((ROOT / "palette" / "foundation.schema.json").read_text(encoding="utf-8"))
+    aliases_schema = json.loads((ROOT / "palette" / "aliases.schema.json").read_text(encoding="utf-8"))
+    validate_schema(FOUNDATION, foundation_schema, schema=foundation_schema)
+    validate_schema(ALIASES, aliases_schema, schema=aliases_schema)
     lock = json.loads((ROOT / "palette" / "lock.json").read_text(encoding="utf-8"))
     digest = hashlib.sha256((ROOT / "palette" / "palette.json").read_bytes()).hexdigest()
     require(lock.get("format") == "nib-palette-lock", "palette lock format changed")
@@ -126,6 +141,21 @@ def verify_palette() -> None:
             require(color not in {"#000000", "#FFFFFF"}, f"{style}.{path}: pure black/white is forbidden")
     require(luminance(PALETTE["modes"]["light"]["background"]) > 0.80, "light paper is not a light surface")
     require(luminance(PALETTE["modes"]["dark"]["background"]) < 0.02, "dark paper is not near-black")
+    for family, ramp in FOUNDATION["ramps"].items():
+        values = list(ramp.values())
+        require(
+            all(luminance(first) > luminance(second) for first, second in zip(values, values[1:])),
+            f"foundation ramp is not strictly light-to-dark: {family}",
+        )
+    for style, bindings in ALIASES.items():
+        if style == "$schema":
+            continue
+        for role, reference in bindings.items():
+            resolved = resolve_palette_reference(FOUNDATION, reference)
+            require(
+                resolved == get_path(PALETTE["modes"][style], role),
+                f"{style}.{role}: alias {reference} does not match the locked semantic color",
+            )
 
 
 def verify_generation() -> None:
