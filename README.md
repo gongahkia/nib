@@ -1,90 +1,75 @@
 # `Nib` 🖋
 
-Nib is a fountain-pen colour system for sustained reading, writing, and code.
-Deep blue-black gives structure to cool-neutral paper, while soft ivory marks a
-near-black chalkboard leaf; diluted washes and pooled accents carry interface
-state without turning the page into a highlighter set.
+A fountain-pen colour system for [sustained](#colors) & [accessible](#accessibility) reading, writing, and code.
 
-## Syntax highlighting
+## Screenshots
 
-Nib keeps prose calm and gives syntax a restrained hierarchy: blue ink for
-structure and callable names, moss for types, teal for strings, and quieter
-burgundy, rust, violet, amber, sepia, and graphite accents. Light and dark ports
-share the same semantic roles rather than using unrelated palettes.
+...
 
 ## Ports
 
-Nib contains artifacts for the following apps and tools. “Available” does not
-mean visually verified: consult the [support and evidence matrix](docs/SUPPORT.md)
-for Generated, Verified, and Experimental tiers. Every bundled port is derived
-from the locked semantic palette or the reviewed foundation ramps.
+`Nib` currently supports the below apps *(and frameworks)*.
 
-### Apps
-
-- [Alacritty](alacritty/)
-- [Black Box](black-box/)
-- [Chrome and Chromium](chromium/)
-- [Discord through BetterDiscord or Vencord](docs/MESSAGING.md#discord) — Experimental
-- [Dunst](docs/DESKTOP.md#dunst)
-- [GNU Emacs](docs/EMACS.md)
-- [GIMP palette](docs/CREATIVE.md#gimp)
-- [Firefox](docs/FIREFOX.md)
-- [fish](fish/)
-- [fzf](fzf/)
-- [Ghostty](docs/GHOSTTY.md)
-- [Helium](docs/HELIUM.md)
-- [Helix](docs/HELIX.md)
-- [i3](docs/DESKTOP.md#i3)
-- [IntelliJ Platform IDEs](intellij/)
-- [iTerm2](iterm2/)
-- [Kitty](kitty/)
-- [Konsole](docs/PORTS.md#konsole)
-- [Lite XL](lite-xl/)
-- [macOS Terminal](docs/PORTS.md#macos-terminal)
-- [Matplotlib](docs/CREATIVE.md#matplotlib)
-- [Neovim](docs/NEOVIM.md)
-- [Obsidian](docs/OBSIDIAN.md)
-- [Pywal](pywal/) — Experimental
-- [R](docs/CREATIVE.md#r)
-- [Slack through Slick or Slack's native custom colours](docs/MESSAGING.md#slack) — Experimental
-- [Sublime Text](docs/SUBLIME.md)
-- [Telegram Desktop](docs/MESSAGING.md#telegram-desktop)
-- [tmux](tmux/)
-- [Vim](docs/VIM.md)
-- [Visual Studio Code and Cursor](docs/VSCODE.md)
-- [Warp](warp-terminal/)
-- [Waybar](docs/DESKTOP.md#waybar)
-- [WezTerm](wezterm/)
-- [Windows Terminal](windows-terminal/)
-- [Xresources-compatible terminals](xresources/)
-- [Yazi](docs/PORTS.md#yazi)
-- [Zed](docs/ZED.md)
-- [Zathura](docs/DESKTOP.md#zathura)
-- [Zellij](zellij/)
+* [Alacritty](alacritty/)
+* [Black Box](black-box/)
+* [Chrome & Chromium](chromium/)
+* [Discord *(through BetterDiscord or Vencord)*](docs/MESSAGING.md#discord)
+* [Dunst](docs/DESKTOP.md#dunst)
+* [GNU Emacs](docs/EMACS.md)
+* [GIMP palette](docs/CREATIVE.md#gimp)
+* [Firefox](docs/FIREFOX.md)
+* [fish](fish/)
+* [fzf](fzf/)
+* [Ghostty](docs/GHOSTTY.md)
+* [Helium](docs/HELIUM.md)
+* [Helix](docs/HELIX.md)
+* [i3](docs/DESKTOP.md#i3)
+* [IntelliJ Platform IDEs](intellij/)
+* [iTerm2](iterm2/)
+* [Kitty](kitty/)
+* [Konsole](docs/PORTS.md#konsole)
+* [Lite XL](lite-xl/)
+* [macOS Terminal](docs/PORTS.md#macos-terminal)
+* [Matplotlib](docs/CREATIVE.md#matplotlib)
+* [Neovim](docs/NEOVIM.md)
+* [Obsidian](docs/OBSIDIAN.md)
+* [Pywal](pywal/)
+* [R](docs/CREATIVE.md#r)
+* [Slack *(through Slick or Slack's native custom colours)*](docs/MESSAGING.md#slack)
+* [Sublime Text](docs/SUBLIME.md)
+* [Telegram Desktop](docs/MESSAGING.md#telegram-desktop)
+* [tmux](tmux/)
+* [Vim](docs/VIM.md)
+* [Visual Studio Code & Cursor](docs/VSCODE.md)
+* [Warp](warp-terminal/)
+* [Waybar](docs/DESKTOP.md#waybar)
+* [WezTerm](wezterm/)
+* [Windows Terminal](windows-terminal/)
+* [Xresources-compatible terminals](xresources/)
+* [Yazi](docs/PORTS.md#yazi)
+* [Zed](docs/ZED.md)
+* [Zathura](docs/DESKTOP.md#zathura)
+* [Zellij](zellij/)
 
 ### Frameworks
 
-- [CSS custom properties](css/nib.css)
-- [Tailwind CSS v4](tailwind/nib.css)
+* [CSS custom properties](css/nib.css)
+* [Tailwind CSS v4](tailwind/nib.css)
 
-See the [port installation guide](docs/PORTS.md) for the portable formats. The
-[Flexoki comparison audit](docs/PORT_AUDIT.md) records supported, missing, and
-intentionally deferred targets.
+## Accessibility
 
-## Contributing
-
-Nib is MIT licensed. Ports and fixes are welcome; please read
-[`CONTRIBUTING.md`](CONTRIBUTING.md). New ports should consume the canonical
-palette rather than introduce parallel colour values.
+Principal text targets 7:1 contrast where practical, meaningful text targets
+4.5:1, and relevant boundaries target 3:1. Diagnostics and diffs do not rely on
+hue alone. See the [accessibility notes](docs/ACCESSIBILITY.md) and generated
+[contrast](docs/generated/CONTRAST.md), [ANSI](docs/generated/ANSI.md), and
+[colour-vision](docs/generated/COLOR_VISION.md) reports.
 
 ## Colors
 
-The tables below show Nib's core interface colours and primary syntax accents.
-The complete semantic and ANSI palette is available as
-[`dist/nib-palette.json`](dist/nib-palette.json); reusable 50–950 ink ramps and
-mode aliases are in [`dist/nib-foundation.json`](dist/nib-foundation.json).
+> [!NOTE]
+> The tables below show `Nib`'s core interface colours and primary syntax accents. A more detailed & complete semantic ANSI palette is available at [`dist/nib-palette.json`](dist/nib-palette.json).
 
-### Base
+### Base colors
 
 | Name | Light | Light RGB | Dark | Dark RGB |
 | --- | --- | --- | --- | --- |
@@ -96,8 +81,6 @@ mode aliases are in [`dist/nib-foundation.json`](dist/nib-foundation.json).
 | focus | `#315D78` | `49, 93, 120` | `#82A6B6` | `130, 166, 182` |
 
 ### Dark colors
-
-These accents are used by the dark theme.
 
 | Color | Hex | RGB |
 | --- | --- | --- |
@@ -111,8 +94,6 @@ These accents are used by the dark theme.
 
 ### Light colors
 
-These accents are used by the light theme.
-
 | Color | Hex | RGB |
 | --- | --- | --- |
 | blue | `#285D7C` | `40, 93, 124` |
@@ -122,25 +103,3 @@ These accents are used by the light theme.
 | rust | `#8A432C` | `138, 67, 44` |
 | violet | `#684873` | `104, 72, 115` |
 | amber | `#77560F` | `119, 86, 15` |
-
-## Accessibility
-
-Principal text targets 7:1 contrast where practical, meaningful text targets
-4.5:1, and relevant boundaries target 3:1. Diagnostics and diffs do not rely on
-hue alone. See the [accessibility notes](docs/ACCESSIBILITY.md) and generated
-[contrast](docs/generated/CONTRAST.md), [ANSI](docs/generated/ANSI.md), and
-[colour-vision](docs/generated/COLOR_VISION.md) reports.
-
-## Development
-
-```sh
-make generate
-make verify
-```
-
-The release suite checks the palette lock, deterministic output, contrast,
-syntax and UI coverage, package structure, documentation, and available local
-runtimes. Development details are in
-[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md), and source provenance is recorded
-in [`THIRD_PARTY_REFERENCES.md`](THIRD_PARTY_REFERENCES.md). Visual acceptance
-is tracked separately in [`docs/VISUAL_ACCEPTANCE.md`](docs/VISUAL_ACCEPTANCE.md).
