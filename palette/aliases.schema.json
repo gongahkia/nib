@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nib.local/aliases.schema.json",
+  "title": "Nib light and dark aliases",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["light", "dark"],
+  "properties": {
+    "$schema": { "const": "./aliases.schema.json" },
+    "light": { "$ref": "#/$defs/aliases" },
+    "dark": { "$ref": "#/$defs/aliases" }
+  },
+  "$defs": {
+    "reference": { "type": "string", "pattern": "^\\$(ramps|anchors)\\.[a-z_]+\\.[a-z0-9_]+$" },
+    "aliases": {
+      "type": "object",
+      "minProperties": 20,
+      "additionalProperties": { "$ref": "#/$defs/reference" }
+    }
+  }
+}
