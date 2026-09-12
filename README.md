@@ -5,9 +5,6 @@ Deep blue-black gives structure to cool-neutral paper, while soft ivory marks a
 near-black chalkboard leaf; diluted washes and pooled accents carry interface
 state without turning the page into a highlighter set.
 
-Learn more in the [palette notes](docs/PALETTE.md) and
-[blind preference audit](docs/BLIND_AUDIT.md).
-
 ## Syntax highlighting
 
 Nib keeps prose calm and gives syntax a restrained hierarchy: blue ink for
