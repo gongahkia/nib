@@ -1,4 +1,4 @@
-name: Verify
+name: Nib CI/CD on push
 
 on:
   push:
