@@ -9,6 +9,11 @@ A fountain-pen colour system for [sustained](#colors) & [accessible](#accessibil
 ![](./asset/reference/alacritty-1.png)
 ![](./asset/reference/alacritty-2.png)
 
+### Black Box
+
+![](./asset/reference/black-box-1.png)
+![](./asset/reference/black-box-2.png)
+
 ### Chromium
 
 ![](./asset/reference/chromium-1.png)
