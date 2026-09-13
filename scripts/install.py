@@ -118,8 +118,15 @@ def main() -> int:
         changes: list[tuple[Path, Path]] = []
         blocked = False
         for name, source, destination in files:
-            if same_file(source, destination, link=False):
+            if same_file(source, destination, link=False) or same_file(source, destination, link=True):
                 print(f"unchanged [{name}]: {destination}")
+                continue
+            if name == "neovim" and any(
+                parent.name == "nib" and parent.parent.name == "start" and parent.is_symlink()
+                for parent in destination.parents
+            ):
+                print(f"blocked (Neovim package is a symlink) [{name}]: {destination}")
+                blocked = True
                 continue
             invalid_parent = next(
                 (parent for parent in destination.parents if (parent.exists() or parent.is_symlink()) and not parent.is_dir()),

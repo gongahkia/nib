@@ -1061,6 +1061,28 @@ def verify_quick_installer() -> None:
         require((root / "only-config/fish/themes/nib-dark.theme").is_file(), "selected port was not installed")
         require(not (root / "only-config/ghostty").exists(), "unselected port was installed")
 
+        linked_environment = environment | {"XDG_CONFIG_HOME": str(root / "linked-config")}
+        linked_theme = root / "linked-config/ghostty/themes/nib-dark"
+        linked_theme.parent.mkdir(parents=True)
+        linked_theme.symlink_to(ROOT / "ghostty/themes/nib-dark")
+        command(script + ["--apply", "--only", "ghostty"], env=linked_environment)
+        require(linked_theme.is_symlink(), "quick installer replaced an existing Ghostty theme link")
+        require((linked_theme.parent / "nib-light").is_file(), "quick installer missed the other Ghostty variant")
+
+        old_package = root / "old-neovim-package"
+        old_package.mkdir()
+        linked_data = root / "linked-data"
+        package_link = linked_data / "nvim/site/pack/themes/start/nib"
+        package_link.parent.mkdir(parents=True)
+        package_link.symlink_to(old_package, target_is_directory=True)
+        linked_data_environment = environment | {"XDG_DATA_HOME": str(linked_data)}
+        blocked = subprocess.run(
+            script + ["--apply", "--only", "neovim"], cwd=ROOT, env=linked_data_environment,
+            text=True, capture_output=True,
+        )
+        require(blocked.returncode == 2, "quick installer wrote through an existing Neovim package link")
+        require(not list(old_package.iterdir()), "quick installer changed an existing Neovim package")
+
 
 def verify_shaders() -> None:
     shaders = sorted((ROOT / "ghostty" / "shaders").glob("*.glsl"))
