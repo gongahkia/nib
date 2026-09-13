@@ -4,6 +4,56 @@
 
 A fountain-pen colour system for [sustained](#colors) & [accessible](#accessibility) reading, writing, and code.
 
+## Ports
+
+`Nib` currently supports the below apps *(and frameworks)*.
+
+* [Alacritty](alacritty/)
+* [Black Box](black-box/)
+* [Chrome & Chromium](chromium/)
+* [Discord *(through BetterDiscord or Vencord)*](docs/MESSAGING.md#discord)
+* [Dunst](docs/DESKTOP.md#dunst)
+* [GNU Emacs](docs/EMACS.md)
+* [GIMP palette](docs/CREATIVE.md#gimp)
+* [Firefox](docs/FIREFOX.md)
+* [fish](fish/)
+* [fzf](fzf/)
+* [Ghostty](docs/GHOSTTY.md)
+* [Helium](docs/HELIUM.md)
+* [Helix](docs/HELIX.md)
+* [i3](docs/DESKTOP.md#i3)
+* [IntelliJ Platform IDEs](intellij/)
+* [iTerm2](iterm2/)
+* [Kitty](kitty/)
+* [Konsole](docs/PORTS.md#konsole)
+* [Lite XL](lite-xl/)
+* [macOS Terminal](docs/PORTS.md#macos-terminal)
+* [Matplotlib](docs/CREATIVE.md#matplotlib)
+* [Neovim](docs/NEOVIM.md)
+* [Obsidian](docs/OBSIDIAN.md)
+* [Pywal](pywal/)
+* [R](docs/CREATIVE.md#r)
+* [Slack *(through Slick or Slack's native custom colours)*](docs/MESSAGING.md#slack)
+* [Sublime Text](docs/SUBLIME.md)
+* [Telegram Desktop](docs/MESSAGING.md#telegram-desktop)
+* [tmux](tmux/)
+* [Vim](docs/VIM.md)
+* [Visual Studio Code & Cursor](docs/VSCODE.md)
+* [Warp](warp-terminal/)
+* [Waybar](docs/DESKTOP.md#waybar)
+* [WezTerm](wezterm/)
+* [Windows Terminal](windows-terminal/)
+* [Xresources-compatible terminals](xresources/)
+* [Yazi](docs/PORTS.md#yazi)
+* [Zed](docs/ZED.md)
+* [Zathura](docs/DESKTOP.md#zathura)
+* [Zellij](zellij/)
+
+### Frameworks
+
+* [CSS custom properties](css/nib.css)
+* [Tailwind CSS v4](tailwind/nib.css)
+
 ## Screenshots
 
 ### Alacritty
@@ -118,63 +168,15 @@ A fountain-pen colour system for [sustained](#colors) & [accessible](#accessibil
     <img src="./asset/reference/zathura-2.png" alt="Nib light theme in Zathura" width="40%">
 </div>
 
-## Ports
-
-`Nib` currently supports the below apps *(and frameworks)*.
-
-* [Alacritty](alacritty/)
-* [Black Box](black-box/)
-* [Chrome & Chromium](chromium/)
-* [Discord *(through BetterDiscord or Vencord)*](docs/MESSAGING.md#discord)
-* [Dunst](docs/DESKTOP.md#dunst)
-* [GNU Emacs](docs/EMACS.md)
-* [GIMP palette](docs/CREATIVE.md#gimp)
-* [Firefox](docs/FIREFOX.md)
-* [fish](fish/)
-* [fzf](fzf/)
-* [Ghostty](docs/GHOSTTY.md)
-* [Helium](docs/HELIUM.md)
-* [Helix](docs/HELIX.md)
-* [i3](docs/DESKTOP.md#i3)
-* [IntelliJ Platform IDEs](intellij/)
-* [iTerm2](iterm2/)
-* [Kitty](kitty/)
-* [Konsole](docs/PORTS.md#konsole)
-* [Lite XL](lite-xl/)
-* [macOS Terminal](docs/PORTS.md#macos-terminal)
-* [Matplotlib](docs/CREATIVE.md#matplotlib)
-* [Neovim](docs/NEOVIM.md)
-* [Obsidian](docs/OBSIDIAN.md)
-* [Pywal](pywal/)
-* [R](docs/CREATIVE.md#r)
-* [Slack *(through Slick or Slack's native custom colours)*](docs/MESSAGING.md#slack)
-* [Sublime Text](docs/SUBLIME.md)
-* [Telegram Desktop](docs/MESSAGING.md#telegram-desktop)
-* [tmux](tmux/)
-* [Vim](docs/VIM.md)
-* [Visual Studio Code & Cursor](docs/VSCODE.md)
-* [Warp](warp-terminal/)
-* [Waybar](docs/DESKTOP.md#waybar)
-* [WezTerm](wezterm/)
-* [Windows Terminal](windows-terminal/)
-* [Xresources-compatible terminals](xresources/)
-* [Yazi](docs/PORTS.md#yazi)
-* [Zed](docs/ZED.md)
-* [Zathura](docs/DESKTOP.md#zathura)
-* [Zellij](zellij/)
-
-### Frameworks
-
-* [CSS custom properties](css/nib.css)
-* [Tailwind CSS v4](tailwind/nib.css)
-
 ## Accessibility
 
-Principal text targets 7:1 contrast where practical, meaningful text targets
-4.5:1, and relevant boundaries target 3:1. Diagnostics and diffs do not rely on
-hue alone. See the [accessibility notes](docs/ACCESSIBILITY.md) and generated
-[contrast](docs/generated/CONTRAST.md), [ANSI](docs/generated/ANSI.md), and
-[colour-vision](docs/generated/COLOR_VISION.md) reports.
+* Principal text targets 7:1 contrast where practical.
+* Meaningful text targets 4.5:1.
+* Relevant boundaries target 3:1.
+* Diagnostics and diffs do not rely on hue alone.
+
+> [!NOTE]
+> See more at [accessibility notes](docs/ACCESSIBILITY.md), [generated contrast docs](docs/generated/CONTRAST.md), [ANSI docs](docs/generated/ANSI.md) and a [colour-vision report](docs/generated/COLOR_VISION.md).
 
 ## Colors
 
