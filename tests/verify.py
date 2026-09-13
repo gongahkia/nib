@@ -1011,6 +1011,57 @@ def verify_installer() -> None:
             require(installed.resolve() == source.resolve(), f"link install points to the wrong source: {source.name}")
 
 
+def verify_quick_installer() -> None:
+    script = [sys.executable, "scripts/install.py"]
+    with tempfile.TemporaryDirectory(prefix="nib-quick-installer-") as temporary:
+        root = Path(temporary)
+        environment = os.environ.copy()
+        environment.update({
+            "HOME": str(root / "home"),
+            "XDG_CONFIG_HOME": str(root / "config"),
+            "XDG_DATA_HOME": str(root / "data"),
+        })
+        command(script, env=environment)
+        require(not (root / "config").exists(), "quick installer dry-run created a config directory")
+        require(not (root / "data").exists(), "quick installer dry-run created a data directory")
+
+        command(script + ["--apply"], env=environment)
+        installed = (
+            ("ghostty/themes/nib-dark", "config/ghostty/themes/nib-dark"),
+            ("helix/nib-light.toml", "config/helix/themes/nib-light.toml"),
+            ("konsole/Nib Dark.colorscheme", "data/konsole/Nib Dark.colorscheme"),
+            ("lua/nib/init.lua", "data/nvim/site/pack/themes/start/nib/lua/nib/init.lua"),
+            ("colors/nib.lua", "data/nvim/site/pack/themes/start/nib/colors/nib.lua"),
+            ("vim/colors/nib.vim", "home/.vim/colors/nib.vim"),
+        )
+        for source, destination in installed:
+            require(
+                (root / destination).read_bytes() == (ROOT / source).read_bytes(),
+                f"quick installer copy mismatch: {destination}",
+            )
+        again = command(script + ["--apply"], env=environment)
+        require("installed 0 file(s)" in again.stdout, "quick installer is not idempotent")
+
+        occupied = root / "config/ghostty/themes/nib-light"
+        occupied.write_text("user content\n", encoding="utf-8")
+        missing = root / "config/helix/themes/nib-dark.toml"
+        missing.unlink()
+        blocked = subprocess.run(script + ["--apply"], cwd=ROOT, env=environment, text=True, capture_output=True)
+        require(blocked.returncode == 2, "quick installer did not block an existing path")
+        require(occupied.read_text(encoding="utf-8") == "user content\n", "blocked install changed user content")
+        require(not missing.exists(), "blocked install partially installed another port")
+        command(script + ["--apply", "--force"], env=environment)
+        backups = list(occupied.parent.glob("nib-light.bak-*"))
+        require(len(backups) == 1, "quick installer did not make exactly one backup")
+        require(backups[0].read_text(encoding="utf-8") == "user content\n", "quick installer backup lost content")
+        require(missing.read_bytes() == (ROOT / "helix/nib-dark.toml").read_bytes(), "forced install missed a port")
+
+        only_environment = environment | {"XDG_CONFIG_HOME": str(root / "only-config")}
+        command(script + ["--apply", "--only", "fish"], env=only_environment)
+        require((root / "only-config/fish/themes/nib-dark.theme").is_file(), "selected port was not installed")
+        require(not (root / "only-config/ghostty").exists(), "unselected port was installed")
+
+
 def verify_shaders() -> None:
     shaders = sorted((ROOT / "ghostty" / "shaders").glob("*.glsl"))
     require(len(shaders) == 4, "expected four shader stages")
@@ -1170,6 +1221,7 @@ CHECKS: tuple[tuple[str, Callable[[], None]], ...] = (
     ("application, file-manager, and messaging ports", verify_application_ports),
     ("Ghostty themes and paired configuration", verify_ghostty),
     ("dry-run installer, backups, and symlinks", verify_installer),
+    ("quick multi-port installer and conflict handling", verify_quick_installer),
     ("static shader structure and compilation", verify_shaders),
     ("language and terminal fixtures", verify_fixtures),
     ("Neovim runtime, switching, and setup API", verify_neovim),
