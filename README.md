@@ -51,8 +51,8 @@ A fountain-pen colour system for [sustained](#colors) & [accessible](#accessibil
 
 ### Lite XL
 
-![](./asset/reference/litexl-1.png)
-![](./asset/reference/litexl-2.png)
+![](./asset/reference/lite-xl-1.png)
+![](./asset/reference/lite-xl-2.png)
 
 ### Neovim
 
