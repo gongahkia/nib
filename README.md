@@ -21,9 +21,8 @@ and the linked app guides below to activate one. Browser themes, Obsidian,
 VS Code, and other GUI imports still use their app-specific instructions.
 
 Run `python3 scripts/install.py` to preview the changes, or add `--only ghostty`
-(repeat `--only` for multiple apps) to select ports. Conflicting existing files
-block the install before any files change; `--force` backs them up before
-replacing them.
+(repeat `--only` for multiple apps) to select ports. Existing paths block the
+install before any files change; `--force` backs them up before replacing them.
 No root privileges or package manager are needed.
 
 ## Ports
