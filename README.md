@@ -4,7 +4,26 @@ A fountain-pen colour system for [sustained](#colors) & [accessible](#accessibil
 
 ## Screenshots
 
-...
+![](./asset/reference/fzf-1.png)
+![](./asset/reference/fzf-2.png)
+![](./asset/reference/vim-1.png)
+![](./asset/reference/vim-2.png)
+![](./asset/reference/fish-1.png)
+![](./asset/reference/fish-2.png)
+![](./asset/reference/tmux-1.png)
+![](./asset/reference/tmux-2.png)
+![](./asset/reference/helium-1.png)
+![](./asset/reference/helium-2.png)
+![](./asset/reference/neovim-1.png)
+![](./asset/reference/neovim-2.png)
+![](./asset/reference/waybar-1.png)
+![](./asset/reference/waybar-2.png)
+![](./asset/reference/ghostty-1.png)
+![](./asset/reference/ghostty-2.png)
+![](./asset/reference/zathura-1.png)
+![](./asset/reference/zathura-2.png)
+![](./asset/reference/chromium-1.png)
+![](./asset/reference/chromium-2.png)
 
 ## Ports
 
