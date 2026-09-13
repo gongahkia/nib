@@ -1,3 +1,5 @@
+[![](https://img.shields.io/badge/nib_1.0.0-passing-green)](https://github.com/gongahkia/nib/releases/tag/1.0)
+
 # `Nib` 🖋
 
 A fountain-pen colour system for [sustained](#colors) & [accessible](#accessibility) reading, writing, and code.
