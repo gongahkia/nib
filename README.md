@@ -1,29 +1,17 @@
-[![](https://img.shields.io/badge/nib_1.0.0-passing-green)](https://github.com/gongahkia/nib/releases/tag/1.0.0) 
+[![](https://img.shields.io/badge/nib_1.0.0-passing-green)](https://github.com/gongahkia/nib/releases/tag/1.0.0)
 [![](https://github.com/gongahkia/nib/actions/workflows/verify.yml/badge.svg)](https://github.com/gongahkia/nib/actions/workflows/release.yml)
-                                                                   
+
 # `Nib` 🖋
 
 A fountain-pen colour system for [sustained](#colors) & [accessible](#accessibility) reading, writing, and code.
 
-## Quick installation
+## One-line installation
 
-On Linux, install the file-based ports into your user directories with one command:
+The below instructions are for [Linux](https://en.wikipedia.org/wiki/Linux) and [Unix](https://en.wikipedia.org/wiki/Unix) systems.
 
-```sh
-git clone --depth 1 https://github.com/gongahkia/nib.git && python3 nib/scripts/install.py --apply
+```console
+$ git clone --depth 1 https://github.com/gongahkia/nib.git && python3 nib/scripts/install.py --apply
 ```
-
-From an existing checkout, run `make install`. The installer places light and
-dark theme files for ports with known user-local paths, including Ghostty,
-Neovim, Helix, Vim, Kitty, Konsole, fish, and others. It does not change app
-settings or select a variant; use the [port installation guide](docs/PORTS.md)
-and the linked app guides below to activate one. Browser themes, Obsidian,
-VS Code, and other GUI imports still use their app-specific instructions.
-
-Run `python3 scripts/install.py` to preview the changes, or add `--only ghostty`
-(repeat `--only` for multiple apps) to select ports. Existing paths block the
-install before any files change; `--force` backs them up before replacing them.
-No root privileges or package manager are needed.
 
 ## Ports
 
