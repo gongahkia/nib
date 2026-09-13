@@ -6,83 +6,115 @@ A fountain-pen colour system for [sustained](#colors) & [accessible](#accessibil
 
 ### Alacritty
 
-![](./asset/reference/alacritty-1.png)
-![](./asset/reference/alacritty-2.png)
+<div align="center">
+    <img src="./asset/reference/alacritty-1.png" alt="Nib dark theme in Alacritty" width="40%">
+    <img src="./asset/reference/alacritty-2.png" alt="Nib light theme in Alacritty" width="40%">
+</div>
 
 ### Black Box
 
-![](./asset/reference/black-box-1.png)
-![](./asset/reference/black-box-2.png)
+<div align="center">
+    <img src="./asset/reference/black-box-1.png" alt="Nib dark theme in Black Box" width="40%">
+    <img src="./asset/reference/black-box-2.png" alt="Nib light theme in Black Box" width="40%">
+</div>
 
 ### Chromium
 
-![](./asset/reference/chromium-1.png)
-![](./asset/reference/chromium-2.png)
+<div align="center">
+    <img src="./asset/reference/chromium-1.png" alt="Nib dark theme in Chromium" width="40%">
+    <img src="./asset/reference/chromium-2.png" alt="Nib light theme in Chromium" width="40%">
+</div>
 
 ### Fish
 
-![](./asset/reference/fish-1.png)
-![](./asset/reference/fish-2.png)
+<div align="center">
+    <img src="./asset/reference/fish-1.png" alt="Nib dark theme in Fish" width="40%">
+    <img src="./asset/reference/fish-2.png" alt="Nib light theme in Fish" width="40%">
+</div>
 
 ### Emacs
 
-![](./asset/reference/emacs-1.png)
-![](./asset/reference/emacs-2.png)
+<div align="center">
+    <img src="./asset/reference/emacs-1.png" alt="Nib dark theme in Emacs" width="40%">
+    <img src="./asset/reference/emacs-2.png" alt="Nib light theme in Emacs" width="40%">
+</div>
 
 ### fzf
 
-![](./asset/reference/fzf-1.png)
-![](./asset/reference/fzf-2.png)
+<div align="center">
+    <img src="./asset/reference/fzf-1.png" alt="Nib dark theme in fzf" width="40%">
+    <img src="./asset/reference/fzf-2.png" alt="Nib light theme in fzf" width="40%">
+</div>
 
 ### Ghostty
 
-![](./asset/reference/ghostty-1.png)
-![](./asset/reference/ghostty-2.png)
+<div align="center">
+    <img src="./asset/reference/ghostty-1.png" alt="Nib dark theme in Ghostty" width="40%">
+    <img src="./asset/reference/ghostty-2.png" alt="Nib light theme in Ghostty" width="40%">
+</div>
 
 ### Helium
 
-![](./asset/reference/helium-1.png)
-![](./asset/reference/helium-2.png)
+<div align="center">
+    <img src="./asset/reference/helium-1.png" alt="Nib dark theme in Helium" width="40%">
+    <img src="./asset/reference/helium-2.png" alt="Nib light theme in Helium" width="40%">
+</div>
 
 ### Helix
 
-![](./asset/reference/helix-1.png)
-![](./asset/reference/helix-2.png)
+<div align="center">
+    <img src="./asset/reference/helix-1.png" alt="Nib dark theme in Helix" width="40%">
+    <img src="./asset/reference/helix-2.png" alt="Nib light theme in Helix" width="40%">
+</div>
 
 ### Kitty
 
-![](./asset/reference/kitty-1.png)
-![](./asset/reference/kitty-2.png)
+<div align="center">
+    <img src="./asset/reference/kitty-1.png" alt="Nib dark theme in Kitty" width="40%">
+    <img src="./asset/reference/kitty-2.png" alt="Nib light theme in Kitty" width="40%">
+</div>
 
 ### Lite XL
 
-![](./asset/reference/lite-xl-1.png)
-![](./asset/reference/lite-xl-2.png)
+<div align="center">
+    <img src="./asset/reference/lite-xl-1.png" alt="Nib dark theme in Lite XL" width="40%">
+    <img src="./asset/reference/lite-xl-2.png" alt="Nib light theme in Lite XL" width="40%">
+</div>
 
 ### Neovim
 
-![](./asset/reference/neovim-1.png)
-![](./asset/reference/neovim-2.png)
+<div align="center">
+    <img src="./asset/reference/neovim-1.png" alt="Nib dark theme in Neovim" width="40%">
+    <img src="./asset/reference/neovim-2.png" alt="Nib light theme in Neovim" width="40%">
+</div>
 
 ### tmux
 
-![](./asset/reference/tmux-1.png)
-![](./asset/reference/tmux-2.png)
+<div align="center">
+    <img src="./asset/reference/tmux-1.png" alt="Nib dark theme in tmux" width="40%">
+    <img src="./asset/reference/tmux-2.png" alt="Nib light theme in tmux" width="40%">
+</div>
 
 ### Vim
 
-![](./asset/reference/vim-1.png)
-![](./asset/reference/vim-2.png)
+<div align="center">
+    <img src="./asset/reference/vim-1.png" alt="Nib dark theme in Vim" width="40%">
+    <img src="./asset/reference/vim-2.png" alt="Nib light theme in Vim" width="40%">
+</div>
 
 ### Waybar
 
-![](./asset/reference/waybar-1.png)
-![](./asset/reference/waybar-2.png)
+<div align="center">
+    <img src="./asset/reference/waybar-1.png" alt="Nib dark theme in Waybar" width="40%">
+    <img src="./asset/reference/waybar-2.png" alt="Nib light theme in Waybar" width="40%">
+</div>
 
 ### Zathura
 
-![](./asset/reference/zathura-1.png)
-![](./asset/reference/zathura-2.png)
+<div align="center">
+    <img src="./asset/reference/zathura-1.png" alt="Nib dark theme in Zathura" width="40%">
+    <img src="./asset/reference/zathura-2.png" alt="Nib light theme in Zathura" width="40%">
+</div>
 
 ## Ports
 
