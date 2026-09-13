@@ -170,13 +170,13 @@ A fountain-pen colour system for [sustained](#colors) & [accessible](#accessibil
 
 ## Accessibility
 
+> [!NOTE]
+> See more at [accessibility notes](docs/ACCESSIBILITY.md), [generated contrast docs](docs/generated/CONTRAST.md), [ANSI docs](docs/generated/ANSI.md) and a [colour-vision report](docs/generated/COLOR_VISION.md).
+
 * Principal text targets 7:1 contrast where practical.
 * Meaningful text targets 4.5:1.
 * Relevant boundaries target 3:1.
 * Diagnostics and diffs do not rely on hue alone.
-
-> [!NOTE]
-> See more at [accessibility notes](docs/ACCESSIBILITY.md), [generated contrast docs](docs/generated/CONTRAST.md), [ANSI docs](docs/generated/ANSI.md) and a [colour-vision report](docs/generated/COLOR_VISION.md).
 
 ## Colors
 
