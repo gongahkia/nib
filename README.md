@@ -4,26 +4,80 @@ A fountain-pen colour system for [sustained](#colors) & [accessible](#accessibil
 
 ## Screenshots
 
-![](./asset/reference/fzf-1.png)
-![](./asset/reference/fzf-2.png)
-![](./asset/reference/vim-1.png)
-![](./asset/reference/vim-2.png)
-![](./asset/reference/fish-1.png)
-![](./asset/reference/fish-2.png)
-![](./asset/reference/tmux-1.png)
-![](./asset/reference/tmux-2.png)
-![](./asset/reference/helium-1.png)
-![](./asset/reference/helium-2.png)
-![](./asset/reference/neovim-1.png)
-![](./asset/reference/neovim-2.png)
-![](./asset/reference/waybar-1.png)
-![](./asset/reference/waybar-2.png)
-![](./asset/reference/ghostty-1.png)
-![](./asset/reference/ghostty-2.png)
-![](./asset/reference/zathura-1.png)
-![](./asset/reference/zathura-2.png)
+### Alacritty
+
+![](./asset/reference/alacritty-1.png)
+![](./asset/reference/alacritty-2.png)
+
+### Chromium
+
 ![](./asset/reference/chromium-1.png)
 ![](./asset/reference/chromium-2.png)
+
+### Fish
+
+![](./asset/reference/fish-1.png)
+![](./asset/reference/fish-2.png)
+
+### Emacs
+
+![](./asset/reference/emacs-1.png)
+![](./asset/reference/emacs-2.png)
+
+### fzf
+
+![](./asset/reference/fzf-1.png)
+![](./asset/reference/fzf-2.png)
+
+### Ghostty
+
+![](./asset/reference/ghostty-1.png)
+![](./asset/reference/ghostty-2.png)
+
+### Helium
+
+![](./asset/reference/helium-1.png)
+![](./asset/reference/helium-2.png)
+
+### Helix
+
+![](./asset/reference/helix-1.png)
+![](./asset/reference/helix-2.png)
+
+### Kitty
+
+![](./asset/reference/kitty-1.png)
+![](./asset/reference/kitty-2.png)
+
+### Lite XL
+
+![](./asset/reference/litexl-1.png)
+![](./asset/reference/litexl-2.png)
+
+### Neovim
+
+![](./asset/reference/neovim-1.png)
+![](./asset/reference/neovim-2.png)
+
+### tmux
+
+![](./asset/reference/tmux-1.png)
+![](./asset/reference/tmux-2.png)
+
+### Vim
+
+![](./asset/reference/vim-1.png)
+![](./asset/reference/vim-2.png)
+
+### Waybar
+
+![](./asset/reference/waybar-1.png)
+![](./asset/reference/waybar-2.png)
+
+### Zathura
+
+![](./asset/reference/zathura-1.png)
+![](./asset/reference/zathura-2.png)
 
 ## Ports
 
