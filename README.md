@@ -1,4 +1,5 @@
-[![](https://img.shields.io/badge/nib_1.0.0-passing-green)](https://github.com/gongahkia/nib/releases/tag/1.0) [![](https://github.com/gongahkia/nib/actions/workflows/verify.yml/badge.svg)](https://github.com/gongahkia/nib/actions/workflows/release.yml)
+[![](https://img.shields.io/badge/nib_1.0.0-passing-green)](https://github.com/gongahkia/nib/releases/tag/1.0.0) 
+[![](https://github.com/gongahkia/nib/actions/workflows/verify.yml/badge.svg)](https://github.com/gongahkia/nib/actions/workflows/release.yml)
                                                                    
 # `Nib` 🖋
 
